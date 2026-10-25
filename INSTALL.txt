@@ -1,0 +1,20 @@
+PROJECT SYSTEM UPDATE — how to install
+=======================================
+1. Unzip this folder INTO your portfolio project root (the folder that contains package.json).
+   Say "yes" to overwrite when asked. Files keep their paths, e.g. src/content/projects/ligtas.ts
+
+2. DELETE these two old files (they are replaced):
+     src/content/projects.ts
+     src/components/HorizontalGallery.tsx
+
+3. OPEN src/components/CommandPalette.tsx, find this line and replace it:
+   FIND:     keywords: [p.title.toLowerCase(), p.slug, ...p.categories.map((c) => c.toLowerCase())],
+   REPLACE:  keywords: [p.title.toLowerCase(), p.slug, ...p.categories.map((c) => c.toLowerCase()), ...p.stack.map((s) => s.toLowerCase())],
+   (optional — lets you search a project by technology, e.g. "esp32")
+
+4. Run:   npm test        → expect: Test Files 4 passed (4) · Tests 43 passed (43)
+   Run:   npm run build   → expect: "✓ built in ..." with no errors
+   Run:   npm run dev     → open http://localhost:5173
+
+TO ADD A PROJECT LATER: copy src/content/projects/_template.ts to src/content/projects/<your-slug>.ts,
+fill it in, save. Read src/content/projects/README.md.

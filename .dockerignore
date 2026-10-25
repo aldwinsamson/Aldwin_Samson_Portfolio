@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.github
+infra
+gitops
+docs
+scripts
+*.md
+*.zip
+.env*

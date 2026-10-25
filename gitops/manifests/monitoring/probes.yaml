@@ -1,0 +1,17 @@
+# External uptime probes of the REAL production site, run from the lab by blackbox-exporter.
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: portfolio-site
+  namespace: monitoring
+spec:
+  interval: 60s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://aldwinsamson.com/
+        - https://aldwinsamson.com/projects
+        - https://www.aldwinsamson.com/

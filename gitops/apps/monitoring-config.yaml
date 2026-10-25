@@ -1,0 +1,31 @@
+# Probes, alert rules and the Grafana dashboard (plain manifests). Waits for the
+# Prometheus Operator CRDs from kube-prometheus-stack via a retrying sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-config
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio.git
+    targetRevision: main
+    path: gitops/manifests/monitoring
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

@@ -1,0 +1,101 @@
+# Lean profile for a single 2 GiB k3s node. Prometheus keeps 3 days on a small PVC;
+# everything is reachable only through SSM port-forwards (NodePorts, no inbound rules).
+fullnameOverride: kps
+
+# k3s embeds etcd/scheduler/controller-manager/proxy in one process, so those scrape targets
+# do not exist — disable them to avoid permanent TargetDown noise.
+kubeEtcd: { enabled: false }
+kubeScheduler: { enabled: false }
+kubeControllerManager: { enabled: false }
+kubeProxy: { enabled: false }
+defaultRules:
+  rules:
+    etcd: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeControllerManager: false
+    kubeProxy: false
+
+prometheusOperator:
+  admissionWebhooks:
+    enabled: false
+  tls:
+    enabled: false
+  resources:
+    requests: { cpu: 20m, memory: 48Mi }
+    limits: { memory: 128Mi }
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30900
+  prometheusSpec:
+    retention: 3d
+    retentionSize: 3GB
+    scrapeInterval: 60s
+    evaluationInterval: 60s
+    walCompression: true
+    # Pick up every ServiceMonitor / PodMonitor / Probe / PrometheusRule in the cluster.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 100m, memory: 300Mi }
+      limits: { memory: 700Mi }
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+alertmanager:
+  service:
+    type: NodePort
+    nodePort: 30903
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 10m, memory: 24Mi }
+      limits: { memory: 64Mi }
+
+grafana:
+  defaultDashboardsTimezone: Asia/Manila
+  # Admin password is generated on the node at first boot (secret `grafana-admin`, also in SSM Parameter Store).
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  service:
+    type: NodePort
+    nodePort: 30300
+  persistence:
+    enabled: false   # dashboards + data sources are provisioned from Git
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+  resources:
+    requests: { cpu: 25m, memory: 100Mi }
+    limits: { memory: 256Mi }
+  additionalDataSources:
+    # Uses the EC2 instance role (read-only CloudWatch) — no access keys stored anywhere.
+    - name: CloudWatch
+      uid: cloudwatch
+      type: cloudwatch
+      access: proxy
+      jsonData:
+        authType: default
+        defaultRegion: us-east-1   # CloudFront metrics are published in us-east-1
+
+kube-state-metrics:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits: { memory: 96Mi }
+
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 48Mi }

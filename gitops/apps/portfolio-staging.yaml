@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: portfolio-staging
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio.git
+    targetRevision: main
+    path: gitops/manifests/portfolio/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: portfolio-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

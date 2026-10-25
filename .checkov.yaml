@@ -1,0 +1,45 @@
+# Checkov configuration — IaC / Dockerfile / Kubernetes / GitHub-Actions security scan (see .github/workflows/ci.yml).
+# Every skip below is a deliberate trade-off for a small personal site running on an AWS credit budget.
+# Revisit them if the project grows (e.g. add a WAF, access logs, KMS keys, replication).
+framework:
+  - terraform
+  - dockerfile
+  - kubernetes
+  - github_actions
+directory:
+  - .
+skip-path:
+  - node_modules
+  - dist
+quiet: true
+compact: true
+skip-check:
+  # -- IAM ---------------------------------------------------------------------------------------
+  - CKV_AWS_356   # "*" resource: CloudWatch read APIs (Grafana) and iam:Get/ListOpenIDConnectProvider do not support resource-level permissions
+  # -- CloudFront / edge ---------------------------------------------------------------------------
+  - CKV_AWS_68    # WAF: ~US$5-10/month base cost; CloudFront already includes Shield Standard. Optional hardening.
+  - CKV2_AWS_47   # Log4j WAF rule: no WAF attached, and no Java anywhere in this stack
+  - CKV_AWS_86    # CloudFront access logs: the site deliberately has no analytics/tracking; CloudWatch metrics are enough
+  - CKV_AWS_374   # Geo restriction: the audience is worldwide (recruiters abroad)
+  - CKV_AWS_310   # Origin failover: S3 is multi-AZ (99.99% availability); a second-region origin is out of scope
+  - CKV_AWS_259   # HSTS preload is opt-in via var.hsts_preload (irreversible-ish); max-age=2y + includeSubDomains are already set
+  # -- S3 ------------------------------------------------------------------------------------------
+  - CKV_AWS_18    # S3 access logging: not needed for a private static-site bucket fronted by CloudFront
+  - CKV2_AWS_62   # S3 event notifications: nothing consumes them
+  - CKV_AWS_144   # Cross-region replication: site is rebuilt from Git in minutes; state bucket is versioned
+  - CKV_AWS_145   # SSE-KMS: SSE-S3 (AES-256) is used; a CMK adds ~US$1/month and OAC/KMS policy complexity
+  # -- Networking / DNS / messaging / compute (lab) ------------------------------------------------
+  - CKV_AWS_88    # Public IP on the lab node: required for outbound internet without a ~US$32/month NAT gateway; no inbound rules exist
+  - CKV_AWS_126   # Detailed EC2 monitoring costs extra
+  - CKV_AWS_394   # AZ data source pinning: only the first AZ name is used for a single-AZ lab
+  - CKV2_AWS_11   # VPC flow logs: lab-only VPC with zero inbound rules; logs would cost more than the node
+  - CKV_AWS_297   # EventBridge Scheduler CMK: payload is just an instance ID
+  - CKV_AWS_26    # SNS encryption: CloudWatch alarms cannot publish to topics using the AWS-managed key; messages contain no sensitive data
+  - CKV2_AWS_39   # Route 53 query logging: needs a CloudWatch log group + resource policy in us-east-1 (extra cost, little value)
+  - CKV2_AWS_38   # DNSSEC: needs a KMS asymmetric key (~US$1/month) and a DS record at the registrar; candidate follow-up
+  # -- Kubernetes manifests (gitops/) ------------------------------------------------------------------
+  - CKV_K8S_21    # Checkov reads the raw base files; the namespace is applied by the Kustomize overlay / Argo CD destination
+  - CKV_K8S_14    # Image tag is a placeholder in base; CI commits an immutable sha-<commit> tag into the overlay
+  - CKV_K8S_43    # Digest pinning: tag is immutable per commit (sha-<commit>); digest pinning is a candidate follow-up
+  # -- GitHub Actions ---------------------------------------------------------------------------------------
+  - CKV_GHA_7    # deploy.yml takes a `ref` input on purpose: it is the one-click rollback (re-deploy an older commit). Only runs from main; the AWS role is limited to the site bucket.

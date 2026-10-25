@@ -1,0 +1,427 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (html.dark) — see src/hooks/useTheme.ts */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens                                                      */
+/*  Light = warm ivory/porcelain · Dark = obsidian/charcoal            */
+/*  Primary accent = champagne · Technical accent = cool cyan          */
+/* ------------------------------------------------------------------ */
+:root {
+  --bg: #f3efe6;
+  --bg-elev: #faf8f3;
+  --bg-sunken: #ebe6da;
+  --ink: #15140f;
+  --ink-soft: #3b3933;
+  --muted: #6a665c;
+  --line: rgba(21, 20, 15, 0.12);
+  --line-strong: rgba(21, 20, 15, 0.24);
+  --accent: #8a6a32;          /* champagne, darkened for AA contrast on ivory */
+  --accent-soft: #c9ae7c;
+  --accent-ink: #faf8f3;
+  --tech: #0b7285;            /* restrained cyan for technical details */
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 30px 60px -30px rgba(40, 32, 18, 0.28);
+  --shadow-sm: 0 12px 30px -18px rgba(40, 32, 18, 0.35);
+  --grain-opacity: 0.05;
+  --hero-overlay: linear-gradient(180deg, rgba(243, 239, 230, 0) 55%, rgba(243, 239, 230, 0.55) 100%);
+}
+
+.dark {
+  --bg: #0a0a0b;
+  --bg-elev: #131315;
+  --bg-sunken: #070708;
+  --ink: #ece7dc;
+  --ink-soft: #c9c3b6;
+  --muted: #9a9487;
+  --line: rgba(236, 231, 220, 0.1);
+  --line-strong: rgba(236, 231, 220, 0.22);
+  --accent: #d6ba86;
+  --accent-soft: #a88d5c;
+  --accent-ink: #0a0a0b;
+  --tech: #67d4e6;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 40px 80px -40px rgba(0, 0, 0, 0.85);
+  --shadow-sm: 0 16px 40px -20px rgba(0, 0, 0, 0.8);
+  --grain-opacity: 0.07;
+  --hero-overlay: linear-gradient(180deg, rgba(10, 10, 11, 0) 50%, rgba(10, 10, 11, 0.7) 100%);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-elev: var(--bg-elev);
+  --color-sunken: var(--bg-sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-tech: var(--tech);
+
+  --font-display: "Instrument Serif", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 6rem;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Gentle theme cross-fade, enabled only after first paint (class added in useTheme) */
+html.theme-ready body,
+html.theme-ready .theme-fade {
+  transition: background-color 0.6s var(--ease-lux), color 0.6s var(--ease-lux), border-color 0.6s var(--ease-lux);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--tech);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* Fluid editorial type scale */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  font-size: clamp(3.1rem, 8.4vw, 8.75rem);
+}
+.t-hero {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.022em;
+  line-height: 0.94;
+  font-size: clamp(2.2rem, 5.8vw, 6.6rem);
+}
+.t-h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 0.98;
+  font-size: clamp(2.6rem, 6vw, 5.5rem);
+}
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  font-size: clamp(1.7rem, 4vw, 3.6rem);
+}
+.t-h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.1;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+}
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+.t-lead {
+  font-size: clamp(1.02rem, 1.25vw, 1.2rem);
+  line-height: 1.65;
+}
+
+/* Hairline rule with champagne center glint */
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-strong) 12%, var(--line-strong) 88%, transparent);
+}
+
+/* Film grain — static, normal-blend (no mix-blend-mode, no animation) so it costs nothing while scrolling. */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: calc(var(--grain-opacity) * 0.7);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Ambient vignette — plain alpha gradient (was multiply-blended over the whole viewport). */
+.vignette::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  background: radial-gradient(circle at center, transparent 45%, rgba(40, 32, 20, 0.1) 100%);
+}
+.dark .vignette::before {
+  background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* Precision grid backdrop used in hero & 404 */
+.blueprint {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at 60% 40%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 60% 40%, #000 30%, transparent 75%);
+}
+
+/* Metallic champagne text for selected accents */
+.text-metal {
+  background: linear-gradient(100deg, var(--accent) 0%, var(--accent-soft) 40%, var(--accent) 60%, var(--ink-soft) 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.surface {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Reveal elements remain visible if JS fails (html.no-js) */
+.no-js [data-reveal] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Global reduced-motion policy */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Custom cursor — hide native on fine pointers when feature is on   */
+/* ------------------------------------------------------------------ */
+@media (hover: hover) and (pointer: fine) {
+  .custom-cursor-active,
+  .custom-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+/* Smooth scroll with Lenis */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 48s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Animated gradient border — used on premium card highlights          */
+/* ------------------------------------------------------------------ */
+@keyframes gradient-rotate {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animated-border {
+  background: conic-gradient(from var(--gradient-angle), var(--accent), var(--tech), var(--accent-soft), var(--accent));
+  animation: gradient-rotate 4s linear infinite;
+}
+
+/* Reveal line — horizontal line that grows from center */
+@keyframes line-reveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.animate-line-reveal {
+  animation: line-reveal 1.2s var(--ease-lux) forwards;
+}
+
+/* Pulse ring for status indicators */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Float — gentle vertical drift */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-6px) rotate(1deg); }
+  66% { transform: translateY(-10px) rotate(-1deg); }
+}
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 7s ease-in-out infinite 2s;
+}
+
+/* Shimmer — left-to-right highlight sweep */
+@keyframes shimmer {
+  0% { background-position: -400% center; }
+  100% { background-position: 400% center; }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--muted) 0%, var(--ink) 35%, var(--accent) 50%, var(--ink) 65%, var(--muted) 100%);
+  background-size: 400% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+
+/* Cinematic slow-reveal for large display text */
+@keyframes reveal-up {
+  from { clip-path: inset(100% 0 0 0); opacity: 0; }
+  to   { clip-path: inset(0% 0 0 0); opacity: 1; }
+}
+.reveal-up {
+  animation: reveal-up 1s var(--ease-lux) forwards;
+}
+
+/* Text scan line effect */
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+.animate-scan {
+  animation: scan 4s var(--ease-lux) infinite 2s;
+}
+
+/* Neon pulse — for the availability dot */
+@keyframes neon-pulse {
+  0%, 100% { box-shadow: 0 0 2px currentColor, 0 0 8px currentColor; }
+  50% { box-shadow: 0 0 4px currentColor, 0 0 16px currentColor, 0 0 24px currentColor; }
+}
+.neon-pulse {
+  animation: neon-pulse 3s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cinematic hero — gold "chrome" lettering                           */
+/* ------------------------------------------------------------------ */
+:root {
+  --chrome: linear-gradient(180deg, #4a3715 0%, #8a6a32 34%, #3a2b10 50%, #7d6030 54%, #b99556 78%, #d9bd84 100%);
+  --chrome-shadow: 0 22px 34px rgba(60, 44, 18, 0.28);
+}
+.dark {
+  --chrome: linear-gradient(180deg, #fff8e4 0%, #efdcae 28%, #c3a15f 47%, #6d5226 51%, #d4b878 70%, #fff1cc 100%);
+  --chrome-shadow: 0 26px 40px rgba(0, 0, 0, 0.55);
+}
+.text-chrome {
+  background-image: var(--chrome);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.chrome-shadow {
+  filter: drop-shadow(var(--chrome-shadow));
+}
+
+/* Soft stage glow behind the particle portrait */
+.hero-glow {
+  background:
+    radial-gradient(55% 45% at 50% 38%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    radial-gradient(90% 70% at 50% 100%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
+}
+
+/* Brand mark: bronze on light, gold on dark */
+.brand-light { display: block; }
+.brand-dark { display: none; }
+.dark .brand-light { display: none; }
+.dark .brand-dark { display: block; }
+
+/* ------------------------------------------------------------------ */
+/*  Hero poster (phones & tablets): everything is sized from the poster */
+/*  itself, so positions can never drift or collapse.                   */
+/* ------------------------------------------------------------------ */
+.poster {
+  container-type: inline-size;
+}
+.poster-name {
+  font-size: 18vw; /* fallback */
+  font-size: 20cqw;
+}
+.poster-outline {
+  font-size: 17vw; /* fallback */
+  font-size: 19.5cqw;
+}
+.poster-badge {
+  width: 18cqw;
+  height: 18cqw;
+  min-width: 68px;
+  min-height: 68px;
+}
+
+@keyframes badge-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.badge-spin {
+  animation: badge-spin 26s linear infinite;
+}

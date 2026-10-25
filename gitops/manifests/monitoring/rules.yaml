@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: portfolio-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: portfolio-site
+      rules:
+        - alert: PortfolioSiteDown
+          expr: probe_success{job="probe/monitoring/portfolio-site"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.instance }} is failing its HTTP probe"
+        - alert: PortfolioSiteSlow
+          expr: probe_duration_seconds{job="probe/monitoring/portfolio-site"} > 2
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.instance }} takes more than 2s to respond"
+        - alert: PortfolioCertificateExpiringSoon
+          expr: (probe_ssl_earliest_cert_expiry{job="probe/monitoring/portfolio-site"} - time()) / 86400 < 14
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "TLS certificate for {{ $labels.instance }} expires in under 14 days"
+    - name: lab-node
+      rules:
+        - alert: LabNodeLowMemory
+          expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Lab node has less than 10% memory available — consider a larger instance type"

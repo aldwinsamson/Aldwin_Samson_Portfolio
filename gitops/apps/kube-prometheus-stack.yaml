@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    # Source 1: the upstream Helm chart.
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 92.10.1
+      helm:
+        releaseName: kube-prometheus-stack
+        valueFiles:
+          - $values/gitops/values/kube-prometheus-stack.yaml
+    # Source 2: this repo, only to read the values file above.
+    - repoURL: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true   # the operator CRDs are too large for client-side apply

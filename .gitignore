@@ -1,0 +1,27 @@
+node_modules
+dist
+dist-ssr
+coverage
+.vite
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+*.zip
+.vercel
+
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+override.tf
+override.tf.json
+terraform.tfvars
+*.auto.tfvars
+# NOTE: commit .terraform.lock.hcl (provider version pinning) and the non-secret prod.tfvars / bootstrap.tfvars
+.lighthouseci/
