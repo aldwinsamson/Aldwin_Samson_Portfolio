@@ -13,7 +13,7 @@ check() {
 }
 code() { curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$@"; }
 headers() { curl -sI --max-time 20 "$1" | tr -d '\r'; }
-has_header() { headers "$1" | grep -qiE "^$2:"; }
+has_header() { headers "$1" | grep -qiE "^$2"; }
 status_is() { [ "$(code "$2")" = "$1" ]; }
 status_in() { local c; c="$(code "$1")"; shift; local want; for want in "$@"; do [ "$c" = "$want" ] && return 0; done; return 1; }
 
@@ -25,9 +25,9 @@ check "missing asset is a real 404" status_is 404 "$BASE/assets/does-not-exist.j
 check "http -> https redirect" status_in "http://$HOST/" 301 302 308
 check "www -> apex 301" status_is 301 "https://www.$HOST/"
 
-check "HSTS header present" has_header "$BASE/" strict-transport-security
-check "X-Content-Type-Options present" has_header "$BASE/" x-content-type-options
-check "CSP header present (enforce or report-only)" has_header "$BASE/" 'content-security-policy(-report-only)?'
+check "HSTS header present" has_header "$BASE/" 'strict-transport-security:'
+check "X-Content-Type-Options present" has_header "$BASE/" 'x-content-type-options:'
+check "CSP header present (enforce or report-only)" has_header "$BASE/" 'content-security-policy(-report-only)?:'
 
 # Hashed bundle must be served immutable; index.html must be revalidated.
 asset="$(curl -s --max-time 20 "$BASE/" | grep -oE '/assets/[^"]+\.js' | head -1 || true)"
