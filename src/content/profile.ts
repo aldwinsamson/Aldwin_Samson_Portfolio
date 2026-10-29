@@ -1,7 +1,7 @@
 import type { SocialLink } from "./types";
 
 /**
- * Personal profile content. Facts come from John's CV.
+ * Personal profile content. Facts come from John's CV (keep this file in sync with it).
  * Private details (phone number, street address) are intentionally NOT published.
  */
 export const profile = {
@@ -15,7 +15,7 @@ export const profile = {
   initials: "JAS",
   location: "Metro Manila, Philippines",
   email: "aldwinsamsonn@gmail.com",
-    availability: "Open to Cloud, DevOps, SRE & Embedded roles",
+  availability: "Open to Cloud, DevOps, SRE & Embedded roles",
 
   hero: {
     eyebrow: "Cloud & DevOps · Embedded Systems · Hardware",

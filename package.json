@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-sitemap.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "new:project": "node scripts/new-project.mjs",
+    "check": "npm run typecheck && npm test"
   },
   "dependencies": {
     "clsx": "2.1.1",

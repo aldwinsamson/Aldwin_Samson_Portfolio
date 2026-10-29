@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  ssm_prefix = "/${var.project}/lab"
+  ssm_prefix = "/${var.context.project}/${var.context.environment}/lab"
 }
 
 data "aws_iam_policy_document" "ec2_assume" {
@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "ec2_assume" {
 }
 
 resource "aws_iam_role" "lab" {
-  name               = "${var.project}-lab-instance"
+  name               = "${var.context.prefix}-lab-instance"
   description        = "k3s lab node: SSM Session Manager, CloudWatch read (Grafana), write own bootstrap secrets"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume.json
 }
@@ -62,6 +62,6 @@ resource "aws_iam_role_policy" "lab" {
 }
 
 resource "aws_iam_instance_profile" "lab" {
-  name = "${var.project}-lab-instance"
+  name = "${var.context.prefix}-lab-instance"
   role = aws_iam_role.lab.name
 }

@@ -1,9 +1,9 @@
 output "bucket_name" {
-  value = aws_s3_bucket.site.bucket
+  value = module.bucket.id
 }
 
 output "bucket_arn" {
-  value = aws_s3_bucket.site.arn
+  value = module.bucket.arn
 }
 
 output "distribution_id" {

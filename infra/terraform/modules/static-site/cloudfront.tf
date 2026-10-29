@@ -1,14 +1,13 @@
 locals {
-  # Matches what the app actually loads: Google Fonts (CSS + font files), Pexels stock
-  # photos, same-origin JS/CSS, blob:/data: textures for the WebGL hero.
-  # style-src needs 'unsafe-inline' because the app uses inline style attributes.
+  # Built from the environment's csp object. The module only ever trusts 'self' by itself;
+  # every extra origin comes from variables. style-src needs 'unsafe-inline' for inline style attributes.
   csp = join("; ", [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src ${join(" ", concat(["'self'", "data:", "blob:"], var.csp_img_hosts))}",
-    "connect-src 'self'",
+    "style-src ${join(" ", concat(["'self'", "'unsafe-inline'"], var.csp.style_hosts))}",
+    "font-src ${join(" ", concat(["'self'", "data:"], var.csp.font_hosts))}",
+    "img-src ${join(" ", concat(["'self'", "data:", "blob:"], var.csp.img_hosts))}",
+    "connect-src ${join(" ", concat(["'self'"], var.csp.connect_hosts))}",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     "object-src 'none'",
@@ -17,8 +16,6 @@ locals {
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
   ])
-
-  permissions_policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), interest-cohort=()"
 }
 
 data "aws_cloudfront_cache_policy" "optimized" {
@@ -26,7 +23,7 @@ data "aws_cloudfront_cache_policy" "optimized" {
 }
 
 resource "aws_cloudfront_origin_access_control" "site" {
-  name                              = "${var.project}-site-oac"
+  name                              = "${var.context.prefix}-site-oac"
   description                       = "CloudFront -> private S3 bucket (SigV4)"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -34,7 +31,7 @@ resource "aws_cloudfront_origin_access_control" "site" {
 }
 
 resource "aws_cloudfront_function" "router" {
-  name    = "${var.project}-spa-router"
+  name    = "${var.context.prefix}-spa-router"
   runtime = "cloudfront-js-2.0"
   comment = "www -> apex redirect + SPA fallback to /index.html"
   publish = true
@@ -42,14 +39,14 @@ resource "aws_cloudfront_function" "router" {
 }
 
 resource "aws_cloudfront_response_headers_policy" "security" {
-  name    = "${var.project}-security-headers"
-  comment = "HSTS, nosniff, frame deny, referrer policy, CSP (${var.csp_mode}), permissions policy"
+  name    = "${var.context.prefix}-security-headers"
+  comment = "HSTS, nosniff, frame deny, referrer policy, CSP (${var.csp.mode}), permissions policy"
 
   security_headers_config {
     strict_transport_security {
-      access_control_max_age_sec = 63072000 # 2 years
-      include_subdomains         = true
-      preload                    = var.hsts_preload
+      access_control_max_age_sec = var.hsts.max_age_seconds
+      include_subdomains         = var.hsts.include_subdomains
+      preload                    = var.hsts.preload
       override                   = true
     }
 
@@ -68,7 +65,7 @@ resource "aws_cloudfront_response_headers_policy" "security" {
     }
 
     dynamic "content_security_policy" {
-      for_each = var.csp_mode == "enforce" ? [1] : []
+      for_each = var.csp.mode == "enforce" ? [1] : []
 
       content {
         content_security_policy = local.csp
@@ -80,12 +77,12 @@ resource "aws_cloudfront_response_headers_policy" "security" {
   custom_headers_config {
     items {
       header   = "Permissions-Policy"
-      value    = local.permissions_policy
+      value    = var.permissions_policy
       override = true
     }
 
     dynamic "items" {
-      for_each = var.csp_mode == "report-only" ? [1] : []
+      for_each = var.csp.mode == "report-only" ? [1] : []
 
       content {
         header   = "Content-Security-Policy-Report-Only"
@@ -100,14 +97,14 @@ resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
   http_version        = "http2and3"
-  comment             = "${var.domain_name} portfolio"
+  comment             = "${var.context.prefix}: ${var.domain_name}"
   default_root_object = "index.html"
   aliases             = local.aliases
   price_class         = var.price_class
 
   origin {
     origin_id                = "s3-site"
-    domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
+    domain_name              = module.bucket.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 

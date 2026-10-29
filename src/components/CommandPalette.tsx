@@ -134,7 +134,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       icon: CircuitBoard,
       action: () => nav(`/projects/${p.slug}`),
       group: "Projects",
-      keywords: [p.title.toLowerCase(), p.slug, ...p.categories.map((c) => c.toLowerCase())],
+      keywords: [p.title.toLowerCase(), p.slug, ...p.categories.map((c) => c.toLowerCase()), ...p.stack.map((s) => s.toLowerCase())],
     }));
 
     const actionItems: CommandItem[] = [

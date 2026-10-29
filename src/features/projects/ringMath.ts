@@ -1,56 +1,48 @@
-import type { MediaItem, Project } from "@/content/types";
+// pure geometry for the 3d wheel (home page + mobile nav). no react in here so it's easy to unit-test.
+// every angle is in DEGREES, because that's what css rotateY() takes.
 
-/**
- * Geometry + content helpers for the 3D project ring (pure, unit-tested).
- * Convention: card i sits at rotateY(i·step) translateZ(R); the ring itself is rotated by `angle`.
- * A card faces the viewer when (i·step + angle) ≈ 0, i.e. i ≈ −angle / step.
- */
-
-/** Radius at which `count` cards of `cardWidth` form a closed ring, plus an optional gap. */
-export const ringRadius = (cardWidth: number, count: number, gap = 0) =>
-  cardWidth / 2 / Math.tan(Math.PI / count) + gap;
-
-/** Wraps any angle into (−180, 180]. 0 = directly facing the viewer. */
-export const normalizeAngle = (deg: number) => ((((deg + 180) % 360) + 360) % 360) - 180;
-
-/** Index of the card currently facing the viewer. */
-export const frontIndex = (angle: number, count: number) =>
-  ((Math.round((-angle * count) / 360) % count) + count) % count;
-
-/** Nearest angle at which a card sits exactly at the front. */
-export const snapAngle = (angle: number, count: number) => {
-  const step = 360 / count;
-  return Math.round(angle / step) * step;
-};
-
-export type SlotKind = "cover" | "shot" | "stack" | "highlight";
-
-export interface RingSlot {
-  id: string;
-  projectSlug: string;
-  kind: SlotKind;
-  media?: MediaItem;
-}
-
+/** the wheel never packs fewer than this many slots, so 2-3 cards don't get a tiny cramped radius */
 const MIN_SLOTS = 8;
 
+/** wraps any angle into (-180, 180] — 0 means "facing the viewer" */
+export function normalizeAngle(angle: number): number {
+  const wrapped = ((angle % 360) + 360) % 360;
+  return wrapped > 180 ? wrapped - 360 : wrapped;
+}
+
+/** degrees between neighbouring cards: one slot each, evenly spaced */
+export function ringStep(count: number): number {
+  return count > 0 ? 360 / count : 0;
+}
+
+/** how many slots the radius is sized for (at least MIN_SLOTS) */
+export function ringGeometryCount(count: number): number {
+  return Math.max(MIN_SLOTS, count);
+}
+
 /**
- * Turns projects into ring faces. Every project contributes its cover, its gallery images, a stack card
- * and a highlight card (awards / outcome) — so the ring is built only from real project content.
+ * distance from the centre to each flat card (the polygon's apothem), so neighbours meet edge to edge:
+ * a regular n-gon with apothem r has side 2·r·tan(π/n), and that side is the card width. `gap` pushes cards apart.
  */
-export function buildSlots(projects: readonly Project[]): RingSlot[] {
-  const slots: RingSlot[] = [];
-  for (const p of projects) {
-    slots.push({ id: `${p.slug}-cover`, projectSlug: p.slug, kind: "cover", media: p.cover });
-    p.gallery.forEach((m, i) => slots.push({ id: `${p.slug}-shot-${i}`, projectSlug: p.slug, kind: "shot", media: m }));
-    slots.push({ id: `${p.slug}-stack`, projectSlug: p.slug, kind: "stack" });
-    slots.push({ id: `${p.slug}-highlight`, projectSlug: p.slug, kind: "highlight" });
-  }
-  const base = slots.length;
-  if (base === 0) return slots;
-  for (let k = 0; slots.length < MIN_SLOTS; k++) {
-    const src = slots[k % base];
-    slots.push({ ...src, id: `${src.id}-r${k}` });
-  }
-  return slots;
+export function ringRadius(cardWidth: number, count: number, gap = 0): number {
+  return cardWidth / (2 * Math.tan(Math.PI / Math.max(3, count))) + gap;
+}
+
+/** which card is at the front when the wheel is turned by `angle` (card i sits at i·step + angle) */
+export function frontIndex(angle: number, count: number): number {
+  if (count <= 0) return 0;
+  const i = Math.round(-angle / ringStep(count));
+  return ((i % count) + count) % count;
+}
+
+/** nearest angle where a card sits squarely at the front */
+export function snapAngle(angle: number, count: number): number {
+  const step = ringStep(count);
+  return step === 0 ? 0 : Math.round(angle / step) * step;
+}
+
+/** the angle that brings card `index` to the front from `current`, taking the shortest way round */
+export function angleForIndex(index: number, current: number, count: number): number {
+  const target = -index * ringStep(count);
+  return current + normalizeAngle(target - current);
 }

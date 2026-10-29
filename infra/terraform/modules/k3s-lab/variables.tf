@@ -1,5 +1,12 @@
-variable "project" {
-  type = string
+variable "context" {
+  description = "Shared naming/tagging context built once per environment (see environments/*/locals.tf)."
+  type = object({
+    project     = string
+    environment = string
+    region      = string
+    prefix      = string
+    tags        = map(string)
+  })
 }
 
 variable "instance_type" {
@@ -45,24 +52,13 @@ variable "gitops_revision" {
   default     = "main"
 }
 
-variable "schedule_enabled" {
+variable "schedule" {
   description = "Stop the instance every night and start it every morning (saves roughly a third of the EC2 cost)."
-  type        = bool
-  default     = true
-}
-
-variable "schedule_timezone" {
-  type    = string
-  default = "Asia/Manila"
-}
-
-variable "schedule_stop_cron" {
-  description = "EventBridge Scheduler cron (evaluated in schedule_timezone)."
-  type        = string
-  default     = "cron(0 23 * * ? *)"
-}
-
-variable "schedule_start_cron" {
-  type    = string
-  default = "cron(0 7 * * ? *)"
+  type = object({
+    enabled    = optional(bool, true)
+    timezone   = optional(string, "Asia/Manila")
+    stop_cron  = optional(string, "cron(0 23 * * ? *)")
+    start_cron = optional(string, "cron(0 7 * * ? *)")
+  })
+  default = {}
 }

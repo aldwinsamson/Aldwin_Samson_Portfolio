@@ -18,6 +18,29 @@ export const DEFAULT_ORDER = 100;
 /** The homepage wheel never shows more than this many projects (the rest live on /projects). */
 export const MAX_RING = 10;
 
+/** Drafts exist only in development; the live (production) site never shows them. */
+export const isVisible = (p: Pick<ProjectInput, "draft">, production: boolean): boolean => !(production && p.draft);
+
+/**
+ * Spots the classic mistake of copying a project file and forgetting to rewrite it: two projects
+ * with the same summary or tagline. Returns plain-language warnings (empty array = all good).
+ */
+export function findCopiedText(list: readonly Pick<ProjectInput, "slug" | "summary" | "tagline">[]): string[] {
+  const seen = new Map<string, string>();
+  const warnings: string[] = [];
+  for (const p of list) {
+    for (const key of ["summary", "tagline"] as const) {
+      const text = p[key]?.trim().toLowerCase();
+      if (!text) continue;
+      const id = `${key}:${text}`;
+      const first = seen.get(id);
+      if (first && first !== p.slug) warnings.push(`"${p.slug}" has the same ${key} as "${first}" — did you copy a file and forget to edit it?`);
+      else seen.set(id, p.slug);
+    }
+  }
+  return warnings;
+}
+
 /** Fills in defaults so components never have to null-check lists. */
 export function resolveProject(input: ProjectInput): Project {
   return {

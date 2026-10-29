@@ -46,7 +46,7 @@ resource "aws_instance" "lab" {
   }
 
   tags = {
-    Name = "${var.project}-lab"
+    Name = "${var.context.prefix}-lab"
   }
 
   lifecycle {

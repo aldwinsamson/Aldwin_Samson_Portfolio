@@ -1,6 +1,6 @@
 /** Typed content models. Add fields here first, then use them in components. */
 
-export type ProjectCategory = "Software" | "Embedded Systems" | "Hardware" | "AI" | "Web Development";
+export type ProjectCategory = "Software" | "Embedded Systems" | "Hardware" | "AI" | "Web Development" | "Cloud & DevOps";
 
 export type ProjectStatus = "Completed" | "In progress" | "Concept";
 
@@ -18,37 +18,66 @@ export interface ProjectLink {
   href: string;
 }
 
-export interface Project {
+/**
+ * What you write in `src/content/projects/<slug>.ts`.
+ * Only the fields without a `?` are required — everything else is optional and the site simply
+ * hides the sections you leave out.
+ */
+export interface ProjectInput {
+  /** URL id, lowercase-with-dashes. Must match the file name, e.g. "my-project" → /projects/my-project */
   slug: string;
   title: string;
   /** Optional expanded name (e.g. acronyms). */
   fullTitle?: string;
+  /** One short line — shown on cards and the homepage wheel. */
   tagline: string;
+  /** Two or three sentences — used for search engines and cards. */
   summary: string;
   categories: ProjectCategory[];
-  /** Used for the Software / Hardware tabs on the homepage. */
-  domain: "software" | "hardware";
   status: ProjectStatus;
   period: string;
   role: string;
-  featured: boolean;
-  cover: MediaItem;
-  gallery: MediaItem[];
-  overview: string;
-  objective: string;
-  problem: string;
-  contributions: string[];
-  architecture?: { label: string; detail: string }[];
+  /** Main technologies (shown as tags). */
   stack: string[];
-  implementation: string[];
+
+  /**
+   * Work in progress. While `draft: true` the project is visible ONLY in `npm run dev` (with a DRAFT badge)
+   * and is left out of the live site, the sitemap and the assistant. Delete the line to publish it.
+   */
+  draft?: boolean;
+  /** Lower number = shown first on the wheel and the projects page. Leave out to go after the numbered ones. */
+  order?: number;
+  /** If you ever have more projects than fit on the homepage wheel, featured ones are shown first. */
+  featured?: boolean;
+  /** Cover image. Optional — a tasteful placeholder is shown until you add one. */
+  cover?: MediaItem;
+  gallery?: MediaItem[];
+
+  overview?: string;
+  objective?: string;
+  problem?: string;
+  contributions?: string[];
+  architecture?: { label: string; detail: string }[];
+  implementation?: string[];
   challenges?: string[];
-  outcomes: string[];
+  outcomes?: string[];
   awards?: string[];
   /** Only add links that are valid AND approved for publication. */
   links?: { repository?: ProjectLink; demo?: ProjectLink };
   /** Shown when a resource exists but cannot be published (e.g. private repo). */
   linkNote?: string;
 }
+
+/** A project after defaults are filled in — this is what the pages and components receive. */
+export type Project = ProjectInput & {
+  featured: boolean;
+  order: number;
+  gallery: MediaItem[];
+  overview: string;
+  contributions: string[];
+  implementation: string[];
+  outcomes: string[];
+};
 
 export interface ExperienceEntry {
   id: string;

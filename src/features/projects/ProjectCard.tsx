@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import type { Project } from "@/content/types";
-import { SmartImage, StatusDot, Tag } from "@/components/ui";
+import { StatusDot, Tag } from "@/components/ui";
+import { ProjectCover } from "./ProjectCover";
 import { useCanHover } from "@/hooks/useMediaQuery";
 
 /** Project card — 3D tilt + cinematic image scale on hover. */
@@ -54,18 +55,23 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         )}
 
         <div className="relative overflow-hidden">
-          <SmartImage
-            src={project.cover.src}
-            alt={project.cover.alt}
+          <ProjectCover
+            project={project}
             ratio="16 / 10"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             imgClassName="transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]"
-            label={project.cover.kind === "representative" ? "Representative image" : undefined}
+            label={project.cover?.kind === "representative" ? "Representative image" : undefined}
           />
           {/* Cinematic gradient over image */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           <span className="t-meta absolute left-4 top-4 rounded-full bg-black/55 px-2.5 py-1 text-[0.62rem] text-white/90 backdrop-blur-sm">
             {String(index + 1).padStart(2, "0")}
           </span>
+          {project.draft && (
+            <span className="t-meta absolute right-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[0.62rem] text-black">
+              Draft · dev only
+            </span>
+          )}
         </div>
 
         <div className="relative flex flex-1 flex-col p-5 sm:p-6 lg:p-7">

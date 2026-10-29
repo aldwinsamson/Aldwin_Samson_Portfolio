@@ -1,5 +1,5 @@
 import type { Project, ProjectInput } from "../types";
-import { resolveProject, sortProjects, usedCategories, validateProject } from "../projectLogic";
+import { findCopiedText, isVisible, resolveProject, sortProjects, usedCategories, validateProject } from "../projectLogic";
 
 /**
  * PROJECT REGISTRY — you never edit this file.
@@ -26,7 +26,15 @@ for (const [file, mod] of Object.entries(modules)) {
     continue;
   }
   seen.add(input.slug);
+  // Drafts are for `npm run dev` only — they never reach the live site (or the sitemap / assistant).
+  if (!isVisible(input, import.meta.env.PROD)) continue;
   loaded.push(resolveProject(input));
+}
+
+if (import.meta.env.DEV) {
+  for (const warning of findCopiedText(loaded.filter((p) => !p.draft))) console.warn(`[projects] ${warning}`);
+  const drafts = loaded.filter((p) => p.draft).map((p) => p.slug);
+  if (drafts.length) console.info(`[projects] ${drafts.length} draft project(s) shown only in dev: ${drafts.join(", ")}`);
 }
 
 /** Every project, in display order. */

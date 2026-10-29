@@ -15,6 +15,6 @@ updates:
   - package-ecosystem: terraform
     directories:
       - /infra/terraform/bootstrap
-      - /infra/terraform/prod
+      - /infra/terraform/environments/*
       - /infra/terraform/modules/*
     schedule: { interval: weekly }

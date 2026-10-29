@@ -1,6 +1,4 @@
-project            = "aldwinsamson"
-region             = "ap-southeast-1"
-domain_name        = "aldwinsamson.com"
-github_repository  = "aldwinsamson/Aldwin_Samson_Portfolio"
-alert_email        = "aldwinsamsonn@gmail.com"
-monthly_budget_usd = 30
+# Bootstrap-only settings. Identity values (project, domain, region, repo, e-mail...) come from ../environment.tfvars.
+github_environments     = ["production"] # GitHub Environments that must approve `terraform apply`
+additional_environments = []             # e.g. ["staging"] once you add environments/staging
+monthly_budget_usd      = 30

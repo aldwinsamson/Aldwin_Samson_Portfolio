@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# Update to your custom domain before deploying.
 Sitemap: https://aldwinsamson.com/sitemap.xml

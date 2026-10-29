@@ -37,9 +37,7 @@ function RoleBadge({ className }: { className?: string }) {
           <path id="badge-circle" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0" />
         </defs>
         <text fill="currentColor" fontSize="9.2" letterSpacing="3.4" fontFamily="JetBrains Mono, monospace">
-          <textPath href="#badge-circle">CLOUD • DEVOPS • EMBEDDED • HARDWARE •
-
-          </textPath>
+          <textPath href="#badge-circle">CLOUD • DEVOPS • EMBEDDED • HARDWARE •</textPath>
         </text>
       </svg>
       <span className="absolute inset-0 flex items-center justify-center">
@@ -146,7 +144,7 @@ export function Hero() {
   const outlineStyle = { WebkitTextStroke: "1.5px color-mix(in srgb, var(--accent) 70%, transparent)" };
   const nameSr = (
     <span className="sr-only">
-      {profile.displayName} — Cloud & Devops Engineer. {profile.hero.headline.join(" ")}
+      {profile.displayName} — Cloud & DevOps Engineer. {profile.hero.headline.join(" ")}
     </span>
   );
 
@@ -234,7 +232,7 @@ export function Hero() {
     );
   }
 
-    /* ------------------------------ DESKTOP (cinematic) ------------------------------ */
+  /* ------------------------------ DESKTOP (cinematic) ------------------------------ */
   return (
     <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-[250svh]">
       <motion.div style={{ opacity: stageOpacity }} className="sticky top-0 isolate h-svh overflow-hidden">
@@ -298,7 +296,7 @@ export function Hero() {
             </div>
           </motion.div>
 
-                    {/* Bottom bar — status (left) · actions (centre) · scroll hint (right).
+          {/* Bottom bar — status (left) · actions (centre) · scroll hint (right).
               The side items hide below xl so the centred action pill always has room. */}
           <Container className="absolute inset-x-0 bottom-6 z-20">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">

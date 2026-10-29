@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { responsiveSrcSet } from "@/utils/image";
 import { ease, spring, stagger as staggerTokens } from "@/styles/motion";
 
 /* ------------------------------------------------------------------ */
@@ -188,6 +189,7 @@ export function SmartImage({
   eager = false,
   position = "50% 50%",
   label,
+  sizes = "(max-width: 768px) 100vw, 55vw",
 }: {
   src: string;
   alt: string;
@@ -197,8 +199,11 @@ export function SmartImage({
   eager?: boolean;
   position?: string;
   label?: string;
+  /** How wide the image is shown, so the browser downloads the right size (only used for resizable stock photos). */
+  sizes?: string;
 }) {
   const [state, setState] = useState<"loading" | "loaded" | "error">("loading");
+  const srcSet = responsiveSrcSet(src);
   return (
     <div
       className={cn("relative overflow-hidden bg-sunken", className)}
@@ -219,6 +224,8 @@ export function SmartImage({
       {state !== "error" && (
         <img
           src={src}
+          srcSet={srcSet}
+          sizes={srcSet ? sizes : undefined}
           alt={alt}
           loading={eager ? "eager" : "lazy"}
           decoding="async"

@@ -6,12 +6,12 @@
 export type RouterMode = "hash" | "browser";
 
 export const siteConfig = {
-  /** Production URL (used for canonical/OG). */
+  /** Production URL (used for canonical/OG, sitemap.xml and robots.txt — scripts/generate-sitemap.mjs reads it). */
   url: "https://aldwinsamson.com",
   title: "John Aldwin R. Samson",
   titleTemplate: (page: string) => `${page} — John Aldwin R. Samson`,
   description:
-    "Cloud, DevOps and SRE engineering with an embedded and hardware foundation. AWS, Terraform, GitOps, observability, IoT and PCB design.",
+    "Computer Engineering graduate specializing in cloud infrastructure, DevOps and SRE, with a foundation in embedded systems and hardware design.",
 
   /**
    * Router mode.
@@ -24,7 +24,7 @@ export const siteConfig = {
 
   /** Feature flags — disabling a feature removes it cleanly from the UI. */
   features: {
-    /** Local, offline FAQ search over src/content/knowledge.ts (no external AI). */
+    /** Smart in-browser assistant that answers from the site's own content (src/features/guide, src/content/knowledge.ts). */
     portfolioGuide: true,
     /** Interactive WebGL layer in the hero. Image parallax still works when false. */
     hero3D: true,

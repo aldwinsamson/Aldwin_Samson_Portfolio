@@ -81,7 +81,7 @@ Why k3s and not EKS: the point is to demonstrate Argo CD/Prometheus/GitOps skill
 * AWS account **with MFA**; do the work as an IAM Identity Center / IAM admin user — **never root keys**. Configure `aws configure sso`.
 * Tools: AWS CLI v2, [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html), Terraform >= 1.10 (or OpenTofu), GitHub CLI (`gh auth login`), Node 22.
 * The repo `aldwinsamson/Aldwin_Samson_Portfolio` must be **public** (Argo CD reads `gitops/` without credentials; GHCR image is pulled anonymously).
-  If you rename the repo, update `github_repository` / `gitops_repo_url` in both `*.tfvars`, the three `repoURL`s in `gitops/apps/`, and the image name in `gitops/manifests/portfolio/`.
+  If you rename the repo, update `github_repository` in `infra/terraform/environment.tfvars`, the three `repoURL`s in `gitops/apps/`, and the image name in `gitops/manifests/portfolio/`.
 
 ### 1. Buy the domain
 Buy `aldwinsamson.com` at any registrar. Do not change anything there yet.
@@ -90,7 +90,7 @@ Buy `aldwinsamson.com` at any registrar. Do not change anything there yet.
 ```bash
 cd infra/terraform/bootstrap
 terraform init
-terraform apply -var-file=bootstrap.tfvars
+terraform apply -var-file=../environment.tfvars -var-file=bootstrap.tfvars
 ```
 Outputs: `name_servers`, the state bucket, role ARNs and ready-made `gh variable set ...` commands.
 Back up this stack's local `terraform.tfstate` (or migrate it: add a `backend "s3"` block pointing at the new bucket with key `bootstrap/terraform.tfstate`, then `terraform init -migrate-state`). Never commit state.
@@ -111,10 +111,10 @@ Settings -> Actions -> General -> allow workflows read/write permission (needed 
 
 ### 5. First production apply (local)
 ```bash
-cd infra/terraform/prod
+cd infra/terraform/environments/prod
 terraform init -backend-config="bucket=<state_bucket from step 2>"
-terraform plan  -var-file=prod.tfvars
-terraform apply -var-file=prod.tfvars     # ~10-20 min: certificate validation + CloudFront deployment
+terraform plan  -var-file=../../environment.tfvars -var-file=prod.tfvars
+terraform apply -var-file=../../environment.tfvars -var-file=prod.tfvars     # ~10-20 min: certificate validation + CloudFront deployment
 ```
 Then run the `gh variable set ...` commands from the new `github_variables_commands` output.
 Click the **SNS subscription confirmation** email AWS sends, or no alert will ever reach you.
@@ -125,20 +125,20 @@ Actions -> **Deploy site** -> *Run workflow*. It builds, uploads, invalidates, t
 From now on every push to `main` that changes the site deploys automatically.
 
 ### 7. Turn the CSP on (after checking it)
-`csp_mode = "report-only"` ships first so nothing can break. Open the live site, DevTools -> Console, visit every page in light and dark theme.
-If no `Content-Security-Policy-Report-Only` violations appear, change `csp_mode = "enforce"` in `prod.tfvars` in a PR; the *Terraform* workflow comments the plan, and merging runs `apply` after your approval. If something is reported, add the host to `csp_img_hosts` (or tell me what is blocked).
+`site.csp.mode = "report-only"` ships first so nothing can break. Open the live site, DevTools -> Console, visit every page in light and dark theme.
+If no `Content-Security-Policy-Report-Only` violations appear, change `mode = "enforce"` (inside `site.csp` in `environments/prod/prod.tfvars`) in a PR; the *Terraform* workflow comments the plan, and merging runs `apply` after your approval. If something is reported, add the host to `site.csp.img_hosts` (or `style_hosts` / `font_hosts` / `connect_hosts`).
 
 ### 8. The DevOps lab (when you want ArgoCD / Prometheus / Grafana)
 1. Merge once so `container.yml` publishes the image, then GitHub -> your profile -> Packages -> the image -> *Package settings* -> **Change visibility: Public**.
-2. Set `enable_lab = true` in `prod.tfvars` (PR -> merge -> approve), or run `terraform apply -var-file=prod.tfvars` locally.
+2. Set `lab = { enabled = true, ... }` in `environments/prod/prod.tfvars` (PR -> merge -> approve), or run the same `terraform apply` as step 5 locally.
 3. Wait ~8-12 min for first boot. Follow it with the `shell` + `bootstrap_log` commands from `terraform output lab`.
 4. Open Argo CD / Grafana / Prometheus / staging through the printed `aws ssm start-session ...` port-forward commands
    (no inbound ports exist). Passwords: the `argocd_password` / `grafana_password` commands.
 5. In Argo CD you should see `root` -> `kube-prometheus-stack`, `blackbox-exporter`, `monitoring-config`, `portfolio-staging` all *Healthy/Synced*.
-6. The lab stops at 23:00 and starts at 07:00 Manila time (`lab_schedule_enabled`). Prometheus data survives (volume), IPs do not matter (SSM).
+6. The lab stops at 23:00 and starts at 07:00 Manila time (`lab.schedule.enabled`). Prometheus data survives (volume), IPs do not matter (SSM).
 
 ### 9. Before month 6
-Upgrade the AWS account to the **Paid plan**. Keep the budget alerts. Consider `terraform destroy` of the lab (`enable_lab = false`) if you are done showcasing it.
+Upgrade the AWS account to the **Paid plan**. Keep the budget alerts. Consider turning the lab off (`lab.enabled = false`) if you are done showcasing it.
 
 ## 4. Day-2 operations
 
@@ -147,9 +147,9 @@ Upgrade the AWS account to the **Paid plan**. Keep the budget alerts. Consider `
 | Change infrastructure | Edit `infra/terraform/**` in a PR -> review the plan comment -> merge -> approve apply. |
 | Roll the site back | Actions -> *Deploy site* -> Run workflow -> `ref` = old commit SHA. |
 | Prune old hashed bundles | `aws s3 ls s3://<bucket>/assets/` and delete old ones (they cost fractions of a cent; do this rarely). |
-| Stop paying for the lab now | `enable_lab = false` (or just stop the instance in the console: you then pay only for the volume). |
+| Stop paying for the lab now | `lab.enabled = false` (or just stop the instance in the console: you then pay only for the volume). |
 | Break-glass | Everything is re-creatable from Git. Site: re-run Deploy. Lab: `terraform apply` re-bootstraps it; Argo CD restores every app from `gitops/`. |
-| Tear everything down | Lab: `enable_lab = false`. Prod: `terraform destroy` (empty the site bucket first). Bootstrap resources have `prevent_destroy`. |
+| Tear everything down | Lab: `lab.enabled = false`. Prod: `terraform destroy` (empty the site bucket first). Bootstrap resources have `prevent_destroy`. |
 
 ## 5. Known limits & what is intentionally not included
 
@@ -168,20 +168,57 @@ Upgrade the AWS account to the **Paid plan**. Keep the budget alerts. Consider `
 | Deploy: `Not authorized to perform sts:AssumeRoleWithWebIdentity` | `github_repository` mismatch (case-sensitive), or the workflow ran from a branch other than `main`. |
 | Lab apps `OutOfSync` / `ImagePullBackOff` | GHCR package not public yet, or `container.yml` hasn't pushed a tag yet (`newTag: latest` placeholder). |
 | Prometheus OOMKilled | Node too small: raise `lab_instance_type` (e.g. `c7i-flex.large`, 4 GiB — Free-plan eligible) and `limits.memory` in `gitops/values/kube-prometheus-stack.yaml`. |
-| Console says CSP violation after `enforce` | Add the host to `csp_img_hosts` (images) or extend `local.csp` in `modules/static-site/cloudfront.tf`. |
+| Console says CSP violation after `enforce` | Add the host to `site.csp.img_hosts` (images), `style_hosts`, `font_hosts` or `connect_hosts` in `prod.tfvars`. |
 
-## 7. File map
+## 7. How the Terraform is organised (generic modules, one environment file)
+
+**Principle:** modules are generic and contain no project-specific values. Everything that makes this *your* infrastructure
+comes from one file — [`infra/terraform/environment.tfvars`](terraform/environment.tfvars) — plus a small per-stack file.
 
 ```
-infra/terraform/bootstrap/   state bucket, Route 53 zone, GitHub OIDC provider + plan/apply roles, budget
-infra/terraform/prod/        root stack: static_site + monitoring (+ k3s_lab) + least-privilege site-deploy role
-infra/terraform/modules/
-  static-site/               S3, CloudFront (OAC, Function, headers policy), ACM, DNS records
-  monitoring/                SNS, Route 53 health check, CloudWatch alarms + dashboard
-  k3s-lab/                   VPC, EC2 (SSM only), IAM, EventBridge start/stop schedule, first-boot script
+infra/terraform/
+  environment.tfvars            THE main environment file: project, environment, region, domain, repo, e-mail, owner
+  bootstrap/                    account foundation (applied once, locally): state bucket, DNS zone, GitHub OIDC + CI roles, budget
+    bootstrap.tfvars            bootstrap-only knobs (budget, GitHub environment name)
+  environments/
+    prod/                       one folder per environment (a composition of modules, no resources of its own)
+      prod.tfvars               environment knobs: site (CSP, price class...), monitoring, lab (sizes, schedule)
+  modules/                      generic, reusable, versioned together
+    secure-s3-bucket/           private + encrypted + versioned bucket with a TLS-only policy
+    static-site/                S3 + CloudFront (OAC, edge Function, security headers) + ACM + Route 53 records
+    monitoring/                 SNS alerts, uptime health check, CloudWatch alarms and dashboard
+    github-oidc-role/           IAM role for GitHub Actions (OIDC trust pinned to exact `sub` values)
+    budget-alerts/              AWS Budgets with percentage thresholds
+    k3s-lab/                    VPC + SSM-only EC2 running k3s, Argo CD and the first-boot script
+    instance-scheduler/         EventBridge Scheduler start/stop for EC2 (used by k3s-lab)
+```
+
+Naming and tagging are derived, never typed: every stack builds one `context` object
+(`project`, `environment`, `region`, `prefix = "<project>-<environment>"`, `tags`) and passes it to the modules.
+With the current values a resource is named like `aldwinsamson-prod-site-<account-id>` or `aldwinsamson-prod-gha-site-deploy`,
+and every resource is tagged `Project`, `Environment`, `Owner`, `Repository`, `ManagedBy`.
+
+### Change a value
+| I want to change... | Edit |
+|---|---|
+| Domain, region, GitHub repo, alert e-mail, project/environment name | `infra/terraform/environment.tfvars` (names and tags follow automatically) |
+| CSP origins, CloudFront price class, www redirect | `site = { ... }` in `environments/prod/prod.tfvars` |
+| Uptime check, alarm threshold | `monitoring = { ... }` |
+| Lab size, versions, schedule, on/off | `lab = { ... }` |
+
+### Add another environment (e.g. `staging`)
+1. Copy `environments/prod` to `environments/staging`; in its `versions.tf` change the state key to `staging/terraform.tfstate`.
+2. Set `environment = "staging"` and a different `domain_name` (e.g. a delegated `staging.<domain>` zone) in a copy of `environment.tfvars`
+   (or pass `-var environment=staging`), then edit `staging.tfvars`.
+3. In `bootstrap/bootstrap.tfvars` add `additional_environments = ["staging"]` and the GitHub Environment name to `github_environments`, re-apply bootstrap, and create that GitHub Environment (with a required reviewer).
+Nothing inside `modules/` changes.
+
+## 8. File map (other folders)
+
+```
 gitops/apps/                 Argo CD child Applications (app-of-apps; "root" is created by the first-boot script)
 gitops/values/               Helm values (lean kube-prometheus-stack)
 gitops/manifests/            Kustomize: portfolio (staging) and monitoring (probes, rules, dashboard)
 .github/workflows/           ci, deploy, terraform, container, codeql   (+ dependabot.yml)
-scripts/smoke-test.sh        post-deploy checks
+scripts/                     smoke-test.sh, generate-sitemap.mjs, new-project.mjs
 ```

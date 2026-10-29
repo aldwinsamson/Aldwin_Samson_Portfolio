@@ -1,57 +1,29 @@
-import { defineProject, px } from "./_define";
+import { defineProject } from "./_define";
 
+/**
+ * Wedding invitation — written from what you've told me about the build (no couple names, no date).
+ * Please check the lines marked REVIEW. Add real screenshots later:
+ * public/images/projects/wedding-invitation/cover.webp + a `cover: { … kind: "authentic" }` block.
+ */
 export default defineProject({
-  slug: "WeddingInvitation",
+  slug: "wedding-invitation",
   title: "Wedding Invitation",
-  fullTitle: "Custom Wedding Invitation Design",
-  tagline: "A personalized digital wedding invitation with elegant design and seamless sharing.",
+  fullTitle: "Custom wedding invitation website",
+  tagline: "A cinematic, password-protected wedding invitation website with a prenup slideshow.",
   summary:
-    "A custom digital wedding invitation platform allowing couples to create and share beautiful, personalized invitations with ease — featuring a modern UI, responsive design, and integrated sharing capabilities.",
-  categories: ["Software", "Web Development"],
+    "A custom React and Vite wedding invitation site with a luxury dark theme, cinematic animations, a password gate, a prenup photo slideshow with lightbox, a music toggle, light/dark mode and a mobile-optimised layout.",
+  categories: ["Web Development", "Software"],
   status: "Completed",
-  period: "Aug 2023 — May 2024",
-  role: "Full-Stack Developer",
-  featured: true,
-order: 2,
-  cover: {
-    src: px(5745576),
-    alt: "Representative image: a schoolchild typing on a laptop during a lesson",
-    kind: "representative",
-    credit: "Ryutaro Tsukata / Pexels",
-  },
-  gallery: [
-    {
-      src: px(5745517),
-      alt: "Representative image: a pupil using a laptop in a computer class",
-      caption: "Representative — classroom context",
-      kind: "representative",
-      credit: "Ryutaro Tsukata / Pexels",
-    },
-  ],
+  period: "2026", // REVIEW: add the months, e.g. "Jun 2026 — Aug 2026"
+  role: "Designer & Developer", // REVIEW
+  stack: ["React", "Vite"], // REVIEW: add TypeScript / animation libraries if you used them
+  order: 5,
+
   overview:
-    "KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals connected by a shared backend.",
-  objective:
-    "Bridge traditional and digital learning by giving faculty simple tools to manage classes and resources, and students an engaging place to learn.",
-  problem:
-    "Classroom resources and class management often live in disconnected tools, which makes digital learning harder to adopt for young students and their teachers.",
+    "A full invitation website built for a couple's wedding — designed around a luxury palette of midnight navy, French blue, soft gold and warm ivory.",
   contributions: [
-    "Conceptualized and built the application architecture and web database.",
-    "Engineered a MongoDB data layer to manage user accounts, platform configurations and application assets.",
-    "Built backend business logic and secure REST API endpoints in Node.js for data flow between student and faculty portals.",
-    "Developed a responsive user interface with modern front-end tools for class management and resource editing.",
+    "Designed and built the whole site from wireframes and reference sites, through several redesigns to the final look.",
+    "Added cinematic animations, a password gate for guests, a prenup slideshow with a dark lightbox and a music toggle.",
+    "Made it work in light and dark mode and optimised the layout for phones.",
   ],
-  architecture: [
-    { label: "Student portal", detail: "Learning-focused interface for young users." },
-    { label: "Faculty portal", detail: "Class management and resource editing." },
-    { label: "API", detail: "Node.js business logic exposed through REST endpoints." },
-    { label: "Data", detail: "MongoDB for accounts, configuration and assets." },
-  ],
-  stack: ["Node.js", "MongoDB", "REST APIs", "JavaScript", "HTML", "CSS"],
-  implementation: [
-    "Role-separated portals for students and faculty backed by a single API.",
-    "Account and configuration data modelled in MongoDB collections.",
-    "Responsive layouts so the platform works across classroom devices.",
-  ],
-  outcomes: ["Delivered a working full-stack LMS covering student and faculty experiences."],
-  linkNote: "Repository visibility is private; screenshots can be added in src/content/projects/kidverse.ts.",
 });

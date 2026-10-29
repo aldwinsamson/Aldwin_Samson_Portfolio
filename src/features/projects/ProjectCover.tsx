@@ -14,6 +14,7 @@ export function ProjectCover({
   imgClassName,
   eager,
   label,
+  sizes,
 }: {
   project: Project;
   ratio?: string;
@@ -21,6 +22,8 @@ export function ProjectCover({
   imgClassName?: string;
   eager?: boolean;
   label?: string;
+  /** Displayed width hint for responsive loading, e.g. "220px" or "(min-width: 1024px) 33vw, 100vw". */
+  sizes?: string;
 }) {
   if (project.cover) {
     return (
@@ -32,6 +35,7 @@ export function ProjectCover({
         imgClassName={imgClassName}
         eager={eager}
         label={label}
+        sizes={sizes}
       />
     );
   }

@@ -25,7 +25,7 @@ env:
   TF_VERSION: "1.16.7"
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
-  WORKDIR: infra/terraform/prod
+  WORKDIR: infra/terraform/environments/prod
 
 jobs:
   validate:
@@ -44,7 +44,7 @@ jobs:
       - name: Validate every root module
         run: |
           set -euo pipefail
-          for dir in infra/terraform/bootstrap infra/terraform/prod; do
+          for dir in infra/terraform/bootstrap infra/terraform/environments/prod; do
             echo "::group::$dir"
             terraform -chdir="$dir" init -backend=false -input=false
             terraform -chdir="$dir" validate
@@ -76,7 +76,7 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
       - run: terraform -chdir="$WORKDIR" init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
       - name: Plan
-        run: terraform -chdir="$WORKDIR" plan -no-color -var-file=prod.tfvars | tee "$RUNNER_TEMP/plan.txt"
+        run: terraform -chdir="$WORKDIR" plan -no-color -var-file=../../environment.tfvars -var-file=prod.tfvars | tee "$RUNNER_TEMP/plan.txt"
       - name: Comment the plan on the PR
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -117,5 +117,5 @@ jobs:
           role-to-assume: ${{ vars.AWS_TF_APPLY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
       - run: terraform -chdir="$WORKDIR" init -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
-      - run: terraform -chdir="$WORKDIR" plan -no-color -var-file=prod.tfvars -out=tfplan
+      - run: terraform -chdir="$WORKDIR" plan -no-color -var-file=../../environment.tfvars -var-file=prod.tfvars -out=tfplan
       - run: terraform -chdir="$WORKDIR" apply -no-color tfplan

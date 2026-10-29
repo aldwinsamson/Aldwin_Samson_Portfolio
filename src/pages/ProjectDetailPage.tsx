@@ -58,6 +58,11 @@ export default function ProjectDetailPage() {
             <Link to="/projects" className="t-meta group inline-flex min-h-11 items-center gap-2 text-muted hover:text-ink">
               <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" /> All projects
             </Link>
+            {project.draft && (
+              <p className="t-meta mt-4 inline-block rounded-full border border-accent/50 px-3 py-1 text-accent">
+                Draft — only visible in npm run dev. Delete the `draft: true` line in this project's file to publish it.
+              </p>
+            )}
             <div className="mt-5 grid gap-8 sm:mt-8 sm:gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-end">
               <div>
                 <div className="flex flex-wrap gap-1.5">
@@ -114,22 +119,24 @@ export default function ProjectDetailPage() {
           </Container>
         </header>
 
-        <Container className="mt-8 sm:mt-14">
-          <ImageReveal className="rounded-2xl sm:rounded-[28px]" duration={1.2}>
-            <motion.div style={{ y: coverY }} className="-mb-[60px] sm:-mb-[90px]">
-              <SmartImage
-                src={project.cover.src}
-                alt={project.cover.alt}
-                eager
-                ratio="16 / 8"
-                className="min-h-[200px] sm:min-h-[280px]"
-                label={project.cover.kind === "representative" ? `Representative image · ${project.cover.credit ?? ""}` : undefined}
-              />
-            </motion.div>
-          </ImageReveal>
-        </Container>
+        {project.cover && (
+          <Container className="mt-8 sm:mt-14">
+            <ImageReveal className="rounded-2xl sm:rounded-[28px]" duration={1.2}>
+              <motion.div style={{ y: coverY }} className="-mb-[60px] sm:-mb-[90px]">
+                <SmartImage
+                  src={project.cover.src}
+                  alt={project.cover.alt}
+                  eager
+                  ratio="16 / 8"
+                  className="min-h-[200px] sm:min-h-[280px]"
+                  label={project.cover.kind === "representative" ? `Representative image · ${project.cover.credit ?? ""}` : undefined}
+                />
+              </motion.div>
+            </ImageReveal>
+          </Container>
+        )}
 
-        <Container className="mt-16 max-w-[1100px]">
+        <Container className={project.cover ? "mt-16 max-w-[1100px]" : "mt-10 max-w-[1100px] sm:mt-14"}>
           <WordReveal
             text={project.overview}
             as="p"
@@ -137,11 +144,11 @@ export default function ProjectDetailPage() {
           />
 
           <div className="mt-16">
-            <Block label="Objective"><p className="t-lead text-ink-soft">{project.objective}</p></Block>
-            <Block label="The problem"><p className="t-lead text-ink-soft">{project.problem}</p></Block>
-            <Block label="My role" title={project.role}><Bullets items={project.contributions} /></Block>
+            {project.objective && <Block label="Objective"><p className="t-lead text-ink-soft">{project.objective}</p></Block>}
+            {project.problem && <Block label="The problem"><p className="t-lead text-ink-soft">{project.problem}</p></Block>}
+            {project.contributions.length > 0 && <Block label="My role" title={project.role}><Bullets items={project.contributions} /></Block>}
 
-            {project.architecture && (
+            {project.architecture && project.architecture.length > 0 && (
               <Block label="System overview">
                 <ol className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
                   {project.architecture.map((a, i) => (
@@ -179,11 +186,11 @@ export default function ProjectDetailPage() {
               </Block>
             )}
 
-            <Block label="Implementation"><Bullets items={project.implementation} /></Block>
-            {project.challenges && <Block label="Challenges"><Bullets items={project.challenges} /></Block>}
-            <Block label="Outcomes"><Bullets items={project.outcomes} /></Block>
+            {project.implementation.length > 0 && <Block label="Implementation"><Bullets items={project.implementation} /></Block>}
+            {project.challenges && project.challenges.length > 0 && <Block label="Challenges"><Bullets items={project.challenges} /></Block>}
+            {project.outcomes.length > 0 && <Block label="Outcomes"><Bullets items={project.outcomes} /></Block>}
 
-            {project.awards && (
+            {project.awards && project.awards.length > 0 && (
               <Block label="Awards">
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {project.awards.map((a) => (
@@ -205,6 +212,7 @@ export default function ProjectDetailPage() {
           </div>
         </Container>
 
+        {projects.length > 1 && (
         <Container className="mt-12 sm:mt-20">
           <nav aria-label="More projects" className="grid gap-4 border-t border-line pt-8 sm:grid-cols-2 sm:pt-10">
             <Link to={`/projects/${prev.slug}`} className="group rounded-xl p-2 sm:rounded-2xl" data-cursor="text" data-cursor-text="Prev">
@@ -217,6 +225,7 @@ export default function ProjectDetailPage() {
             </Link>
           </nav>
         </Container>
+        )}
       </article>
     </>
   );

@@ -102,7 +102,7 @@ npm run dev          # local dev server → http://localhost:5173
 npm run build        # production build → dist/
 npm run preview      # serve the production build locally
 npx vitest run       # run automated tests
-npx tsc --noEmit     # strict TypeScript check
+npm run check        # strict TypeScript check + all tests
 ```
 
 ## Project structure
@@ -117,7 +117,8 @@ src/
   content/                ★ all editable portfolio content (typed)
     types.ts              content models
     profile.ts            bio, hero copy, socials, contact copy
-    projects.ts           projects + filter logic + template
+    projects/             ★ one file per project (auto-discovered) — see projects/README.md
+    projectLogic.ts       sorting, validation, drafts, copy-paste detection
     experience.ts         experience, education, certifications, honors
     skills.ts             tech-stack groups
     knowledge.ts          Portfolio Guide knowledge base + local search
@@ -129,12 +130,13 @@ src/
     experience/           Timeline, ExperienceRows
     stack/                StackGrid
     contact/              ContactSection, CopyEmailButton
-    guide/                PortfolioGuide (local FAQ search)
+    guide/                PortfolioGuide (in-browser assistant: engine, corpus, glossary)
   hooks/                  useTheme, useMediaQuery, useDeviceCapability, useCopy
   pages/                  Home, Projects, ProjectDetail, Experience, Stack, About, Contact, NotFound
   styles/motion.ts        easing, durations, springs, distances, stagger
 public/                   robots.txt, sitemap.xml, favicon.svg (add images to public/images/)
 tests/                    Vitest unit tests
+scripts/                  generate-sitemap.mjs (runs before build), new-project.mjs, smoke-test.sh
 infra/                    Terraform (bootstrap, prod, modules) + runbook — see infra/README.md
 gitops/                   Argo CD apps, Helm values, Kustomize manifests (k3s lab)
 .github/workflows/        CI, deploy, terraform, container, CodeQL
@@ -214,9 +216,10 @@ stored choice — or the OS preference on first visit — **before paint** (no f
 
 ## Editing content
 
-- **Add a project:** copy the template at the bottom of `src/content/projects.ts`. Cards, filters, homepage tabs
-  (`domain`) and `/projects/<slug>` are generated. Mark stock images `kind: "representative"`; only add
-  `links.repository` / `links.demo` if public and approved. Add the URL to `public/sitemap.xml`.
+- **Add a project:** `npm run new:project -- my-slug "My Title"`, fill in the file, check it with `npm run dev`, then delete
+  its `draft: true` line to publish. The wheel, cards, filters, `/projects/<slug>`, the sitemap and the assistant are all generated.
+  Mark stock images `kind: "representative"`; only add `links.repository` / `links.demo` if public and approved.
+  Details: `src/content/projects/README.md`.
 - **Add experience:** append to `experience` or `education` in `src/content/experience.ts`.
 - **Add a skill:** add an item (optionally with `note`) to a group in `src/content/skills.ts`.
 - **Guide answers:** edit `src/content/knowledge.ts`. Disable the guide with `features.portfolioGuide = false`.

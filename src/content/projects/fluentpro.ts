@@ -1,57 +1,34 @@
-import { defineProject, px } from "./_define";
+import { defineProject } from "./_define";
 
+/**
+ * FluentPro — written from what you've told me about the app. Please check the lines marked REVIEW.
+ * No screenshots yet, so a placeholder cover is shown. To add one: save it as
+ * public/images/projects/fluentpro/cover.webp and add a `cover: { src, alt, kind: "authentic" }` block.
+ */
 export default defineProject({
-  slug: "FluentPro",
+  slug: "fluentpro",
   title: "FluentPro",
-  fullTitle: "FluentPro - Language Learning Platform",
-  tagline: "An innovative language learning platform designed to make mastering new languages engaging and accessible.",
+  fullTitle: "FluentPro — 365-day English learning platform",
+  tagline: "A 365-day English learning platform for business professionals, with an AI tutor.",
   summary:
-    "FluentPro is a comprehensive language learning platform that combines interactive lessons, real-time practice, and community-driven features to create an immersive learning experience.",
-  categories: ["Software", "Web Development"],
-  status: "Completed",
-  period: "Aug 2023 — May 2024",
-  role: "Full-Stack Developer",
-  featured: true,
-order: 2,
-  cover: {
-    src: px(5745576),
-    alt: "Representative image: a schoolchild typing on a laptop during a lesson",
-    kind: "representative",
-    credit: "Ryutaro Tsukata / Pexels",
-  },
-  gallery: [
-    {
-      src: px(5745517),
-      alt: "Representative image: a pupil using a laptop in a computer class",
-      caption: "Representative — classroom context",
-      kind: "representative",
-      credit: "Ryutaro Tsukata / Pexels",
-    },
-  ],
+    "A structured, one-hour-a-day English fluency programme for workplace and business English, built as a deployable web app with streaks, vocabulary flashcards, a writing journal and an AI chatbot tutor called “Coach Alex”.",
+  categories: ["Web Development", "Software", "AI"],
+  status: "In progress", // REVIEW: change to "Completed" when you consider it finished
+  period: "2026", // REVIEW: add your real start/end months, e.g. "Aug 2026 — Present"
+  role: "Designer & Full-Stack Developer", // REVIEW
+  stack: ["React", "TypeScript", "Vite", "MongoDB Atlas", "GROQ API", "Vercel", "Render"],
+  order: 4,
+
   overview:
-    "KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals connected by a shared backend.",
-  objective:
-    "Bridge traditional and digital learning by giving faculty simple tools to manage classes and resources, and students an engaging place to learn.",
-  problem:
-    "Classroom resources and class management often live in disconnected tools, which makes digital learning harder to adopt for young students and their teachers.",
+    "FluentPro started as my own structured English fluency plan — beginner level, workplace focus, one hour a day — and grew into a full web app that other learners can use too.",
   contributions: [
-    "Conceptualized and built the application architecture and web database.",
-    "Engineered a MongoDB data layer to manage user accounts, platform configurations and application assets.",
-    "Built backend business logic and secure REST API endpoints in Node.js for data flow between student and faculty portals.",
-    "Developed a responsive user interface with modern front-end tools for class management and resource editing.",
+    "Designed and built the learning experience: a 365-day plan, a streak system with pause challenges, vocabulary flashcards and a writing journal.",
+    "Integrated an AI chatbot tutor (“Coach Alex”) that gives learners feedback through the GROQ API.",
+    "Deployed the frontend on Vercel and the backend on Render, with MongoDB Atlas keeping progress in sync across devices.",
   ],
-  architecture: [
-    { label: "Student portal", detail: "Learning-focused interface for young users." },
-    { label: "Faculty portal", detail: "Class management and resource editing." },
-    { label: "API", detail: "Node.js business logic exposed through REST endpoints." },
-    { label: "Data", detail: "MongoDB for accounts, configuration and assets." },
-  ],
-  stack: ["Node.js", "MongoDB", "REST APIs", "JavaScript", "HTML", "CSS"],
   implementation: [
-    "Role-separated portals for students and faculty backed by a single API.",
-    "Account and configuration data modelled in MongoDB collections.",
-    "Responsive layouts so the platform works across classroom devices.",
+    "Grew iteratively over many sessions — adding features, expanding the lesson content and fixing bugs before settling on the final design.",
+    "Rebuilt the speaking and writing journal experience as the app matured.",
   ],
-  outcomes: ["Delivered a working full-stack LMS covering student and faculty experiences."],
-  linkNote: "Repository visibility is private; screenshots can be added in src/content/projects/kidverse.ts.",
+  linkNote: "Add a live link under `links: { demo: … }` when you are ready to share the app publicly.",
 });

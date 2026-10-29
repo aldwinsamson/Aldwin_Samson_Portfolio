@@ -1,13 +1,176 @@
 /**
- * PORTFOLIO GUIDE — curated knowledge base.
- * The guide is a LOCAL keyword search over these entries. It does not call any AI
- * service, never sends data anywhere, and only answers from what is written here.
- * Edit / add entries freely; keep answers factual.
+ * PORTFOLIO ASSISTANT — your own words.
+ *
+ * Most of what the assistant knows is READ AUTOMATICALLY from the rest of the site:
+ * profile, experience, education, certifications, awards, skills and every file in
+ * src/content/projects/. Add a project or edit your CV data and it can answer about it.
+ *
+ * This file holds the things that are NOT in those files:
+ *   1) GUIDE / STRINGS — the chat window text and every sentence the assistant says itself, in English and Filipino
+ *   2) knowledgeBase — hand-written Q&A. When a visitor asks something the assistant could not answer,
+ *                      add the answer here once and it will be able to answer it from then on.
+ *
+ * Keep answers factual — the assistant repeats them as written.
  */
+
+export type Lang = "en" | "tl";
+
+/** Every sentence the assistant itself says, in English and Filipino. (Facts from the site stay in English.) */
+export interface GuideStrings {
+  greeting: string;
+  fallback: string;
+  privacy: string;
+  offTopic: string;
+  thanks: string;
+  bye: string;
+  identity: string;
+  help: string;
+  empty: string;
+  yes: string;
+  found: string;
+  inWork: string;
+  /** Said before the facts when the visitor asks for a judgement ("is he good at AWS?"). */
+  evalNote: string;
+  /** Lead-ins for the "latest / current / how many / compare" questions. */
+  latestProject: string;
+  ongoingProject: string;
+  latestRole: string;
+  compareIntro: string;
+  count: (n: number, what: "projects" | "certifications" | "awards" | "internships") => string;
+  moreIntro: string;
+  moreEnd: string;
+  moreHint: string;
+  moreHintAgain: string;
+  notFound: (words: string[]) => string;
+  emailLabel: string;
+  contactLabel: string;
+  linkedinLabel: string;
+  emailBody: (question: string) => string;
+  /** Suggestion chips. */
+  starters: (firstProject?: string) => string[];
+}
+
+export const STRINGS: Record<Lang, GuideStrings> = {
+  en: {
+    greeting:
+      "Hi! I'm John's portfolio assistant. Ask me about his projects, experience, skills, certifications or how to get in touch — I answer from the information on this site. You can ask in English, Tagalog or Taglish.",
+    /** Shown when the assistant cannot answer a question. */
+    fallback:
+      "I couldn't find an answer to that on John's portfolio, and I'd rather not guess. For this one, please contact John personally — he'll be glad to help.",
+    /** Shown for personal/private topics (salary, phone number, age, …). */
+    privacy:
+      "That's something John prefers to share personally rather than publish on his site. Please contact him directly and he'll be happy to talk about it.",
+    /** Shown for questions that have nothing to do with John or his work. */
+    offTopic:
+      "I'm here to answer questions about John and his work, so that one is outside what I can help with. If you'd like to ask him something directly, please contact John personally.",
+    thanks: "You're welcome! If you'd like to know anything else about John, just ask — or contact him personally for anything I can't answer.",
+    bye: "Thanks for stopping by! Feel free to come back any time — and if you'd like to talk to John directly, you can reach him from the contact page.",
+    identity:
+      "I'm John's portfolio assistant — not a person. I search the information on this website (his experience, projects, skills, certifications and more) and put an answer together. I don't make things up: if I can't find it, I'll point you to John.",
+    help: "Here's what I can help with:\n• His projects and how they were built\n• Work experience, internships and education\n• Skills, tools and technologies (I can also explain them in plain English)\n• Certifications and awards\n• Availability and how to contact him\n\nAnything else, I'll point you to John personally.",
+    empty: "Ask me anything about John's projects, experience, skills or how to reach him.",
+    yes: "Yes!",
+    found: "Here's what I found:",
+    inWork: "In John's work —",
+    evalNote: "I can't judge his skill level, but here's what his portfolio says:",
+    latestProject: "His most recent project on this portfolio:",
+    ongoingProject: "Here's what he is working on at the moment:",
+    latestRole: "His most recent role:",
+    compareIntro: "Here's what his portfolio says about each:",
+    count: (n, what) =>
+      ({
+        projects: `John has ${n} published ${n === 1 ? "project" : "projects"} on this portfolio.`,
+        certifications: `John lists ${n} ${n === 1 ? "certification or training" : "certifications and trainings"}.`,
+        awards: `John lists ${n} ${n === 1 ? "award" : "awards"}.`,
+        internships: `John has done ${n} ${n === 1 ? "internship" : "internships"}.`,
+      })[what],
+    moreIntro: "More details:",
+    moreEnd: "That's everything I have on that topic. Is there anything else you'd like to know?",
+    moreHint: "(Say “tell me more” for additional details.)",
+    moreHintAgain: "(Say “tell me more” again for the rest.)",
+    notFound: (w) => `I couldn't find “${w.slice(0, 3).join("”, “")}” mentioned anywhere on this site.`,
+    emailLabel: "Email John",
+    contactLabel: "Open the contact page",
+    linkedinLabel: "Message on LinkedIn",
+    emailBody: (q) =>
+      `Hi John,\n\nI was using your portfolio assistant and asked:\n"${q}"\n\nIt couldn't answer, so I'm reaching out personally.\n\nThanks!`,
+    starters: (p) => [
+      "What does John specialize in?",
+      p ? `Tell me about ${p}` : "What projects has John built?",
+      "What cloud and DevOps experience does he have?",
+      "Is John open to work?",
+      "What awards has he won?",
+      "How can I contact him?",
+    ],
+  },
+  tl: {
+    greeting:
+      "Kumusta! Ako ang portfolio assistant ni John. Magtanong ka tungkol sa kanyang mga proyekto, karanasan, skills, sertipikasyon, o kung paano siya makokontak — sasagot ako batay sa impormasyon sa site na ito. Puwede kang magtanong sa English, Tagalog o Taglish.",
+    fallback:
+      "Wala akong makitang sagot diyan sa portfolio ni John, at ayokong manghula. Para sa tanong na ito, mangyaring makipag-ugnayan kay John nang personal — matutuwa siyang tumulong.",
+    privacy:
+      "Mas gusto ni John na siya mismo ang magbahagi ng bagay na iyan kaysa ilathala sa site niya. Mangyaring makipag-ugnayan sa kanya nang direkta at masaya siyang makipag-usap tungkol dito.",
+    offTopic:
+      "Narito ako para sagutin ang mga tanong tungkol kay John at sa kanyang trabaho, kaya hindi ko matutulungan ang tanong na iyan. Kung may gusto kang itanong sa kanya, mangyaring makipag-ugnayan kay John nang personal.",
+    thanks: "Walang anuman! Kung may iba ka pang gustong malaman tungkol kay John, magtanong lang — o makipag-ugnayan nang direkta kay John para sa mga hindi ko masasagot.",
+    bye: "Salamat sa pagbisita! Bumalik ka anumang oras — at kung gusto mong makausap si John nang direkta, puwede mo siyang abutin sa contact page.",
+    identity:
+      "Ako ang portfolio assistant ni John — hindi ako tao. Hinahanap ko sa impormasyon ng website na ito (karanasan, proyekto, skills, sertipikasyon at iba pa) ang sagot at binubuo ko ito. Hindi ako gumagawa ng sagot na wala sa site: kung wala akong makita, ituturo kita kay John.",
+    help: "Narito ang matutulungan ko:\n• Ang mga proyekto niya at kung paano ginawa ang mga ito\n• Karanasan sa trabaho, internship at edukasyon\n• Skills, tools at teknolohiya (maipapaliwanag ko rin sa simpleng paraan)\n• Mga sertipikasyon at parangal\n• Availability at kung paano siya makokontak\n\nPara sa iba pa, ituturo kita kay John mismo.",
+    empty: "Magtanong ka tungkol sa mga proyekto, karanasan, skills ni John, o kung paano siya makokontak.",
+    yes: "Opo!",
+    found: "Heto ang nakita ko:",
+    inWork: "Sa trabaho ni John —",
+    evalNote: "Hindi ko masusukat ang antas ng kanyang galing, pero heto ang nakasaad sa portfolio niya:",
+    latestProject: "Ang pinakabago niyang proyekto sa portfolio na ito:",
+    ongoingProject: "Heto ang kasalukuyan niyang ginagawa:",
+    latestRole: "Ang pinakahuli niyang tungkulin:",
+    compareIntro: "Heto ang nakasaad sa portfolio niya tungkol sa bawat isa:",
+    count: (n, what) =>
+      ({
+        projects: `May ${n} proyekto si John sa portfolio na ito.`,
+        certifications: `May ${n} sertipikasyon at training si John.`,
+        awards: `May ${n} parangal si John.`,
+        internships: `${n} internship ang natapos ni John.`,
+      })[what],
+    moreIntro: "Karagdagang detalye:",
+    moreEnd: "Iyan na ang lahat ng alam ko tungkol sa paksang iyan. May iba ka pa bang gustong malaman?",
+    moreHint: "(Sabihin ang “dagdag pa” para sa karagdagang detalye.)",
+    moreHintAgain: "(Sabihin muli ang “dagdag pa” para sa natitira.)",
+    notFound: (w) => `Hindi ko makita ang “${w.slice(0, 3).join("”, “")}” saanman sa site na ito.`,
+    emailLabel: "I-email si John",
+    contactLabel: "Buksan ang contact page",
+    linkedinLabel: "Mag-message sa LinkedIn",
+    emailBody: (q) =>
+      `Hello John,\n\nGumamit ako ng portfolio assistant mo at tinanong ko:\n"${q}"\n\nHindi ito nasagot, kaya direkta akong nagme-message sa iyo.\n\nSalamat!`,
+    starters: (p) => [
+      "Ano ang specialty ni John?",
+      p ? `Ikuwento mo ang ${p}` : "Anu-ano ang mga proyekto ni John?",
+      "Ano ang cloud at DevOps experience niya?",
+      "Bukas ba si John sa trabaho?",
+      "Anong mga parangal ang napanalunan niya?",
+      "Paano ko siya makokontak?",
+    ],
+  },
+};
+
+/** Fixed text for the chat window. */
+export const GUIDE = {
+  title: "Ask about John",
+  subtitle: "From this portfolio · runs in your browser",
+  /** First message in a new chat. */
+  welcome: STRINGS.en.greeting,
+  placeholder: "Ask anything · Magtanong lang",
+  /** Prefilled into the email that the "Email John" button opens. */
+  emailSubject: "A question from your portfolio",
+} as const;
+
 export interface KnowledgeEntry {
   id: string;
+  /** How the question would be phrased (also shown as a suggestion chip). */
   question: string;
   answer: string;
+  /** Extra words that should lead to this answer. */
   keywords: string[];
   link?: { label: string; to: string };
 }
@@ -17,140 +180,31 @@ export const knowledgeBase: KnowledgeEntry[] = [
     id: "who",
     question: "Who is John Aldwin Samson?",
     answer:
-      "John Aldwin R. Samson is a Computer Engineering graduate from Pamantasan ng Lungsod ng Maynila specializing in cloud infrastructure, DevOps and site reliability, with a foundation in embedded systems and hardware design.",
-    keywords: ["who", "about", "john", "aldwin", "samson", "introduce", "yourself", "background", "bio"],
+      "John Aldwin R. Samson is a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps and site reliability, with a strong foundation in embedded systems and hardware design.",
+    keywords: ["who", "introduce", "bio", "background", "profile", "summary", "person", "yourself"],
     link: { label: "Read the about page", to: "/about" },
   },
   {
-    id: "roles",
-    question: "What roles is he looking for?",
+    id: "why-hire",
+    question: "Why should we hire John?",
     answer:
-      "He's pursuing Cloud, DevOps and SRE roles, as well as embedded systems and hardware engineering roles — with full-stack development and applied AI as connected strengths.",
-    keywords: ["role", "job", "looking", "hire", "hiring", "opportunity", "career", "devops", "sre", "position", "available", "open"],
-    link: { label: "Get in touch", to: "/contact" },
+      "He pairs hands-on cloud and DevOps experience — a multi-AZ AWS environment as code with Terraform and CloudFormation, GitLab CI/CD and ArgoCD GitOps delivery, and a Prometheus, Grafana, Loki and Tempo observability stack — with a real hardware and firmware background in multi-layer PCBs, ESP32 and device-to-cloud telemetry. He also led a five-member thesis team to four awards, so he's used to owning outcomes and working with others.",
+    keywords: ["hire", "hiring", "why", "strength", "strengths", "choose", "unique", "different", "advantage", "candidate"],
+    link: { label: "See his experience", to: "/experience" },
   },
   {
-    id: "ligtas",
-    question: "What is L.I.G.T.A.S.?",
+    id: "resume",
+    question: "Can I get John's CV or resume?",
     answer:
-      "L.I.G.T.A.S. (Leakage Identification using Groundwater Testing and AI-Based Sensing) is his thesis: a remote-controlled amphibious vehicle built around an ESP32 with custom voltage sensors, a Python ML pipeline that classifies water as “Safe” or “Danger”, and Wi-Fi streaming of telemetry and live video to a mobile app. He was thesis group leader and lead hardware developer.",
-    keywords: ["ligtas", "thesis", "flood", "boat", "vehicle", "amphibious", "leakage", "water", "hazard", "sensing", "groundwater"],
-    link: { label: "Open the L.I.G.T.A.S. case study", to: "/projects/ligtas" },
-  },
-  {
-    id: "awards",
-    question: "Has he won any awards?",
-    answer:
-      "Yes — L.I.G.T.A.S. was recognized as Top 2 Best Thesis and received Best Thesis Paper, Best Booth and Best Poster. Academically, he was on the Dean's List at PLM.",
-    keywords: ["award", "awards", "won", "recognition", "achievement", "honor", "honors", "best", "deans", "list"],
-  },
-  {
-    id: "kidverse",
-    question: "What is KidVerse?",
-    answer:
-      "KidVerse is a children's edutainment learning management system. As full-stack developer he built the architecture, a MongoDB data layer, Node.js REST endpoints connecting student and faculty portals, and the responsive UI.",
-    keywords: ["kidverse", "lms", "learning", "management", "education", "edutainment", "student", "faculty", "web", "app"],
-    link: { label: "Open the KidVerse case study", to: "/projects/kidverse" },
-  },
-  {
-    id: "internship",
-    question: "Where did he intern?",
-    answer:
-      "He completed two internships. At Stratpoint Technologies (June–September 2026, Mandaluyong) he was a Cloud & DevOps Engineer Intern working on multi-AZ AWS infrastructure as code, GitLab CI/CD and ArgoCD delivery, and Prometheus/Grafana/Loki/Tempo observability. At USHER Technologies Inc. (January–March 2026, Makati) he was a Hardware Engineer Intern designing multi-layer PCBs in KiCAD and writing ESP32 and Raspberry Pi firmware.",
-    keywords: ["intern", "internship", "stratpoint", "usher", "experience", "work", "company", "job", "makati", "mandaluyong", "employment"],
-    link: { label: "See the experience timeline", to: "/experience" },
-  },
-  {
-    id: "cloud",
-    question: "What cloud and DevOps experience does he have?",
-    answer:
-      "During his Cloud & DevOps internship at Stratpoint Technologies he built a three-tier, multi-AZ AWS architecture with Terraform and CloudFormation, set up GitLab CI/CD pipelines, managed ArgoCD on Kubernetes for GitOps delivery, and deployed a Prometheus, Grafana, Loki and Tempo observability stack with alerting.",
-    keywords: ["cloud", "aws", "devops", "terraform", "cloudformation", "kubernetes", "argocd", "gitops", "gitlab", "cicd", "pipeline", "docker", "observability", "monitoring", "prometheus", "grafana", "sre", "infrastructure"],
-    link: { label: "See the experience timeline", to: "/experience" },
-  },
-  {
-    id: "embedded",
-    question: "What embedded and hardware skills does he have?",
-    answer:
-      "ESP32 and Raspberry Pi firmware in C/C++ over I2C, SPI and UART, multi-layer PCB design in KiCAD, SMD assembly and bench validation, and MQTT/REST device-to-cloud connectivity. He has also completed embedded ML training with Edge Impulse and the Arduino Nano 33 BLE Sense.",
-    keywords: ["embedded", "hardware", "esp32", "raspberry", "pi", "arduino", "firmware", "circuit", "schematic", "pcb", "sensor", "iot", "microcontroller"],
-    link: { label: "View the full stack", to: "/stack" },
-  },
-  {
-    id: "software",
-    question: "What programming languages and software tools does he use?",
-    answer:
-      "Python, Bash, JavaScript and TypeScript (Node.js, Express, React) and C/C++; PostgreSQL, MySQL and MongoDB for data; and REST APIs for services.",
-    keywords: ["language", "languages", "programming", "python", "bash", "javascript", "typescript", "react", "node", "software", "stack", "skills", "tools", "mongodb", "postgres", "git", "code"],
-    link: { label: "View the full stack", to: "/stack" },
-  },
-  {
-    id: "education",
-    question: "Where did he study?",
-    answer:
-      "He studied B.S. Computer Engineering at Pamantasan ng Lungsod ng Maynila (PLM), 2022–2026, and was selected for the Dean's List.",
-    keywords: ["study", "school", "university", "education", "degree", "college", "plm", "graduate", "pamantasan"],
-  },
-  {
-    id: "contact",
-    question: "How can I contact him?",
-    answer:
-      "Email aldwinsamsonn@gmail.com, or reach him on LinkedIn and GitHub (@aldwinsamson). The contact page has one-click Gmail compose and copy-email actions.",
-    keywords: ["contact", "email", "reach", "message", "linkedin", "github", "talk", "connect", "mail"],
+      "His CV isn't downloadable from this site. Please contact John personally and he'll send you the latest version.",
+    keywords: ["cv", "resume", "curriculum", "vitae", "download", "pdf", "document"],
     link: { label: "Go to contact", to: "/contact" },
   },
   {
-    id: "guide",
-    question: "How does this guide work?",
+    id: "assistant",
+    question: "How does this assistant work?",
     answer:
-      "It's a simple local search: your question is matched against a short, hand-written list of facts in this website's source code. Nothing is sent to a server or an AI model, and if no entry matches, it says so.",
-    keywords: ["guide", "bot", "chatbot", "ai", "work", "how", "you", "privacy"],
+      "It's a smart search that runs entirely in your browser. It reads the information on this site — his experience, projects, skills, certifications and more — finds the most relevant parts of it and puts an answer together. Nothing you type is sent anywhere, and it never makes things up: if it can't find the answer, it tells you to contact John personally.",
+    keywords: ["assistant", "bot", "chatbot", "chatgpt", "gpt", "privacy", "private"],
   },
 ];
-
-const STOPWORDS = new Set(
-  "a an and are as at be by can did do does for from has have he him his how i in is it me my of on or so tell that the this to was what where which who why with you your about".split(" "),
-);
-
-/** Lowercase, strip punctuation, drop stopwords, naive singularization. */
-export function tokenize(text: string): string[] {
-  return text
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/(?<=[a-z0-9])[.'’](?=[a-z0-9])/g, "") // "l.i.g.t.a.s" → "ligtas", "what's" → "whats"
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter((t) => t.length > 1 && !STOPWORDS.has(t))
-    .map((t) => (t.length > 4 && t.endsWith("s") ? t.slice(0, -1) : t));
-}
-
-export interface GuideResult {
-  entry: KnowledgeEntry | null;
-  score: number;
-  related: KnowledgeEntry[];
-}
-
-/** Scores every entry; returns the best match above a minimum confidence, or null. */
-export function searchKnowledge(query: string, kb: KnowledgeEntry[] = knowledgeBase): GuideResult {
-  const terms = tokenize(query);
-  if (terms.length === 0) return { entry: null, score: 0, related: [] };
-
-  const scored = kb
-    .map((entry) => {
-      const keys = new Set(entry.keywords.flatMap(tokenize));
-      const qTokens = new Set(tokenize(entry.question));
-      let score = 0;
-      for (const t of terms) {
-        if (keys.has(t)) score += 2;
-        else if (qTokens.has(t)) score += 1;
-        else if ([...keys].some((k) => k.length > 3 && (k.startsWith(t) || t.startsWith(k)))) score += 1;
-      }
-      return { entry, score };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  const best = scored[0];
-  const related = scored.slice(1, 4).filter((s) => s.score > 0).map((s) => s.entry);
-  if (!best || best.score < 2) return { entry: null, score: best?.score ?? 0, related };
-  return { entry: best.entry, score: best.score, related };
-}

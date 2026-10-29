@@ -1,0 +1,29 @@
+PORTFOLIO PATCH — what to do (about 5 minutes)
+==============================================
+This zip contains ONLY the files that changed. It has no node_modules, no .git, and no
+unchanged files, so it cannot overwrite your other work.
+
+STEP 0 — SAVE YOUR CURRENT WORK FIRST (so you can always go back)
+    git add -A
+    git commit -m "backup before patch"
+
+STEP 1 — Unzip this patch INTO your project root (the folder that contains package.json).
+         Choose "Replace" when asked. Your .git folder and node_modules are not in this zip.
+
+STEP 2 — DELETE the 10 old files (from the project root, PowerShell):
+    git rm src/content/projects.ts src/components/HorizontalGallery.tsx tests/knowledge.test.ts
+    git rm -r infra/terraform/prod
+
+    (src/content/projects.ts is the file that was hiding your new projects.)
+
+STEP 3 — Install and check:
+    npm install
+    npm run check          # expect: 106 tests passed
+    npm run dev            # open http://localhost:5173
+
+STEP 4 — Commit:
+    git add -A
+    git commit -m "Fix projects, add draft system, generic Terraform modules"
+
+ADD A PROJECT FROM NOW ON:
+    npm run new:project -- my-slug "My Project Title"

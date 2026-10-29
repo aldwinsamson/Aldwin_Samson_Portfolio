@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mulberry32, sampleParticles } from "@/features/hero/particles";
-import { buildSlots, frontIndex, normalizeAngle, ringRadius, snapAngle } from "@/features/projects/ringMath";
-import { projects } from "@/content/projects";
+import { angleForIndex, frontIndex, normalizeAngle, ringGeometryCount, ringRadius, ringStep, snapAngle } from "@/features/projects/ringMath";
 
 /** Builds an RGBA buffer: left half opaque white, right half transparent. */
 function halfImage(size: number) {
@@ -100,11 +99,24 @@ describe("ring math", () => {
     expect(snapAngle(-46, 12)).toBeCloseTo(-60);
   });
 
-  it("builds ring faces from real project content, never fewer than 8", () => {
-    const slots = buildSlots(projects);
-    expect(slots.length).toBeGreaterThanOrEqual(8);
-    expect(new Set(slots.map((s) => s.id)).size).toBe(slots.length);
-    for (const s of slots) expect(projects.some((p) => p.slug === s.projectSlug)).toBe(true);
-    expect(buildSlots([])).toEqual([]);
+  it("gives every project exactly one slot, evenly spaced", () => {
+    expect(ringStep(3)).toBe(120);
+    expect(ringStep(8)).toBe(45);
+    expect(ringStep(1)).toBe(360);
+  });
+
+  it("sizes the radius for at least 8 cards so tiny wheels aren't cramped", () => {
+    expect(ringGeometryCount(2)).toBe(8);
+    expect(ringGeometryCount(3)).toBe(8);
+    expect(ringGeometryCount(10)).toBe(10);
+  });
+
+  it("finds the shortest rotation that brings a card to the front", () => {
+    // 5 cards (72° apart). From rest, card 1 needs -72°.
+    expect(angleForIndex(1, 0, 5)).toBeCloseTo(-72);
+    // Already turned to card 4 (-288°): going to card 0 is a short +72° hop forward, not a long way back.
+    expect(angleForIndex(0, -288, 5)).toBeCloseTo(-360);
+    // The result always faces the requested card.
+    for (let i = 0; i < 5; i++) expect(frontIndex(angleForIndex(i, 123.4, 5), 5)).toBe(i);
   });
 });

@@ -10,7 +10,7 @@ resource "aws_vpc" "lab" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${var.project}-lab"
+    Name = "${var.context.prefix}-lab"
   }
 }
 
@@ -19,7 +19,7 @@ resource "aws_default_security_group" "lab" {
   vpc_id = aws_vpc.lab.id
 
   tags = {
-    Name = "${var.project}-lab-default-DO-NOT-USE"
+    Name = "${var.context.prefix}-lab-default-DO-NOT-USE"
   }
 }
 
@@ -27,7 +27,7 @@ resource "aws_internet_gateway" "lab" {
   vpc_id = aws_vpc.lab.id
 
   tags = {
-    Name = "${var.project}-lab"
+    Name = "${var.context.prefix}-lab"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "${var.project}-lab-public"
+    Name = "${var.context.prefix}-lab-public"
   }
 }
 
@@ -51,7 +51,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project}-lab-public"
+    Name = "${var.context.prefix}-lab-public"
   }
 }
 
@@ -61,12 +61,12 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_security_group" "lab" {
-  name        = "${var.project}-lab"
+  name        = "${var.context.prefix}-lab"
   description = "k3s lab node: no inbound; outbound only (SSM, package + image pulls)"
   vpc_id      = aws_vpc.lab.id
 
   tags = {
-    Name = "${var.project}-lab"
+    Name = "${var.context.prefix}-lab"
   }
 }
 

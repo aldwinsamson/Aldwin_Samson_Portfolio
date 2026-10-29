@@ -5,7 +5,6 @@ dist
 infra
 gitops
 docs
-scripts
 *.md
 *.zip
 .env*

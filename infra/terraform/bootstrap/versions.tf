@@ -14,10 +14,6 @@ provider "aws" {
   region = var.region
 
   default_tags {
-    tags = {
-      Project   = var.project
-      ManagedBy = "terraform"
-      Stack     = "bootstrap"
-    }
+    tags = merge(local.context.tags, { Stack = "bootstrap" })
   }
 }

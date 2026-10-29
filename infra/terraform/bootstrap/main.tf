@@ -1,229 +1,93 @@
-data "aws_caller_identity" "current" {}
+# =============================================================================
+# Account-level foundation. Applied once, locally, by an admin. Everything else is applied by CI.
+#   1. remote state bucket   2. DNS zone   3. GitHub OIDC provider + CI roles   4. budget alerts
+# =============================================================================
 
-locals {
-  account_id   = data.aws_caller_identity.current.account_id
-  state_bucket = "${var.project}-tfstate-${local.account_id}"
-  repo         = var.github_repository
-  oidc_host    = "token.actions.githubusercontent.com"
+# ---- 1. Remote state (used by environments/*) ---------------------------------------------------------
+module "state_bucket" {
+  source = "../modules/secure-s3-bucket"
+
+  bucket_name                        = local.state_bucket
+  noncurrent_version_expiration_days = 90
 }
 
-# -----------------------------------------------------------------------------
-# 1. Remote state bucket (used by infra/terraform/prod). Versioned + encrypted.
-# -----------------------------------------------------------------------------
-resource "aws_s3_bucket" "tfstate" {
-  bucket = local.state_bucket
+data "aws_iam_policy_document" "state_bucket" {
+  source_policy_documents = [module.state_bucket.tls_only_policy_json]
 
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "tfstate" {
-  bucket                  = aws_s3_bucket.tfstate.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_ownership_controls" "tfstate" {
-  bucket = aws_s3_bucket.tfstate.id
-
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "tfstate" {
-  bucket = aws_s3_bucket.tfstate.id
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "tfstate" {
-  bucket = aws_s3_bucket.tfstate.id
-
-  rule {
-    bucket_key_enabled = true
-
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "tfstate" {
-  bucket = aws_s3_bucket.tfstate.id
-
-  rule {
-    id     = "expire-old-state-versions"
-    status = "Enabled"
-
-    filter {}
-
-    noncurrent_version_expiration {
-      noncurrent_days = 90
-    }
-
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 7
-    }
-  }
-}
-
-data "aws_iam_policy_document" "tfstate_bucket" {
+  # A state bucket must never be deleted by accident (not even by an admin running terraform destroy).
   statement {
-    sid       = "DenyInsecureTransport"
+    sid       = "DenyBucketDeletion"
     effect    = "Deny"
-    actions   = ["s3:*"]
-    resources = [aws_s3_bucket.tfstate.arn, "${aws_s3_bucket.tfstate.arn}/*"]
+    actions   = ["s3:DeleteBucket"]
+    resources = [module.state_bucket.arn]
 
     principals {
       type        = "*"
       identifiers = ["*"]
     }
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
   }
 }
 
-resource "aws_s3_bucket_policy" "tfstate" {
-  bucket = aws_s3_bucket.tfstate.id
-  policy = data.aws_iam_policy_document.tfstate_bucket.json
+resource "aws_s3_bucket_policy" "state" {
+  bucket = module.state_bucket.id
+  policy = data.aws_iam_policy_document.state_bucket.json
 
-  depends_on = [aws_s3_bucket_public_access_block.tfstate]
+  depends_on = [module.state_bucket]
 }
 
-# -----------------------------------------------------------------------------
-# 2. DNS: the hosted zone lives here (not in prod) so its name servers never
-#    change, even if the prod stack is destroyed and rebuilt.
-# -----------------------------------------------------------------------------
+# ---- 2. DNS: the hosted zone lives here so its name servers never change when an environment is rebuilt ----
 resource "aws_route53_zone" "primary" {
   name    = var.domain_name
-  comment = "Public zone for ${var.domain_name} (managed by Terraform bootstrap)"
+  comment = "Public zone for ${var.domain_name} (managed by the bootstrap stack)"
 
   lifecycle {
     prevent_destroy = true
   }
 }
 
-# -----------------------------------------------------------------------------
-# 3. GitHub Actions -> AWS with OIDC (no long-lived access keys anywhere).
-# -----------------------------------------------------------------------------
+# ---- 3. GitHub Actions -> AWS with OIDC (no long-lived access keys anywhere) --------------------------------
 resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://${local.oidc_host}"
+  url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
 }
 
-# Role 1: terraform PLAN on pull requests — read-only.
-data "aws_iam_policy_document" "trust_plan" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_host}:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_host}:sub"
-      values   = ["repo:${local.repo}:pull_request"]
-    }
-  }
-}
-
-resource "aws_iam_role" "tf_plan" {
-  name                 = "${var.project}-gha-terraform-plan"
-  description          = "GitHub Actions: terraform plan on pull requests (read-only)"
-  assume_role_policy   = data.aws_iam_policy_document.trust_plan.json
-  max_session_duration = 3600
-}
-
-resource "aws_iam_role_policy_attachment" "tf_plan_readonly" {
-  role       = aws_iam_role.tf_plan.name
-  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-}
-
-data "aws_iam_policy_document" "tf_plan_state" {
+# Plan role: pull requests only, read-only.
+data "aws_iam_policy_document" "plan_state_access" {
   statement {
     sid       = "ListStateBucket"
     actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.tfstate.arn]
+    resources = [module.state_bucket.arn]
   }
 
   statement {
     sid       = "ReadState"
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.tfstate.arn}/prod/*"]
+    resources = [for e in local.state_prefixes : "${module.state_bucket.arn}/${e}/*"]
   }
 
   # Native S3 locking writes/deletes a .tflock object next to the state file.
   statement {
     sid       = "LockState"
     actions   = ["s3:PutObject", "s3:DeleteObject"]
-    resources = ["${aws_s3_bucket.tfstate.arn}/prod/terraform.tfstate.tflock"]
+    resources = [for e in local.state_prefixes : "${module.state_bucket.arn}/${e}/terraform.tfstate.tflock"]
   }
 }
 
-resource "aws_iam_role_policy" "tf_plan_state" {
-  name   = "state-access"
-  role   = aws_iam_role.tf_plan.id
-  policy = data.aws_iam_policy_document.tf_plan_state.json
+module "plan_role" {
+  source = "../modules/github-oidc-role"
+
+  name                = "${local.context.prefix}-gha-terraform-plan"
+  description         = "GitHub Actions: terraform plan on pull requests (read-only)"
+  oidc_provider_arn   = aws_iam_openid_connect_provider.github.arn
+  subjects            = ["repo:${var.github_repository}:pull_request"]
+  managed_policy_arns = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+  inline_policy_json  = data.aws_iam_policy_document.plan_state_access.json
 }
 
-# Role 2: terraform APPLY — only from the protected "production" GitHub
-# Environment (required reviewer = you). PowerUser + IAM limited to this
-# project's name prefix. NOTE: any role that can create IAM roles is
-# effectively admin; the real guard is the Environment approval + OIDC `sub`.
-data "aws_iam_policy_document" "trust_apply" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_host}:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "${local.oidc_host}:sub"
-      values   = ["repo:${local.repo}:environment:production"]
-    }
-  }
-}
-
-resource "aws_iam_role" "tf_apply" {
-  name                 = "${var.project}-gha-terraform-apply"
-  description          = "GitHub Actions: terraform apply for the prod stack (production environment only)"
-  assume_role_policy   = data.aws_iam_policy_document.trust_apply.json
-  max_session_duration = 3600
-}
-
-resource "aws_iam_role_policy_attachment" "tf_apply_poweruser" {
-  role       = aws_iam_role.tf_apply.name
-  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
-}
-
-data "aws_iam_policy_document" "tf_apply_extra" {
+# Apply role: ONLY from the protected GitHub Environment (required reviewer = you).
+# PowerUser + IAM limited to this project's name prefix. Anything that can create IAM roles is effectively
+# admin; the real guard is the Environment approval + the OIDC `sub` pinned to it.
+data "aws_iam_policy_document" "apply_extra" {
   statement {
     sid = "ManageProjectIam"
     actions = [
@@ -259,59 +123,32 @@ data "aws_iam_policy_document" "tf_apply_extra" {
   statement {
     sid       = "ListStateBucket"
     actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.tfstate.arn]
+    resources = [module.state_bucket.arn]
   }
 
   statement {
-    sid       = "ReadWriteProdState"
+    sid       = "ReadWriteEnvironmentState"
     actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
-    resources = ["${aws_s3_bucket.tfstate.arn}/prod/*"]
+    resources = [for e in local.state_prefixes : "${module.state_bucket.arn}/${e}/*"]
   }
 }
 
-resource "aws_iam_role_policy" "tf_apply_extra" {
-  name   = "project-iam-and-state"
-  role   = aws_iam_role.tf_apply.id
-  policy = data.aws_iam_policy_document.tf_apply_extra.json
+module "apply_role" {
+  source = "../modules/github-oidc-role"
+
+  name                = "${local.context.prefix}-gha-terraform-apply"
+  description         = "GitHub Actions: terraform apply (only from the protected GitHub Environments: ${join(", ", var.github_environments)})"
+  oidc_provider_arn   = aws_iam_openid_connect_provider.github.arn
+  subjects            = [for e in var.github_environments : "repo:${var.github_repository}:environment:${e}"]
+  managed_policy_arns = ["arn:aws:iam::aws:policy/PowerUserAccess"]
+  inline_policy_json  = data.aws_iam_policy_document.apply_extra.json
 }
 
-# -----------------------------------------------------------------------------
-# 4. Cost guard-rails. Credits are NOT netted off, so these alerts fire on real
-#    usage — i.e. on how fast the free credit is being consumed.
-# -----------------------------------------------------------------------------
-resource "aws_budgets_budget" "monthly" {
-  name         = "${var.project}-monthly-gross-usage"
-  budget_type  = "COST"
-  limit_amount = tostring(var.monthly_budget_usd)
-  limit_unit   = "USD"
-  time_unit    = "MONTHLY"
+# ---- 4. Cost guard-rails -----------------------------------------------------------------------------------------
+module "budget" {
+  source = "../modules/budget-alerts"
 
-  cost_types {
-    include_credit = false
-    include_refund = false
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 50
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 80
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.alert_email]
-  }
+  name      = "${local.context.prefix}-monthly-gross-usage"
+  limit_usd = var.monthly_budget_usd
+  emails    = [var.alert_email]
 }

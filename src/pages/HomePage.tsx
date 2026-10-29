@@ -59,7 +59,7 @@ export default function HomePage() {
       <Seo />
       <Hero />
 
-      {/* 01 — Introduction */}
+      {/* 01 — Introduction (pulled up on desktop so it rises while the hero is still fading — no empty screen between them) */}
       <SectionTransition className="lg:-mt-[45svh]">
         <section id="introduction" aria-labelledby="intro-title" className="pb-16 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-16">
           <Container>
@@ -98,9 +98,9 @@ export default function HomePage() {
                         <MessageCircle className="size-5" aria-hidden="true" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-sm font-medium sm:text-base">Ask the portfolio guide</span>
+                        <span className="block text-sm font-medium sm:text-base">Ask me anything about John</span>
                         <span className="t-meta block text-[0.6rem] text-muted sm:text-[0.64rem]">
-                          Local FAQ search · answers only from this site
+                          Smart assistant · answers from this portfolio
                         </span>
                       </span>
                     </button>

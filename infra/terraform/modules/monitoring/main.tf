@@ -5,7 +5,7 @@
 # the AWS-managed SNS key, and these messages contain no sensitive data.
 resource "aws_sns_topic" "alerts" {
   provider = aws.use1
-  name     = "${var.project}-alerts"
+  name     = "${var.context.prefix}-alerts"
 }
 
 resource "aws_sns_topic_subscription" "email" {
@@ -17,27 +17,27 @@ resource "aws_sns_topic_subscription" "email" {
 
 # --- Uptime: probes https://<domain>/ from 6 AWS regions around the world ---------------
 resource "aws_route53_health_check" "site" {
-  count = var.enable_health_check ? 1 : 0
+  count = var.health_check.enabled ? 1 : 0
 
   fqdn              = var.domain_name
   port              = 443
   type              = "HTTPS"
-  resource_path     = "/"
-  request_interval  = 30
-  failure_threshold = 3
+  resource_path     = var.health_check.path
+  request_interval  = var.health_check.interval_seconds
+  failure_threshold = var.health_check.failure_threshold
   enable_sni        = true
-  regions           = ["us-east-1", "us-west-1", "eu-west-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1"]
+  regions           = var.health_check.regions
 
   tags = {
-    Name = "${var.project}-site"
+    Name = "${var.context.prefix}-site"
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "site_down" {
   provider = aws.use1
-  count    = var.enable_health_check ? 1 : 0
+  count    = var.health_check.enabled ? 1 : 0
 
-  alarm_name          = "${var.project}-site-down"
+  alarm_name          = "${var.context.prefix}-site-down"
   alarm_description   = "https://${var.domain_name} failed its Route 53 health check from multiple regions."
   namespace           = "AWS/Route53"
   metric_name         = "HealthCheckStatus"
@@ -56,8 +56,8 @@ resource "aws_cloudwatch_metric_alarm" "site_down" {
 resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
   provider = aws.use1
 
-  alarm_name          = "${var.project}-cloudfront-5xx"
-  alarm_description   = "More than 5% of CloudFront responses are 5xx."
+  alarm_name          = "${var.context.prefix}-cloudfront-5xx"
+  alarm_description   = "More than ${var.error_rate_5xx_threshold_percent}% of CloudFront responses are 5xx."
   namespace           = "AWS/CloudFront"
   metric_name         = "5xxErrorRate"
   dimensions          = { DistributionId = var.distribution_id, Region = "Global" }
@@ -65,7 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
   period              = 300
   evaluation_periods  = 3
   datapoints_to_alarm = 2
-  threshold           = 5
+  threshold           = var.error_rate_5xx_threshold_percent
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching" # no traffic == no errors
   alarm_actions       = [aws_sns_topic.alerts.arn]
@@ -76,7 +76,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
 resource "aws_cloudwatch_dashboard" "site" {
   provider = aws.use1
 
-  dashboard_name = "${var.project}-site"
+  dashboard_name = "${var.context.prefix}-site"
 
   dashboard_body = jsonencode({
     widgets = concat(
@@ -123,7 +123,7 @@ resource "aws_cloudwatch_dashboard" "site" {
           }
         },
       ],
-      var.enable_health_check ? [
+      var.health_check.enabled ? [
         {
           type = "metric", x = 12, y = 6, width = 12, height = 6
           properties = {

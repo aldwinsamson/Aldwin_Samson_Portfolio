@@ -1,17 +1,8 @@
-locals {
-  tags = {
-    Project     = var.project
-    Environment = "prod"
-    ManagedBy   = "terraform"
-    Repository  = var.github_repository
-  }
-}
-
 provider "aws" {
   region = var.region
 
   default_tags {
-    tags = local.tags
+    tags = local.context.tags
   }
 }
 
@@ -21,6 +12,6 @@ provider "aws" {
   region = "us-east-1"
 
   default_tags {
-    tags = local.tags
+    tags = local.context.tags
   }
 }
