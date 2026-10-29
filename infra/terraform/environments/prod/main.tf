@@ -72,7 +72,7 @@ module "site_deploy_role" {
   name               = "${local.context.prefix}-gha-site-deploy"
   description        = "GitHub Actions (main branch): publish the built site to S3 and invalidate CloudFront"
   oidc_provider_arn  = data.aws_iam_openid_connect_provider.github.arn
-  subjects           = ["repo:${var.github_repository}:ref:refs/heads/main"]
+  subjects           = ["${local.oidc_sub_prefix}:ref:refs/heads/main"]
   inline_policy_json = data.aws_iam_policy_document.site_deploy.json
 }
 

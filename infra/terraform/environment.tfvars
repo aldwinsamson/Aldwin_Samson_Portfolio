@@ -15,3 +15,7 @@ domain_name       = "aldwinsamson.com"
 github_repository = "aldwinsamson/Aldwin_Samson_Portfolio" # OWNER/REPO, case-sensitive
 alert_email       = "aldwinsamsonn@gmail.com"
 owner             = "aldwinsamson"
+
+# GitHub puts permanent numeric IDs in the OIDC identity (use_immutable_subject = true).
+# Get it with: gh api repos/<owner>/<repo>/actions/oidc/customization/sub
+github_oidc_subject_prefix = "repo:aldwinsamson@257675786/Aldwin_Samson_Portfolio@1412925839"

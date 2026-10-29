@@ -69,5 +69,5 @@ variable "hsts" {
 
 variable "permissions_policy" {
   type    = string
-  default = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), interest-cohort=()"
+  default = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()"
 }

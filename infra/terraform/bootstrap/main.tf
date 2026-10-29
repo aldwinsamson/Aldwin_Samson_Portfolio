@@ -79,7 +79,7 @@ module "plan_role" {
   name                = "${local.context.prefix}-gha-terraform-plan"
   description         = "GitHub Actions: terraform plan on pull requests (read-only)"
   oidc_provider_arn   = aws_iam_openid_connect_provider.github.arn
-  subjects            = ["repo:${var.github_repository}:pull_request"]
+  subjects            = ["${local.oidc_sub_prefix}:pull_request"]
   managed_policy_arns = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
   inline_policy_json  = data.aws_iam_policy_document.plan_state_access.json
 }
@@ -139,7 +139,7 @@ module "apply_role" {
   name                = "${local.context.prefix}-gha-terraform-apply"
   description         = "GitHub Actions: terraform apply (only from the protected GitHub Environments: ${join(", ", var.github_environments)})"
   oidc_provider_arn   = aws_iam_openid_connect_provider.github.arn
-  subjects            = [for e in var.github_environments : "repo:${var.github_repository}:environment:${e}"]
+  subjects            = [for e in var.github_environments : "${local.oidc_sub_prefix}:environment:${e}"]
   managed_policy_arns = ["arn:aws:iam::aws:policy/PowerUserAccess"]
   inline_policy_json  = data.aws_iam_policy_document.apply_extra.json
 }
