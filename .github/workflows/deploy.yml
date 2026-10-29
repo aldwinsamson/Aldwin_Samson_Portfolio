@@ -100,7 +100,7 @@ jobs:
           aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$ID"
 
       - name: Smoke test production
-        run: scripts/smoke-test.sh "${{ vars.SITE_URL }}"
+        run: bash scripts/smoke-test.sh "${{ vars.SITE_URL }}"
 
   lighthouse:
     name: Lighthouse (non-blocking)
