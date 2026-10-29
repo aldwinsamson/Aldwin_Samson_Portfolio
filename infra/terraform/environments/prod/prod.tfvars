@@ -8,7 +8,7 @@ site = {
   csp = {
     # "report-only" first so nothing can break. Flip to "enforce" once the browser console shows no CSP
     # reports on every page, in both themes.
-    mode        = "report-only"
+    mode        = "enforce"
     style_hosts = ["https://fonts.googleapis.com"]
     font_hosts  = ["https://fonts.gstatic.com"]
     img_hosts   = ["https://images.pexels.com"]
