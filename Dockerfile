@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Stage 1 always runs on the BUILD machine's native architecture (fast, no QEMU);
 # it only produces static files, which are architecture-independent.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS build
+FROM --platform=$BUILDPLATFORM node:25-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
