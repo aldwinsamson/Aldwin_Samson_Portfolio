@@ -5,6 +5,9 @@ import { projects as allProjects } from "@/content/projects";
 import { knowledgeBase } from "@/content/knowledge";
 import type { Project } from "@/content/types";
 import { glossary } from "./glossary";
+import { FRAMES, type Frames } from "./frames";
+import { TL_TEXT } from "@/content/tagalogContent";
+import type { Lang } from "@/content/knowledge";
 
 /** The assistant only knows PUBLISHED projects — drafts (`draft: true`) stay private, in dev and on the live site. */
 const projects = allProjects.filter((p) => !p.draft);
@@ -33,6 +36,9 @@ export interface Fact {
   text: string;
   /** Short version without context, used when this fact is shown as a bullet. */
   short?: string;
+  /** The same fact written in Filipino / Taglish (shown when the visitor writes in Tagalog). */
+  textTl?: string;
+  shortTl?: string;
   keywords?: string[];
   links?: GuideLink[];
   /** Search weight (1 = normal). */
@@ -46,21 +52,43 @@ export interface Fact {
 }
 
 const link = (label: string, to: string): GuideLink => ({ label, to });
+
+/** Strings that had no Filipino version while the Filipino facts were built (used by the test that reports them). */
+const untranslated = new Set<string>();
+interface Ctx {
+  lang: Lang;
+  F: Frames;
+  /** Translates one piece of site content (English passes through unchanged). */
+  t: (s: string) => string;
+}
+const makeCtx = (lang: Lang): Ctx => ({
+  lang,
+  F: FRAMES[lang],
+  t: (s) => {
+    if (lang === "en" || !/[A-Za-z]/.test(s)) return s;
+    if (!(s in TL_TEXT)) untranslated.add(s);
+    return TL_TEXT[s] ?? s;
+  },
+});
+
+/** A project's `linkNote` is often a note to the site owner ("add a link under links: …") — never show those to visitors. */
+const isDevNote = (note: string) => /src\/|`|\bREVIEW\b|TODO/.test(note);
 const bullets = (items: string[]) => items.map((i) => `• ${i}`).join("\n");
 const sentence = (s: string) => (/[.!?]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
 
-function projectFacts(p: Project): Fact[] {
+function projectFacts(p: Project, c: Ctx): Fact[] {
+  const { F, t } = c;
   const group = `proj:${p.slug}`;
   const to = `/projects/${p.slug}`;
   const open = link(`Open the ${p.title} case study`, to);
-  const label = p.fullTitle ? `${p.title} (${p.fullTitle})` : p.title;
+  const label = p.fullTitle ? `${p.title} (${t(p.fullTitle)})` : p.title;
   const base: Fact[] = [
     {
       id: group,
       kind: "overview",
       group,
       title: p.title,
-      text: `${label} — ${sentence(p.summary)} Role: ${p.role}. Status: ${p.status} (${p.period}). Built with ${p.stack.join(", ")}.`,
+      text: F.projectOverview({ label, summary: sentence(t(p.summary)), role: t(p.role), status: F.status(p.status), period: p.period, stack: p.stack.join(", ") }),
       keywords: [p.slug, p.title, p.fullTitle ?? "", ...p.categories, ...p.stack, "project", "built", "made"],
       links: [open],
       boost: 1.15,
@@ -78,31 +106,36 @@ function projectFacts(p: Project): Fact[] {
     keywords: [p.slug, p.title, ...p.stack, ...extraKeywords],
     links: [open],
   });
-  if (p.objective) base.push(detail("objective", "goal", `Goal: ${sentence(p.objective)}`, undefined, ["objective", "goal", "purpose", "aim"]));
-  if (p.problem) base.push(detail("problem", "problem it solves", `The problem it solves: ${sentence(p.problem)}`, undefined, ["problem", "why", "solve"]));
-  p.contributions.forEach((c, i) => base.push(detail(`c${i}`, "his contribution", `What John did: ${sentence(c)}`, sentence(c), ["contribution", "role", "did", "responsibility", "responsibilities"])));
-  (p.architecture ?? []).forEach((a, i) => base.push(detail(`a${i}`, a.label, `${a.label}: ${sentence(a.detail)}`, `${a.label}: ${sentence(a.detail)}`, ["architecture", "design", "system", "components"])));
-  p.implementation.forEach((c, i) => base.push(detail(`i${i}`, "implementation", `How it works: ${sentence(c)}`, sentence(c), ["implementation", "how", "works", "technical"])));
-  (p.challenges ?? []).forEach((c, i) => base.push(detail(`ch${i}`, "challenges", `A challenge: ${sentence(c)}`, sentence(c), ["challenge", "difficult", "hard", "difficulty", "obstacle"])));
-  p.outcomes.forEach((c, i) => base.push(detail(`o${i}`, "outcome", `Outcome: ${sentence(c)}`, sentence(c), ["outcome", "result", "delivered", "impact", "achieved"])));
+  if (p.objective) base.push(detail("objective", "goal", `${F.goal}${sentence(t(p.objective))}`, undefined, ["objective", "goal", "purpose", "aim"]));
+  if (p.problem) base.push(detail("problem", "problem it solves", `${F.problem}${sentence(t(p.problem))}`, undefined, ["problem", "why", "solve"]));
+  p.contributions.forEach((x, i) => base.push(detail(`c${i}`, "his contribution", `${F.didJohn}${sentence(t(x))}`, sentence(t(x)), ["contribution", "role", "did", "responsibility", "responsibilities"])));
+  (p.architecture ?? []).forEach((a, i) => base.push(detail(`a${i}`, a.label, `${t(a.label)}: ${sentence(t(a.detail))}`, `${t(a.label)}: ${sentence(t(a.detail))}`, ["architecture", "design", "system", "components"])));
+  p.implementation.forEach((x, i) => base.push(detail(`i${i}`, "implementation", `${F.howItWorks}${sentence(t(x))}`, sentence(t(x)), ["implementation", "how", "works", "technical"])));
+  (p.challenges ?? []).forEach((x, i) => base.push(detail(`ch${i}`, "challenges", `${F.challenge}${sentence(t(x))}`, sentence(t(x)), ["challenge", "difficult", "hard", "difficulty", "obstacle"])));
+  p.outcomes.forEach((x, i) => base.push(detail(`o${i}`, "outcome", `${F.outcome}${sentence(t(x))}`, sentence(t(x)), ["outcome", "result", "delivered", "impact", "achieved"])));
   if (p.awards && p.awards.length) {
-    base.push(detail("awards", "awards", `Awards: ${p.awards.join(", ")}.`, undefined, ["award", "awards", "won", "recognition", "achievement"]));
+    base.push(detail("awards", "awards", F.awards(p.awards.join(", ")), undefined, ["award", "awards", "won", "recognition", "achievement"]));
   }
   const ext: GuideLink[] = [];
   if (p.links?.repository) ext.push({ label: p.links.repository.label, to: p.links.repository.href, external: true });
   if (p.links?.demo) ext.push({ label: p.links.demo.label, to: p.links.demo.href, external: true });
+  const linkWords = ["link", "links", "github", "repository", "repo", "demo", "source", "code", "live", "website", "url", "public"];
   if (ext.length) {
     base.push({
-      ...detail("links", "links", `Where to see it: ${ext.map((l) => l.label).join(" and ")}.`, undefined, ["link", "links", "github", "repository", "repo", "demo", "source", "code", "live", "website", "url"]),
+      ...detail("links", "links", F.whereToSee(ext.map((l) => l.label)), undefined, linkWords),
       links: [open, ...ext],
     });
   } else if (p.linkNote) {
-    base.push(detail("links", "source code", sentence(p.linkNote), undefined, ["link", "links", "github", "repository", "repo", "demo", "source", "code", "live", "url", "public"]));
+    // Developer notes ("add a link under links: …") become a plain visitor-facing sentence.
+    const visitorNote = isDevNote(p.linkNote) ? (p.linkNote.split(";")[0] !== p.linkNote && !isDevNote(p.linkNote.split(";")[0]) ? p.linkNote.split(";")[0] : null) : p.linkNote;
+    base.push(detail("links", "source code", visitorNote ? sentence(t(visitorNote)) : F.noPublicLink, undefined, linkWords));
   }
   return base;
 }
 
-export function buildCorpus(): Fact[] {
+function buildFacts(lang: Lang): Fact[] {
+  const c = makeCtx(lang);
+  const { F, t } = c;
   const facts: Fact[] = [];
   const github = socials.find((s) => s.id === "github");
   const linkedin = socials.find((s) => s.id === "linkedin");
@@ -114,8 +147,8 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "about",
       title: "About John — in his own words",
-      text: `In his own words: “${p}”`,
-      short: p,
+      text: F.inHisWords(t(p)),
+      short: t(p),
       keywords: ["about", "background", "story", "journey", "bio"],
       links: [link("Read the about page", "/about")],
     }),
@@ -126,8 +159,8 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "focus",
       title: d.title,
-      text: `${d.title}: ${d.detail}`,
-      short: `${d.title}: ${d.detail}`,
+      text: `${d.title}: ${t(d.detail)}`,
+      short: `${d.title}: ${t(d.detail)}`,
       keywords: ["focus", "specialize", "specialise", "specialization", "discipline", "expertise", "area", "strength", "speciality"],
       links: [link("Read the about page", "/about")],
     }),
@@ -137,7 +170,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "focus",
     title: "What John specializes in",
-    text: `John's main focus areas:\n${bullets(profile.disciplines.map((d) => `${d.title} — ${d.detail}`))}`,
+    text: `${F.focusList}${bullets(profile.disciplines.map((d) => `${d.title} — ${t(d.detail)}`))}`,
     keywords: ["focus", "specialize", "specialise", "specialization", "discipline", "expertise", "areas", "strengths", "does", "speciality", "field", "domain"],
     links: [link("Read the about page", "/about")],
     boost: 1.2,
@@ -150,8 +183,8 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "values",
       title: v.title,
-      text: `One of his working principles — ${v.title}: ${v.detail}`,
-      short: `${v.title}: ${v.detail}`,
+      text: F.principle(t(v.title), t(v.detail)),
+      short: `${t(v.title)}: ${t(v.detail)}`,
       keywords: ["values", "principles", "philosophy", "approach", "style", "mindset", "believe", "culture", "ethic"],
     }),
   );
@@ -162,7 +195,7 @@ export function buildCorpus(): Fact[] {
     kind: "overview",
     group: "availability",
     title: "Availability and roles",
-    text: `${sentence(profile.availability)} He is based in ${profile.location}. The best way to discuss an opportunity is to contact him directly.`,
+    text: F.availability({ availability: sentence(t(profile.availability)), location: profile.location }),
     keywords: ["available", "availability", "open", "hire", "hiring", "looking", "role", "roles", "job", "position", "opportunity", "opportunities", "employment", "work", "vacancy", "recruit", "recruiter", "employed", "seeking", "career"],
     links: [link("Get in touch", "/contact")],
     boost: 1.3,
@@ -174,7 +207,7 @@ export function buildCorpus(): Fact[] {
     kind: "overview",
     group: "availability",
     title: "Location",
-    text: `John is based in ${profile.location}.`,
+    text: F.location(profile.location),
     keywords: ["location", "based", "live", "lives", "city", "country", "located", "philippines", "manila", "where", "timezone", "address"],
     boost: 1.2,
   });
@@ -183,7 +216,7 @@ export function buildCorpus(): Fact[] {
     kind: "overview",
     group: "contact",
     title: "How to contact John",
-    text: `You can email John at ${profile.email}, or find him on LinkedIn (${linkedin?.handle ?? "John Aldwin Samson"}) and GitHub (${github?.handle ?? "@aldwinsamson"}). The contact page has one-click Gmail compose and copy-email actions.`,
+    text: F.contact({ email: profile.email, linkedin: linkedin?.handle ?? "John Aldwin Samson", github: github?.handle ?? "@aldwinsamson" }),
     keywords: ["contact", "email", "mail", "reach", "message", "touch", "connect", "talk", "linkedin", "github", "social", "socials", "write", "inquiry", "enquiry"],
     links: [
       link("Go to the contact page", "/contact"),
@@ -199,7 +232,7 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "contact",
       title: "GitHub",
-      text: `John's GitHub is ${github.handle}.`,
+      text: F.githubIs(github.handle),
       keywords: ["github", "code", "repository", "repositories", "repos", "open", "source"],
       links: [{ label: "Open GitHub", to: github.href, external: true }],
     });
@@ -210,7 +243,7 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "contact",
       title: "LinkedIn",
-      text: `John is on LinkedIn as ${linkedin.handle}.`,
+      text: F.linkedinIs(linkedin.handle),
       keywords: ["linkedin", "professional", "network", "profile"],
       links: [{ label: "Open LinkedIn", to: linkedin.href, external: true }],
     });
@@ -225,7 +258,7 @@ export function buildCorpus(): Fact[] {
       kind: "overview",
       group,
       title: `${e.role} — ${e.organization}`,
-      text: `${e.role} at ${e.organization} (${e.start} – ${e.end}${e.location ? `, ${e.location}` : ""}). ${sentence(e.summary)}`,
+      text: F.roleAt(e.role, e.organization, `${e.start} – ${e.end}${e.location ? `, ${e.location}` : ""}`, sentence(t(e.summary))),
       keywords: [e.organization, e.role, e.type, e.start, e.end, ...e.skills, "experience", "work", "role", "position", "title", e.type === "Internship" ? "internship intern" : ""],
       links: [to],
       boost: 1.15,
@@ -238,8 +271,8 @@ export function buildCorpus(): Fact[] {
         kind: "detail",
         group,
         title: `${e.organization} — ${e.role}`,
-        text: `At ${e.organization} (${e.role}): ${sentence(h)}`,
-        short: sentence(h),
+        text: F.atOrg(e.organization, e.role, sentence(t(h))),
+        short: sentence(t(h)),
         keywords: [...e.skills, e.organization],
         links: [to],
       }),
@@ -250,7 +283,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "experience",
     title: "Work experience overview",
-    text: `John's experience:\n${bullets(experience.map((e) => `${e.role} — ${e.organization} (${e.start} – ${e.end})`))}`,
+    text: `${F.experienceList}${bullets(experience.map((e) => `${e.role} — ${e.organization} (${e.start} – ${e.end})`))}`,
     keywords: ["experience", "work", "history", "career", "internships", "intern", "jobs", "timeline", "employment", "worked", "companies", "company", "background", "resume"],
     links: [link("See the experience timeline", "/experience")],
     boost: 1.25,
@@ -266,7 +299,7 @@ export function buildCorpus(): Fact[] {
       kind: "overview",
       group,
       title: `${e.role} — ${e.organization}`,
-      text: `${e.role} at ${e.organization} (${e.start} – ${e.end}${e.location ? `, ${e.location}` : ""}). ${e.highlights.map(sentence).join(" ")}`.trim(),
+      text: F.roleAt(e.role, e.organization, `${e.start} – ${e.end}${e.location ? `, ${e.location}` : ""}`, e.highlights.map((h) => sentence(t(h))).join(" ")),
       keywords: [e.organization, e.role, "education", "school", "university", "college", "degree", "study", "studied", "graduate", "graduated", "course", "major", e.organization.includes("Pamantasan") ? "plm" : ""],
       links: [link("See education and honors", "/experience")],
       boost: 1.15,
@@ -277,7 +310,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "education",
     title: "Education overview",
-    text: `John's education:\n${bullets(education.map((e) => `${e.role} — ${e.organization} (${e.start} – ${e.end})`))}`,
+    text: `${F.educationList}${bullets(education.map((e) => `${e.role} — ${e.organization} (${e.start} – ${e.end})`))}`,
     keywords: ["education", "school", "university", "college", "degree", "study", "studied", "graduate", "graduated", "academic", "alma", "mater", "diploma", "bachelor"],
     links: [link("See education and honors", "/experience")],
     boost: 1.25,
@@ -286,14 +319,14 @@ export function buildCorpus(): Fact[] {
   });
 
   /* --------------------- Certifications · honors --------------------- */
-  certifications.forEach((c, i) =>
+  certifications.forEach((x, i) =>
     facts.push({
       id: `cert:${i}`,
       kind: "detail",
       group: "certs",
-      title: c.title,
-      text: `${c.title}: ${sentence(c.detail)}`,
-      short: `${c.title} — ${c.detail}`,
+      title: x.title,
+      text: `${x.title}: ${sentence(t(x.detail))}`,
+      short: `${x.title} — ${t(x.detail)}`,
       keywords: ["certification", "certifications", "certificate", "training", "course", "seminar", "credential", "learned", "learning"],
       links: [link("See certifications", "/experience")],
       boost: 0.8,
@@ -304,7 +337,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "certs",
     title: "Certifications and training",
-    text: `John's certifications and training:\n${bullets(certifications.map((c) => `${c.title} — ${c.detail}`))}`,
+    text: `${F.certsList}${bullets(certifications.map((x) => `${x.title} — ${t(x.detail)}`))}`,
     keywords: ["certification", "certifications", "certificate", "certificates", "training", "course", "courses", "seminar", "credential", "credentials", "licenses", "learned", "masterclass"],
     links: [link("See certifications", "/experience")],
     boost: 1.25,
@@ -317,8 +350,8 @@ export function buildCorpus(): Fact[] {
       kind: "detail",
       group: "honors",
       title: h.title,
-      text: `${h.title}: ${sentence(h.detail)}`,
-      short: `${h.title} — ${h.detail}`,
+      text: `${h.title}: ${sentence(t(h.detail))}`,
+      short: `${h.title} — ${t(h.detail)}`,
       keywords: ["award", "awards", "honor", "honors", "recognition", "achievement", "won", "best", "dean", "deans", "lister"],
       boost: 0.85,
     }),
@@ -328,7 +361,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "honors",
     title: "Awards and honors",
-    text: `John's awards and honors:\n${bullets(honors.map((h) => `${h.title} — ${h.detail}`))}`,
+    text: `${F.honorsList}${bullets(honors.map((h) => `${h.title} — ${t(h.detail)}`))}`,
     keywords: ["award", "awards", "honor", "honors", "recognition", "recognitions", "achievement", "achievements", "won", "win", "prize", "accomplishments", "dean", "deans", "lister", "list", "best", "recognized"],
     links: [link("See honors", "/experience")],
     boost: 1.3,
@@ -345,7 +378,7 @@ export function buildCorpus(): Fact[] {
       kind: "overview",
       group,
       title: g.title,
-      text: `${g.title}: ${sentence(g.description)} It includes ${g.items.map((it) => (it.note ? `${it.name} (${it.note})` : it.name)).join(", ")}.`,
+      text: F.skillsOverview({ title: g.title, description: sentence(t(g.description)), items: g.items.map((it) => (it.note ? `${it.name} (${it.note})` : it.name)).join(", ") }),
       keywords: [g.title, ...g.items.map((i) => i.name), "skill", "skills", "technology", "technologies", "stack", "tools", "know", "proficient", "experience"],
       links: [stackLink],
       boost: 1.1,
@@ -353,13 +386,14 @@ export function buildCorpus(): Fact[] {
       askTl: `Ano ang ${g.title} skills ni John?`,
     });
     for (const it of g.items) {
+      const label = `${it.name}${it.note ? ` (${it.note})` : ""}`;
       facts.push({
         id: `${group}:${it.name}`,
         kind: "detail",
         group,
         title: it.name,
-        text: `${it.name}${it.note ? ` (${it.note})` : ""} is part of John's ${g.title} skills.`,
-        short: `${it.name}${it.note ? ` (${it.note})` : ""}`,
+        text: F.skillDetail(label, g.title),
+        short: label,
         keywords: [g.title, "skill", "skills", "know", "proficient", "use", "uses", "experience"],
         links: [stackLink],
       });
@@ -370,7 +404,7 @@ export function buildCorpus(): Fact[] {
     kind: "list",
     group: "skills",
     title: "Skills overview",
-    text: `John's skills by area:\n${bullets(skillGroups.map((g) => `${g.title}: ${g.items.map((i) => i.name).join(", ")}`))}`,
+    text: `${F.skillsList}${bullets(skillGroups.map((g) => `${g.title}: ${g.items.map((i) => i.name).join(", ")}`))}`,
     keywords: ["skill", "skills", "technology", "technologies", "tech", "stack", "tools", "languages", "programming", "proficient", "expertise", "competencies", "capabilities", "know", "good", "software", "frameworks"],
     links: [link("View the full tech stack", "/stack")],
     boost: 1.3,
@@ -379,13 +413,13 @@ export function buildCorpus(): Fact[] {
   });
 
   /* ------------------------------ Projects ------------------------------ */
-  for (const p of projects) facts.push(...projectFacts(p));
+  for (const p of projects) facts.push(...projectFacts(p, c));
   facts.push({
     id: "projects-list",
     kind: "list",
     group: "projects",
     title: "Projects overview",
-    text: `${projects.length === 1 ? "John's project" : `John's ${projects.length} projects`}:\n${bullets(projects.map((p) => `${p.title} — ${p.tagline} (${p.status}, ${p.period})`))}`,
+    text: `${F.projectsList(projects.length)}${bullets(projects.map((p) => `${p.title} — ${t(p.tagline)} (${F.status(p.status)}, ${p.period})`))}`,
     keywords: ["project", "projects", "built", "build", "made", "portfolio", "work", "samples", "case", "studies", "developed", "created", "apps", "applications", "show", "showcase", "list"],
     links: [link("See all projects", "/projects")],
     boost: 1.3,
@@ -400,11 +434,13 @@ export function buildCorpus(): Fact[] {
       kind: "curated",
       group: `faq:${k.id}`,
       title: k.question,
-      text: k.answer,
+      text: lang === "tl" ? (k.answerTl ?? k.answer) : k.answer,
       keywords: k.keywords,
       links: k.link ? [link(k.link.label, k.link.to)] : undefined,
-      boost: 1.15,
+      // curated answers are reached by the shortcuts below / their own keywords; a low weight stops the bio from leading unrelated answers
+      boost: 0.8,
       ask: k.question,
+      askTl: k.questionTl,
     });
   }
 
@@ -415,7 +451,7 @@ export function buildCorpus(): Fact[] {
       kind: "glossary",
       group: `term:${g.term}`,
       title: `What is ${g.term}?`,
-      text: g.definition,
+      text: t(g.definition),
       keywords: [g.term, ...(g.aliases ?? []), "what", "meaning", "mean", "explain", "definition", "define"],
       boost: 1.1,
       ask: `What is ${g.term}?`,
@@ -425,4 +461,20 @@ export function buildCorpus(): Fact[] {
   }
 
   return facts;
+}
+
+/** Builds every fact in English, with the Filipino wording attached (`textTl` / `shortTl`) so the assistant can answer in either. */
+export function buildCorpus(): Fact[] {
+  const tl = new Map(buildFacts("tl").map((f) => [f.id, f]));
+  return buildFacts("en").map((f) => {
+    const x = tl.get(f.id);
+    return x ? { ...f, textTl: x.text, shortTl: x.short } : f;
+  });
+}
+
+/** English sentences from the site's content that have no Filipino version yet (they are shown in English until you add one). */
+export function findUntranslated(): string[] {
+  untranslated.clear();
+  buildFacts("tl");
+  return [...untranslated];
 }

@@ -21,6 +21,10 @@ export interface GuideStrings {
   fallback: string;
   privacy: string;
   offTopic: string;
+  /** Shown for open-ended / opinion / very long questions that only John can answer properly. */
+  complex: string;
+  /** Said after answering part of a multi-part question when the other part is unknown. */
+  partial: string;
   thanks: string;
   bye: string;
   identity: string;
@@ -63,6 +67,9 @@ export const STRINGS: Record<Lang, GuideStrings> = {
     /** Shown for questions that have nothing to do with John or his work. */
     offTopic:
       "I'm here to answer questions about John and his work, so that one is outside what I can help with. If you'd like to ask him something directly, please contact John personally.",
+    complex:
+      "That's a bigger question than I can answer reliably from his portfolio — it really needs John's own words. Please message him directly and he'll be glad to talk it through.",
+    partial: "I couldn't answer the other part from his portfolio — please contact John for that one.",
     thanks: "You're welcome! If you'd like to know anything else about John, just ask — or contact him personally for anything I can't answer.",
     bye: "Thanks for stopping by! Feel free to come back any time — and if you'd like to talk to John directly, you can reach him from the contact page.",
     identity:
@@ -112,6 +119,9 @@ export const STRINGS: Record<Lang, GuideStrings> = {
       "Mas gusto ni John na siya mismo ang magbahagi ng bagay na iyan kaysa ilathala sa site niya. Mangyaring makipag-ugnayan sa kanya nang direkta at masaya siyang makipag-usap tungkol dito.",
     offTopic:
       "Narito ako para sagutin ang mga tanong tungkol kay John at sa kanyang trabaho, kaya hindi ko matutulungan ang tanong na iyan. Kung may gusto kang itanong sa kanya, mangyaring makipag-ugnayan kay John nang personal.",
+    complex:
+      "Mas malaking tanong iyan kaysa kaya kong sagutin nang tama mula sa portfolio niya — mas mainam na si John mismo ang sumagot. Mangyaring mag-message nang direkta sa kanya at matutuwa siyang pag-usapan ito.",
+    partial: "Hindi ko nasagot ang isa pang bahagi mula sa portfolio niya — mangyaring makipag-ugnayan kay John tungkol doon.",
     thanks: "Walang anuman! Kung may iba ka pang gustong malaman tungkol kay John, magtanong lang — o makipag-ugnayan nang direkta kay John para sa mga hindi ko masasagot.",
     bye: "Salamat sa pagbisita! Bumalik ka anumang oras — at kung gusto mong makausap si John nang direkta, puwede mo siyang abutin sa contact page.",
     identity:
@@ -160,7 +170,7 @@ export const GUIDE = {
   subtitle: "From this portfolio · runs in your browser",
   /** First message in a new chat. */
   welcome: STRINGS.en.greeting,
-  placeholder: "Ask anything · Magtanong lang",
+  placeholder: "Ask anything about John…",
   /** Prefilled into the email that the "Email John" button opens. */
   emailSubject: "A question from your portfolio",
 } as const;
@@ -169,7 +179,11 @@ export interface KnowledgeEntry {
   id: string;
   /** How the question would be phrased (also shown as a suggestion chip). */
   question: string;
+  /** The same question in Filipino (a suggestion chip when the visitor writes in Tagalog). */
+  questionTl?: string;
   answer: string;
+  /** The answer in Filipino / Taglish. */
+  answerTl?: string;
   /** Extra words that should lead to this answer. */
   keywords: string[];
   link?: { label: string; to: string };
@@ -179,32 +193,44 @@ export const knowledgeBase: KnowledgeEntry[] = [
   {
     id: "who",
     question: "Who is John Aldwin Samson?",
+    questionTl: "Sino si John Aldwin Samson?",
     answer:
       "John Aldwin R. Samson is a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps and site reliability, with a strong foundation in embedded systems and hardware design.",
+    answerTl:
+      "Si John Aldwin R. Samson ay nagtapos ng Computer Engineering sa Pamantasan ng Lungsod ng Maynila (PLM) na nakatuon sa cloud infrastructure, DevOps at site reliability, na may matibay na pundasyon sa embedded systems at hardware design.",
     keywords: ["who", "introduce", "bio", "background", "profile", "summary", "person", "yourself"],
     link: { label: "Read the about page", to: "/about" },
   },
   {
     id: "why-hire",
     question: "Why should we hire John?",
+    questionTl: "Bakit dapat i-hire si John?",
     answer:
       "He pairs hands-on cloud and DevOps experience — a multi-AZ AWS environment as code with Terraform and CloudFormation, GitLab CI/CD and ArgoCD GitOps delivery, and a Prometheus, Grafana, Loki and Tempo observability stack — with a real hardware and firmware background in multi-layer PCBs, ESP32 and device-to-cloud telemetry. He also led a five-member thesis team to four awards, so he's used to owning outcomes and working with others.",
+    answerTl:
+      "Pinagsasama niya ang hands-on na karanasan sa cloud at DevOps — isang multi-AZ na AWS environment as code gamit ang Terraform at CloudFormation, GitLab CI/CD at ArgoCD GitOps delivery, at Prometheus, Grafana, Loki at Tempo observability stack — kasama ang tunay na background sa hardware at firmware sa multi-layer PCBs, ESP32 at device-to-cloud telemetry. Pinangunahan din niya ang limang-miyembrong thesis team hanggang sa apat na parangal, kaya sanay siyang managot sa resulta at makipagtulungan sa iba.",
     keywords: ["hire", "hiring", "why", "strength", "strengths", "choose", "unique", "different", "advantage", "candidate"],
     link: { label: "See his experience", to: "/experience" },
   },
   {
     id: "resume",
     question: "Can I get John's CV or resume?",
+    questionTl: "Puwede ko bang makuha ang CV o resume ni John?",
     answer:
       "His CV isn't downloadable from this site. Please contact John personally and he'll send you the latest version.",
+    answerTl:
+      "Hindi mada-download ang CV niya sa site na ito. Mangyaring makipag-ugnayan kay John nang personal at ipapadala niya ang pinakabagong bersyon.",
     keywords: ["cv", "resume", "curriculum", "vitae", "download", "pdf", "document"],
     link: { label: "Go to contact", to: "/contact" },
   },
   {
     id: "assistant",
     question: "How does this assistant work?",
+    questionTl: "Paano gumagana ang assistant na ito?",
     answer:
       "It's a smart search that runs entirely in your browser. It reads the information on this site — his experience, projects, skills, certifications and more — finds the most relevant parts of it and puts an answer together. Nothing you type is sent anywhere, and it never makes things up: if it can't find the answer, it tells you to contact John personally.",
+    answerTl:
+      "Isa itong matalinong search na tumatakbo nang buo sa browser mo. Binabasa nito ang impormasyon sa site na ito — ang karanasan, proyekto, skills, sertipikasyon at iba pa ni John — hinahanap ang pinakaangkop na bahagi at binubuo ang sagot. Walang ipinapadala saanman ang itinitype mo, at hindi ito gumagawa ng sagot na wala sa site: kapag wala itong makita, sasabihan ka nitong makipag-ugnayan kay John nang personal.",
     keywords: ["assistant", "bot", "chatbot", "chatgpt", "gpt", "privacy", "private"],
   },
 ];

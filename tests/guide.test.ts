@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createGuide, normalize, tokenize, type GuideAnswer, type GuideContext } from "@/features/guide/engine";
+import { findUntranslated } from "@/features/guide/corpus";
+import { GUIDE, STRINGS } from "@/content/knowledge";
 
 const guide = createGuide();
 const ask = (q: string, ctx?: GuideContext) => guide.ask(q, ctx);
@@ -312,7 +314,7 @@ describe("judgement questions, texting spellings and durations", () => {
     has(ask("Gaano katagal ang internship niya sa Stratpoint?"), "Jun 2026");
   });
   it("'Can I hire him?' in Filipino is an availability question", () => {
-    has(ask("Pwede ko ba siyang i-hire?"), "Open to");
+    has(ask("Pwede ko ba siyang i-hire?"), "Bukas sa");
   });
   it("ignores filler like 'pls' and 'in simple terms'", () => {
     has(ask("pls explain kubernetes in simple terms"), "containerized");
@@ -350,10 +352,10 @@ describe("smarter questions: counts, latest, compare, follow-ups", () => {
   it("tells a person's role apart from 'hire' questions", () => {
     has(ask("What was his role in the thesis?"), "Thesis Group Leader");
     has(ask("Ano ang role niya sa thesis?"), "Thesis Group Leader");
-    has(ask("Sino ang mga kasama niya sa thesis?"), "five-member");
+    has(ask("Sino ang mga kasama niya sa thesis?"), "limang-miyembrong");
   });
   it("understands more Filipino, including typos", () => {
-    has(ask("ano po ang sertifikasyon nya"), "certifications");
+    has(ask("ano po ang sertifikasyon nya"), "sertipikasyon");
     has(ask("Tell me about his AWS setup"), "AWS");
     expect(ask("Ano natutunan niya sa internship?").kind).toBe("answer");
   });
@@ -408,7 +410,7 @@ describe("follow-up memory never hijacks a question that names its own subject",
 
 describe("more Filipino phrasing", () => {
   it("handles the Filipino '-ng' ending (pinakabagong, kasalukuyang)", () => {
-    has(ask("Anong pinakabagong sertipikasyon niya?"), "certifications");
+    has(ask("Anong pinakabagong sertipikasyon niya?"), "sertipikasyon");
     has(ask("Ano ang kasalukuyang proyekto niya?"), "ginagawa");
   });
   it("judgement words other than 'good' also get the honest note", () => {
@@ -416,5 +418,113 @@ describe("more Filipino phrasing", () => {
   });
   it("'highest education' shows his education", () => {
     has(ask("what is his highest education?"), "Pamantasan");
+  });
+});
+
+describe("answers are fully Filipino when the visitor writes Filipino", () => {
+  /** English sentence frames that must NOT appear in a Filipino answer. */
+  const ENGLISH_FRAMES = [/\bRole:/, /\bStatus:/, /\bBuilt with\b/, /What John did:/, /How it works:/, /A challenge:/, /Outcome:/, /It includes\b/, /is part of John's/, /John's (skills|experience|education|projects|certifications)/, /\bAt [A-Z][A-Za-z ]+ \(/, /The problem it solves/, /In his own words/, /He is based in/];
+  const noEnglishFrames = (a: GuideAnswer) => {
+    for (const re of ENGLISH_FRAMES) expect(a.text, `${re} in: ${a.text.slice(0, 160)}`).not.toMatch(re);
+  };
+  it("every suggested Filipino question gets a Filipino answer (no English sentence frames)", () => {
+    const qs = new Set([...guide.starters("tl"), ...guide.facts.map((f) => f.askTl).filter((q): q is string => Boolean(q))]);
+    for (const q of qs) {
+      const a = ask(q);
+      expect(a.kind, q).toBe("answer");
+      expect(a.lang, q).toBe("tl");
+      noEnglishFrames(a);
+    }
+  });
+  for (const [q, ...parts] of [
+    ["Ikuwento mo ang KidVerse", "Tungkulin:", "Katayuan:", "Ginawa gamit ang"],
+    ["Ano ang challenges sa LIGTAS?", "Isang challenge:"],
+    ["Ano ang karanasan niya sa Stratpoint?", "Sa Stratpoint Technologies", "Nagdisenyo"],
+    ["Ano ang ginagawa ni John?", "nakatuon sa cloud"],
+    ["Ano ang MQTT?", "publish/subscribe", "Isang magaan"],
+    ["Anong mga parangal ang napanalunan niya?", "Ang mga parangal at karangalan ni John"],
+    ["Ano ang Cloud & Architecture skills ni John?", "Kasama rito ang"],
+  ]) {
+    it(`"${q}"`, () => {
+      const a = ask(q);
+      has(a, ...parts);
+      noEnglishFrames(a);
+    });
+  }
+  it("link buttons are in Filipino too", () => {
+    const labels = ask("Ikuwento mo ang KidVerse").links.map((l) => l.label);
+    expect(labels).toContain("Buksan ang case study ng KidVerse");
+    expect(ask("Ano ang skills niya?").links.map((l) => l.label)).toContain("Tingnan ang buong tech stack");
+  });
+  it("the project's developer notes are never shown to visitors", () => {
+    for (const q of ["Where is the code for KidVerse?", "Saan ko makikita ang code ng KidVerse?", "Is there a live link for FluentPro?"]) {
+      const t = ask(q).text;
+      expect(t, q).not.toMatch(/src\/content|`links|REVIEW|TODO/);
+    }
+  });
+  it("reports content that still has no Filipino wording (informational — it falls back to English)", () => {
+    const missing = findUntranslated();
+    if (missing.length) console.warn(`[guide] ${missing.length} sentence(s) have no Filipino version yet — add them to src/content/tagalogContent.ts:\n- ${missing.join("\n- ")}`);
+    expect(Array.isArray(missing)).toBe(true);
+  });
+});
+
+describe("English first: pre-messages are English, replies follow the visitor's language", () => {
+  it("the welcome message, placeholder and starter chips are English", () => {
+    expect(GUIDE.welcome).toBe(STRINGS.en.greeting);
+    expect(GUIDE.placeholder).toMatch(/^Ask anything/);
+    expect(guide.starters().join(" ")).not.toMatch(/\b(ang|ni|si|mga|niya)\b/i);
+  });
+  it("English questions always get English replies — even right after a Filipino conversation", () => {
+    const tl = ask("Ano ang GitOps?");
+    expect(tl.lang).toBe("tl");
+    for (const q of ["good morning", "thanks", "hello", "What is GitOps?", "Terraform please"]) {
+      expect(ask(q, { group: tl.group, shown: tl.shown, lang: "tl" }).lang, q).toBe("en");
+    }
+  });
+  it("a bare topic word keeps the Filipino conversation going", () => {
+    expect(ask("Terraform?", { lang: "tl" }).lang).toBe("tl");
+  });
+});
+
+describe("only complex or unknown questions are sent to John", () => {
+  for (const q of [
+    "Would he be a good fit for my startup?",
+    "Why did he choose Terraform over Pulumi?",
+    "What are his weaknesses?",
+    "Do you think he can handle a team of 20?",
+    "Kaya ba niya ang trabaho namin?",
+    "Ano sa tingin mo, bagay ba siya sa kumpanya namin?",
+  ]) {
+    it(`escalates: "${q}"`, () => {
+      const a = ask(q);
+      expect(a.kind, a.text).toBe("fallback");
+      expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
+    });
+  }
+  it("a factual question about his skills is answered, not escalated", () => {
+    expect(ask("What is his experience with Kubernetes?").kind).toBe("answer");
+    expect(ask("Ano ang experience niya sa Kubernetes?").kind).toBe("answer");
+  });
+});
+
+describe("two questions in one message", () => {
+  it("answers both", () => {
+    const a = ask("What are his skills? How can I contact him?");
+    has(a, "skills by area", "aldwinsamsonn@gmail.com");
+  });
+  it("answers both in Filipino", () => {
+    const a = ask("Ano ang skills niya? Paano ko siya makokontak?");
+    expect(a.lang).toBe("tl");
+    has(a, "Ang mga skills ni John", "aldwinsamsonn@gmail.com");
+  });
+  it("answers what it can and sends John the rest", () => {
+    const a = ask("What are his skills? What is his favorite color?");
+    expect(a.kind).toBe("answer");
+    has(a, "skills by area", "contact John");
+    expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
+  });
+  it("'and' inside a single question does not split it", () => {
+    has(ask("Compare Terraform and CloudFormation"), "about each");
   });
 });

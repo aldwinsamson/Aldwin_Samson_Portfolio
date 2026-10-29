@@ -5,6 +5,7 @@ import { certifications, experience, honors } from "@/content/experience";
 import { projects } from "@/content/projects";
 import { buildCorpus, type Fact, type GuideLink } from "./corpus";
 import { TL, TL_STOPWORDS, TL_WH, detectLang, isTagalogYesNo, toEnglish } from "./tagalog";
+import { linkLabelTl } from "./frames";
 
 export type { Fact, GuideLink } from "./corpus";
 export type { Lang } from "@/content/knowledge";
@@ -163,6 +164,14 @@ const WORK_TERMS =
   /\b(remote(ly)?|relocat\w*|hybrid|on-?site|full[- ]?time|part[- ]?time|notice period|start date|when can (he|john) start|sponsor\w*|work permit|time ?zone|overtime|willing to|contract(or)?|freelanc\w*)\b/;
 const WORK_CONTEXT = /\b(work|job|role|hire|hiring|join|start|available|employ\w*|position|opportunit\w*|can he|will he|would he|could he|is he willing)\b/;
 
+/** Open-ended, opinion or hypothetical questions — only John can answer these properly. */
+const COMPLEX =
+  /\b(would|will|could|can) (he|john|you) (be )?(a )?(good |great |right |perfect )?(fit|match)\b|\bdo you think\b|\bin your opinion\b|\bwhat if\b|\bhow would (he|john)\b|\bwhy did (he|john) (choose|pick|decide|leave|quit|use|go)\b|\bwhy does (he|john) (prefer|like|choose|use)\b|\b(weakness(es)?|biggest failure|greatest weakness|shortcomings?)\b|(his|john'?s) (thoughts|opinion|view|take) on\b|\bwould (he|john) (consider|be interested|join|accept|take|work for)\b|\bhow (do|does) (he|john) (feel|think)\b|\bwhat would (he|john)\b|\bcan (he|john) help (me|us|my)\b|\bour (team|company|startup|project)\b/;
+const TL_COMPLEX =
+  /\b(sa palagay mo|sa tingin mo|ano ang palagay|ano sa tingin|paano kung|bakit niya (pinili|iniwan|napili|ginamit)|kaya ba niya|babagay ba siya|bagay ba siya|angkop ba siya|tatanggapin ba niya|interesado ba siya|kahinaan|ano ang opinyon)\b/;
+/** Words that show the message is English even when it is short ("good morning") — so the Filipino-follow-up rule never flips English to Filipino. */
+const ENGLISH_HINT = /\b(hi|hello|hey|thanks|thank|good|morning|afternoon|evening|bye|ok|okay|yes|no|please|what|who|where|when|why|how|tell|show|is|are|does|did|can|the|and|about|more)\b/;
+
 const SHORTCUTS: { test: RegExp; ids: string[] }[] = [
   { test: /\b(is|are) (he|john|aldwin|you) (available|open|looking|hirable|employed|free|hiring)\b|\bopen to (work|opportunit|roles?|offers?|job)|\bavailable (for|to) (hire|work)\b|\b(can|could) (i|we) hire (him|john)\b|\blooking for (a )?(job|work|role|opportunit)/, ids: ["availability"] },
   { test: /\bwhy (should|would|do|shall|must) (i|we|you).*(hire|choose|pick|work)|\bwhat makes (him|john|you) (different|special|unique|stand)|\bsell (him|yourself)|\b(his|john'?s|your) strengths?\b|\bwhy hire\b/, ids: ["faq:why-hire"] },
@@ -243,6 +252,9 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
   const idfMax = Math.log(1 + (N - 1 + 0.5) / 1.5);
   const vocab = [...df.keys()];
   const byId = new Map(corpus.map((f) => [f.id, f]));
+  /** The fact's text in the visitor's language (Filipino wording where it exists, English otherwise). */
+  const txt = (f: Fact, lang: Lang) => (lang === "tl" ? f.textTl ?? f.text : f.text);
+  const brief = (f: Fact, lang: Lang) => (lang === "tl" ? f.shortTl ?? f.short ?? f.textTl ?? f.text : f.short ?? f.text);
 
   const bm25 = (d: Doc, term: string) => {
     const f = d.tf.get(term);
@@ -384,13 +396,13 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
 
   const fallback = (
     question: string,
-    kind: "unknown" | "privacy" | "offTopic",
+    kind: "unknown" | "privacy" | "offTopic" | "complex",
     lang: Lang,
     unknownWords: string[] = [],
     related: Ranked[] = [],
   ): GuideAnswer => {
     const S = STRINGS[lang];
-    const base = kind === "privacy" ? S.privacy : kind === "offTopic" ? S.offTopic : S.fallback;
+    const base = kind === "privacy" ? S.privacy : kind === "offTopic" ? S.offTopic : kind === "complex" ? S.complex : S.fallback;
     const note = unknownWords.length ? S.notFound(unknownWords) : "";
     return {
       kind: "fallback",
@@ -406,7 +418,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     const facts = ids.map((id) => byId.get(id)).filter((f): f is Fact => Boolean(f));
     return {
       kind: "answer",
-      text: facts.map((f) => f.text).join("\n\n"),
+      text: facts.map((f) => txt(f, lang)).join("\n\n"),
       links: uniqLinks(facts),
       followUps: pickFollowUps(ranked, new Set(facts.map((f) => f.group)), lang),
       sources: facts.map((f) => f.id),
@@ -435,44 +447,44 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
       const all = [best, ...peers.map((p) => p.fact)];
       all.forEach((f) => used.push(...(used.includes(f) ? [] : [f])));
       lines.push(S.found);
-      for (const f of all) lines.push(`• ${f.text}`);
+      for (const f of all) lines.push(`• ${txt(f, opts.lang)}`);
     } else if (best.kind === "detail") {
-      lines.push(best.text);
+      lines.push(txt(best, opts.lang));
       const extras = sameGroup.filter((r) => r.fact.kind === "detail" && r.score >= 0.6 * top.score).slice(0, 3);
       for (const r of extras) {
-        lines.push(`• ${r.fact.short ?? r.fact.text}`);
+        lines.push(`• ${brief(r.fact, opts.lang)}`);
         used.push(r.fact);
       }
       // Skill facts are thin on their own — back them up with real evidence.
       if (best.group.startsWith("skills:")) {
         const ev = evidence(opts.groups, new Set(used.map((u) => u.id)));
         if (ev) {
-          lines.push(`${S.inWork} ${ev.text}`);
+          lines.push(`${S.inWork} ${txt(ev, opts.lang)}`);
           used.push(ev);
         }
       }
     } else if (best.kind === "overview") {
-      lines.push(best.text);
+      lines.push(txt(best, opts.lang));
       const details = sameGroup.filter((r) => r.fact.kind === "detail" && r.score >= 0.45 * top.score).slice(0, 3);
       for (const r of details) {
-        lines.push(`• ${r.fact.short ?? r.fact.text}`);
+        lines.push(`• ${brief(r.fact, opts.lang)}`);
         used.push(r.fact);
       }
     } else if (best.kind === "glossary") {
-      lines.push(best.text);
+      lines.push(txt(best, opts.lang));
       const ev = evidence(groupsFor(tokenize((best.evidence ?? []).join(" "))), new Set());
       if (ev) {
-        lines.push(`${S.inWork} ${ev.text}`);
+        lines.push(`${S.inWork} ${txt(ev, opts.lang)}`);
         used.push(ev);
       }
     } else {
-      lines.push(best.text);
+      lines.push(txt(best, opts.lang));
     }
 
     // A strong answer from a different topic is worth a second paragraph (e.g. a skill AND the project that used it).
     const other = ranked.find((r) => r.fact.group !== best.group && r.score >= 0.85 * top.score && r.fact.kind !== "glossary" && !used.includes(r.fact));
     if (other && best.kind !== "list" && other.fact.kind !== "list" && lines.length < 4) {
-      lines.push(other.fact.kind === "detail" ? other.fact.text : other.fact.text.split("\n")[0]);
+      lines.push(other.fact.kind === "detail" ? txt(other.fact, opts.lang) : txt(other.fact, opts.lang).split("\n")[0]);
       used.push(other.fact);
     }
 
@@ -503,7 +515,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     const next = rest.slice(0, 4);
     return {
       kind: "answer",
-      text: `${S.moreIntro}\n${next.map((f) => `• ${f.short ?? f.text}`).join("\n")}${rest.length > 4 ? `\n\n${S.moreHintAgain}` : ""}`,
+      text: `${S.moreIntro}\n${next.map((f) => `• ${brief(f, lang)}`).join("\n")}${rest.length > 4 ? `\n\n${S.moreHintAgain}` : ""}`,
       links: uniqLinks(next),
       followUps: starters(lang).slice(0, 3),
       sources: next.map((f) => f.id),
@@ -530,7 +542,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     const list = byId.get(listId);
     return {
       kind: "answer",
-      text: `${S.count(n, what)}${list ? `\n\n${list.text.split("\n").slice(1).join("\n")}` : ""}`,
+      text: `${S.count(n, what)}${list ? `\n\n${txt(list, lang).split("\n").slice(1).join("\n")}` : ""}`,
       links: uniqLinks(list ? [list] : []),
       followUps: pickFollowUps([], new Set(list ? [list.group] : []), lang),
       sources: list ? [list.id] : [],
@@ -598,7 +610,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     const shown = picked.slice(0, 4);
     return {
       kind: "answer",
-      text: `${S.compareIntro}\n${shown.map((f) => `• ${f.text}`).join("\n")}`,
+      text: `${S.compareIntro}\n${shown.map((f) => `• ${txt(f, lang)}`).join("\n")}`,
       links: uniqLinks(shown),
       followUps: pickFollowUps([], new Set(shown.map((f) => f.group)), lang),
       sources: shown.map((f) => f.id),
@@ -609,10 +621,10 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
   };
 
   /* ------------------------------ ask() ------------------------------ */
-  function ask(raw: string, ctx: GuideContext = {}): GuideAnswer {
+  function askOne(raw: string, ctx: GuideContext = {}): GuideAnswer {
     const query = raw.trim().slice(0, 300);
     const norm = normalize(query);
-    const lang: Lang = detectLang(norm) === "tl" || (ctx.lang === "tl" && norm.split(" ").length <= 3) ? "tl" : "en";
+    const lang: Lang = detectLang(norm) === "tl" || (ctx.lang === "tl" && norm.split(" ").length <= 3 && !ENGLISH_HINT.test(norm)) ? "tl" : "en";
     const S = STRINGS[lang];
     if (!norm) return smalltalk(lang, S.empty);
     // Filipino / Taglish is translated into the English words the site is written in; English passes through unchanged.
@@ -632,6 +644,9 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
 
     // 3. "Tell me more"
     if ((MORE.test(norm) || TL.more.test(norm)) && ctx.group) return more(ctx, lang);
+
+    // 3b. Open-ended / opinion / very long questions go to John
+    if (COMPLEX.test(en) || TL_COMPLEX.test(norm) || words > 45 || (query.match(/\?/g) ?? []).length >= 4) return fallback(query, "complex", lang);
 
     // 4. Direct shortcuts
     const yesNoQuestion = YES_NO.test(en) || isTagalogYesNo(norm);
@@ -720,6 +735,46 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
         ? compose(ranked, { groups, ctx, lang })
         : compose(ranked, { yes: isYesNo && top.fact.kind !== "glossary", groups, ctx, lang });
     return evaluative ? { ...answer, text: `${S.evalNote}\n${answer.text}` } : answer;
+  }
+
+  /** "What are his skills? How can I contact him?" → two questions. Returns null for an ordinary single question. */
+  const splitQuestions = (raw: string): string[] | null => {
+    const text = raw.trim().slice(0, 300);
+    const byMark = text.split(/\?+/).map((p) => p.trim()).filter((p) => p.split(/\s+/).length >= 2);
+    const parts = byMark.length >= 2 ? byMark : text.split(/\s+(?:and also|also|plus|tapos|saka|at saka|pati na rin)\s+/i).map((p) => p.trim());
+    const good = parts.filter((p) => p.split(/\s+/).length >= 3);
+    return good.length >= 2 && good.length === parts.length && parts.length <= 3 ? parts : null;
+  };
+
+  /** Answers one OR several questions, and writes Filipino link labels when the visitor wrote in Filipino. */
+  function ask(raw: string, ctx: GuideContext = {}): GuideAnswer {
+    const parts = splitQuestions(raw);
+    let result: GuideAnswer;
+    if (!parts) result = askOne(raw, ctx);
+    else {
+      const answers = parts.map((p) => askOne(p, ctx));
+      const good = answers.filter((a) => a.kind === "answer");
+      const lang = answers[0].lang;
+      if (good.length === 0) result = askOne(raw, ctx);
+      else if (good.length === 1 && answers.length === 1) result = good[0];
+      else {
+        const S = STRINGS[lang];
+        const missed = answers.some((a) => a.kind !== "answer");
+        const seen = new Set<string>();
+        const links = [...good.flatMap((a) => a.links), ...(missed ? personalLinks(S, raw) : [])].filter((l) => !seen.has(l.to) && seen.add(l.to));
+        result = {
+          kind: "answer",
+          text: `${good.map((a) => a.text).join("\n\n")}${missed ? `\n\n${S.partial}` : ""}`,
+          links: links.slice(0, 4),
+          followUps: good[good.length - 1].followUps,
+          sources: good.flatMap((a) => a.sources),
+          lang,
+          group: good[0].group,
+          shown: good.flatMap((a) => a.shown ?? []),
+        };
+      }
+    }
+    return result.lang === "tl" ? { ...result, links: result.links.map((l) => ({ ...l, label: linkLabelTl(l.label) })) } : result;
   }
 
   /** Shows how a question was understood and which facts matched best (for debugging / tuning). */
