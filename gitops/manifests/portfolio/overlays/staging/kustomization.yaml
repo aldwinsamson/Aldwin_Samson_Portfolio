@@ -8,4 +8,4 @@ patches:
 # .github/workflows/container.yml rewrites `newTag` on every push to main; Argo CD then rolls it out.
 images:
   - name: ghcr.io/aldwinsamson/aldwinsamson_portfolio
-    newTag: sha-3606cc1
+    newTag: sha-afbd17e
