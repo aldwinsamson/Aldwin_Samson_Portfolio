@@ -245,6 +245,31 @@ img {
   .custom-cursor-active * {
     cursor: none !important;
   }
+  /* text fields keep the native i-beam so typing feels normal; the dot hides there */
+  .custom-cursor-active input,
+  .custom-cursor-active textarea {
+    cursor: text !important;
+  }
+  .site-cursor {
+    transition: opacity 0.2s;
+    will-change: transform;
+  }
+  .site-cursor[data-field="1"] {
+    visibility: hidden;
+  }
+  .site-cursor-dot {
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 9999px;
+    background: var(--accent);
+    transition: transform 0.18s ease-out, background-color 0.18s ease-out;
+  }
+  .site-cursor-dot[data-active="1"] {
+    transform: scale(4.5);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    box-shadow: 0 0 0 0.6px var(--accent);
+  }
 }
 
 /* Smooth scroll with Lenis */

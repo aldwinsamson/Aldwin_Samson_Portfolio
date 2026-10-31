@@ -15,7 +15,7 @@ export function useSmoothScroll(enabled = true) {
 
     const lenis = new Lenis({
       // lerp-based smoothing responds immediately to input (the old 1.2 s eased duration felt delayed).
-      lerp: 0.11,
+      lerp: 0.12,
       wheelMultiplier: 1,
       syncTouch: false, // keep native momentum scrolling on phones
       infinite: false,

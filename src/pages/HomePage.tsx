@@ -59,9 +59,12 @@ export default function HomePage() {
       <Seo />
       <Hero />
 
-      {/* 01 — Introduction (pulled up on desktop so it rises while the hero is still fading — no empty screen between them) */}
-      <SectionTransition className="lg:-mt-[45svh]">
-        <section id="introduction" aria-labelledby="intro-title" className="pb-16 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-16">
+      {/* 01 — Introduction. On desktop the hero section ends 45svh early (-mb in Hero.tsx); this wrapper sits on top
+          of it, with a soft fade, so the page rises while the hero fades — no empty screen between them. */}
+      <div className="relative z-20 bg-bg">
+      <div aria-hidden="true" className="pointer-events-none -mt-[10svh] hidden h-[10svh] bg-gradient-to-b from-transparent to-bg lg:block" />
+      <SectionTransition>
+        <section id="introduction" aria-labelledby="intro-title" className="pb-16 pt-12 sm:pb-24 sm:pt-16 lg:pb-32 lg:pt-12">
           <Container>
             <SectionHeader
               index="01"
@@ -137,6 +140,7 @@ export default function HomePage() {
           </Container>
         </section>
       </SectionTransition>
+      </div>
 
       {/* Key experience & achievements */}
       <SectionTransition>

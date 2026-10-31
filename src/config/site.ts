@@ -29,8 +29,8 @@ export const siteConfig = {
     /** Interactive WebGL layer in the hero. Image parallax still works when false. */
     hero3D: true,
     backToTop: true,
-    /** Custom dot+ring cursor with magnetic, text and hover modes (fine pointers only). */
-    customCursor: true,
+    /** Simple cursor. Position is set directly, no easing, so no lag. */
+    customCursor: false,
     /** Cinematic preloader animation (plays once per session). */
     preloader: true,
     /** Lenis smooth scroll (buttery feel on fine pointer devices). */

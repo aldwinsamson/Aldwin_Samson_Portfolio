@@ -1,7 +1,7 @@
 import { lazy, Suspense, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, useMotionValue, useScroll, useTransform } from "motion/react";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { AnimatePresence, motion, useMotionValue, useScroll, useTransform } from "motion/react";
+import { ArrowDown, ArrowRight, User, X } from "lucide-react";
 import { profile, socials } from "@/content/profile";
 import { siteConfig } from "@/config/site";
 import { ButtonLink, Container, ExternalLink } from "@/components/ui";
@@ -65,6 +65,8 @@ export function Hero() {
   const [particlesFailed, setParticlesFailed] = useState(false);
   // The real photo only appears once the particle intro has finished.
   const [photoReady, setPhotoReady] = useState(false);
+  // Desktop: the description (headline + lead) is hidden until the visitor opens it with the toggle.
+  const [descOpen, setDescOpen] = useState(false);
   const useParticles = siteConfig.features.hero3D && !reduced && !particlesFailed && detectWebGL();
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -78,15 +80,13 @@ export function Hero() {
   const photoFade = useTransform(p, cinematic ? [0.12, 0.6] : [0.05, 0.38], [1, 0]);
   const nameY = useTransform(p, [0, 1], ["0svh", "-24svh"]);
   const nameScale = useTransform(p, [0, 1], [1, 1.16]);
-  const nameOpacity = useTransform(p, [0, 0.7, 0.95], [1, 1, 0]);
+  const nameOpacity = useTransform(p, [0, 0.5, 0.8], [1, 1, 0]);
   const outlineY = useTransform(p, [0, 1], ["0svh", "-14svh"]);
   const outlineX = useTransform(p, [0, 1], ["0%", "-9%"]);
   const portraitScale = useTransform(p, [0, 1], [1, 1.14]);
   const portraitY = useTransform(p, [0, 1], ["0svh", "-5svh"]);
-  const leftX = useTransform(p, [0, 0.4], [0, -90]);
-  const rightX = useTransform(p, [0, 0.4], [0, 90]);
   const sideOpacity = useTransform(p, [0, 0.34], [1, 0]);
-  const stageOpacity = useTransform(p, [0.86, 1], [1, 0]);
+  const stageOpacity = useTransform(p, [0.62, 0.9], [1, 0]);
   const hintOpacity = useTransform(p, [0, 0.08], [1, 0]);
   // Phones: the poster eases out as it scrolls away (no pinning, no hijacking).
   const posterOpacity = useTransform(mob.scrollYProgress, [0.25, 0.5], [1, 0.0]);
@@ -234,120 +234,155 @@ export function Hero() {
 
   /* ------------------------------ DESKTOP (cinematic) ------------------------------ */
   return (
-    <section ref={sectionRef} aria-labelledby="hero-title" className="relative h-[250svh]">
-      <motion.div style={{ opacity: stageOpacity }} className="sticky top-0 isolate h-svh overflow-hidden">
-        <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0 -z-20" />
-        <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 -z-20 opacity-60" />
+    <>
+      <section ref={sectionRef} aria-labelledby="hero-title" className="relative -mb-[45svh] h-[190svh]">
+        <motion.div style={{ opacity: stageOpacity }} className="sticky top-0 isolate h-svh overflow-hidden">
+          <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0 -z-20" />
+          <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 -z-20 opacity-60" />
 
-        {/* Outline given names — depth layer behind the portrait */}
-        <motion.div
-          aria-hidden="true"
-          style={{ y: outlineY, x: outlineX }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2, delay: 0.5 }}
-          className="pointer-events-none absolute left-0 right-0 top-[max(9svh,4.75rem)] -z-10 select-none whitespace-nowrap text-center font-display text-[min(11vw,23svh)] italic leading-none text-transparent"
-        >
-          <span style={outlineStyle}>{profile.givenNames}</span>
-        </motion.div>
+          {/* Role badge with the monogram — top-right corner, the same place as on phones.
+              It fades out together with the side copy as you start to scroll. */}
+          <motion.div aria-hidden="true" style={{ opacity: sideOpacity }} className="pointer-events-none absolute inset-x-0 top-0 z-20">
+            <Container className="flex justify-end pt-5 xl:pt-6">
+              <RoleBadge className="size-[clamp(84px,7.4vw,124px)]" />
+            </Container>
+          </motion.div>
 
-        <div className="relative h-full">
+          {/* Outline given names — depth layer behind the portrait */}
           <motion.div
-            style={{ scale: portraitScale, y: portraitY }}
-            className="absolute bottom-0 left-1/2 z-0 aspect-square w-[min(92svh,64vw)] -translate-x-1/2 origin-bottom"
+            aria-hidden="true"
+            style={{ y: outlineY, x: outlineX }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 2, delay: 0.5 }}
+            className="pointer-events-none absolute left-0 right-0 top-[max(9svh,4.75rem)] -z-10 select-none whitespace-nowrap text-center font-display text-[min(11vw,23svh)] italic leading-none text-transparent"
           >
-            {portrait}
+            <span style={outlineStyle}>{profile.givenNames}</span>
           </motion.div>
 
-          <motion.h1
-            id="hero-title"
-            style={{ y: nameY, scale: nameScale, opacity: nameOpacity }}
-            className="pointer-events-none absolute bottom-[max(21svh,7.5rem)] left-0 right-0 z-10 w-full font-sans text-[min(17.5vw,31svh)] font-extrabold uppercase leading-[0.8] tracking-[-0.04em]"
-          >
-            {nameSr}
-            <HeroWord text={profile.lastName} reduced={reduced} startDelay={0.15} />
-          </motion.h1>
+          <div className="relative h-full">
+            <motion.div
+              style={{ scale: portraitScale, y: portraitY }}
+              className="absolute bottom-0 left-1/2 z-0 aspect-square w-[min(92svh,64vw)] -translate-x-1/2 origin-bottom"
+            >
+              {portrait}
+            </motion.div>
 
-          {/* Left flank */}
-          <motion.div style={{ x: leftX, opacity: sideOpacity }} className="absolute left-[5vw] top-[30svh] z-20 w-[24vw] max-w-md">
-            <motion.p {...fade(0.2)} className="flex items-center gap-3">
-              <span className="h-px w-8 bg-accent" aria-hidden="true" />
-              <span className="t-eyebrow text-[0.68rem] text-ink">{profile.displayName}</span>
-            </motion.p>
-            <motion.p {...fade(0.3)} className="t-meta mt-2 pl-11 text-[0.6rem] text-muted">
-              {profile.hero.eyebrow}
-            </motion.p>
-            <motion.p {...fade(0.45)} className="mt-4 font-display text-[clamp(1.5rem,2.1vw,2.4rem)] italic leading-[1.08] text-ink">
-              {profile.hero.headline.map((line, i) => (
-                <span key={line} className={cn("block", i === profile.hero.accentLine && "text-metal")}>
-                  {line}
-                </span>
-              ))}
-            </motion.p>
-          </motion.div>
+            <motion.h1
+              id="hero-title"
+              style={{ y: nameY, scale: nameScale, opacity: nameOpacity }}
+              className="pointer-events-none absolute bottom-[max(21svh,7.5rem)] max-[1319px]:bottom-[max(21svh,10.5rem)] left-0 right-0 z-10 w-full font-sans text-[min(17.5vw,31svh)] font-extrabold uppercase leading-[0.8] tracking-[-0.04em]"
+            >
+              {nameSr}
+              <HeroWord text={profile.lastName} reduced={reduced} startDelay={0.15} />
+            </motion.h1>
 
-          {/* Right flank — description, with the role badge stacked under it on large screens */}
-          <motion.div style={{ x: rightX, opacity: sideOpacity }} className="absolute right-[5vw] top-[30svh] z-20 hidden w-[25vw] max-w-sm xl:block">
-            <motion.p {...fade(0.8)} className="t-lead text-[0.8rem] leading-[1.6] text-ink-soft 2xl:text-[0.85rem]">
-              {profile.hero.lead}
-            </motion.p>
-            <div className="mt-6 hidden justify-end [@media(min-width:1700px)_and_(min-height:860px)]:flex">
-              <RoleBadge className="size-[92px]" />
-            </div>
-          </motion.div>
+            {/* Description — same spots as the deployed site: headline left, lead right.
+                Hidden by default (clean hero). The "Intro" button next to the contact bar opens / closes it. */}
+            <motion.div style={{ opacity: sideOpacity }} className="pointer-events-none absolute inset-x-0 top-[max(30svh,11rem)] z-20">
+              <AnimatePresence>
+                {descOpen && (
+                  <div id="hero-description" className="flex items-start justify-between gap-10 px-[clamp(1.5rem,4.6vw,7rem)]">
+                    <motion.div
+                      key="desc-left"
+                      initial={{ opacity: 0, x: -24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -24 }}
+                      transition={{ duration: 0.6, ease: ease.lux }}
+                      className="pointer-events-auto max-w-[24rem]"
+                    >
+                      <p className="flex items-center gap-3">
+                        <span className="h-px w-8 shrink-0 bg-accent" aria-hidden="true" />
+                        <span className="t-eyebrow text-[0.62rem] text-ink">{profile.displayName}</span>
+                      </p>
+                      <p className="t-meta mt-2 pl-11 text-[0.6rem] text-muted">{profile.hero.eyebrow}</p>
+                      <p className="mt-4 font-display text-[clamp(1.45rem,1.75vw,2.1rem)] italic leading-[1.08] text-ink">
+                        {profile.hero.headline.map((line, i) => (
+                          <span key={line} className={cn("block", i === profile.hero.accentLine && "text-metal")}>
+                            {line}
+                          </span>
+                        ))}
+                      </p>
+                    </motion.div>
 
-          {/* Bottom bar — status (left) · actions (centre) · scroll hint (right).
-              The side items hide below xl so the centred action pill always has room. */}
-          <Container className="absolute inset-x-0 bottom-6 z-20">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-              <motion.div
-                {...fade(1.3)}
-                style={{ opacity: hintOpacity }}
-                className="t-meta col-start-1 hidden justify-self-start text-[0.66rem] text-muted xl:block"
-              >
-                <StatusTicker />
-              </motion.div>
+                    <motion.p
+                      key="desc-right"
+                      initial={{ opacity: 0, x: 24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 24 }}
+                      transition={{ duration: 0.6, ease: ease.lux, delay: 0.06 }}
+                      className="t-lead pointer-events-auto w-[min(24rem,30vw)] text-ink-soft"
+                    >
+                      {profile.hero.lead}
+                    </motion.p>
+                  </div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-              <motion.div
-                style={{ opacity: sideOpacity }}
-                className="col-start-2 flex w-max max-w-[92vw] items-center justify-center gap-x-5 rounded-[2rem] border border-line bg-bg/80 px-4 py-3"
-              >
-                <motion.div {...fade(0.95)} className="flex items-center gap-3">
-                  <ButtonLink to={profile.hero.primaryCta.to}>{profile.hero.primaryCta.label}</ButtonLink>
-                  <ButtonLink to={profile.hero.secondaryCta.to} variant="ghost">
-                    {profile.hero.secondaryCta.label}
-                  </ButtonLink>
+            {/* Bottom row.
+                ≥1320px : status (left) · contact bar + Intro button (centre) · scroll hint (right)
+                <1320px : status centred just above the contact bar, so nothing can collide on smaller laptops. */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 px-[clamp(1.5rem,3.4vw,4rem)]">
+              <div className="flex flex-col items-center gap-3 min-[1320px]:grid min-[1320px]:grid-cols-[1fr_auto_1fr] min-[1320px]:gap-6">
+                <motion.div {...fade(1.1)} className="pointer-events-auto min-[1320px]:justify-self-start">
+                  <StatusTicker variant="readable" />
                 </motion.div>
-                <motion.div {...fade(1.1)} className="flex items-center gap-x-5">
-                  <Link
-                    to={profile.hero.tertiaryLink.to}
-                    className="group hidden items-center gap-2 whitespace-nowrap text-sm text-ink-soft decoration-accent underline-offset-[6px] transition-colors hover:text-ink hover:underline xl:inline-flex"
+
+                <motion.div {...fade(1.0)} className="pointer-events-auto flex items-center gap-3">
+                  {/* Contact bar */}
+                  <div className="flex items-center gap-2 rounded-full border border-line-strong bg-bg/55 p-3 backdrop-blur-xl">
+                    <ButtonLink to={profile.hero.primaryCta.to}>{profile.hero.primaryCta.label}</ButtonLink>
+                    <ButtonLink to={profile.hero.secondaryCta.to} variant="ghost">
+                      {profile.hero.secondaryCta.label}
+                    </ButtonLink>
+                    <Link
+                      to={profile.hero.tertiaryLink.to}
+                      className="group mx-2 inline-flex items-center gap-2 whitespace-nowrap text-sm text-ink-soft decoration-accent underline-offset-[6px] transition-colors hover:text-ink hover:underline"
+                    >
+                      {profile.hero.tertiaryLink.label}
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    </Link>
+                    <Socials social={social} />
+                  </div>
+
+                  {/* Profile toggle — beside the contact bar */}
+                  <button
+                    type="button"
+                    onClick={() => setDescOpen((v) => !v)}
+                    aria-expanded={descOpen}
+                    aria-controls="hero-description"
+                    data-cursor="magnetic"
+                    className={cn(
+                      "inline-flex h-14 items-center gap-2 rounded-full border px-5 text-sm font-medium backdrop-blur-xl transition-colors duration-300",
+                      descOpen
+                        ? "border-accent bg-accent text-accent-ink"
+                        : "border-line-strong bg-bg/55 text-ink hover:border-accent hover:text-accent",
+                    )}
                   >
-                    {profile.hero.tertiaryLink.label}
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                  </Link>
-                  <Socials social={social} />
+                    {descOpen ? <X className="size-4" aria-hidden="true" /> : <User className="size-4" aria-hidden="true" />}
+                  </button>
                 </motion.div>
-              </motion.div>
 
-              <motion.div
-                {...fade(1.3)}
-                style={{ opacity: hintOpacity }}
-                className="t-meta col-start-3 hidden justify-self-end text-[0.66rem] text-muted xl:block"
-              >
-                <button
-                  type="button"
-                  onClick={() => document.getElementById("introduction")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                  className="mr-14 inline-flex min-h-10 items-center gap-2 hover:text-ink"
+                <motion.div
+                  {...fade(1.3)}
+                  style={{ opacity: hintOpacity }}
+                  className="pointer-events-auto t-meta hidden text-[0.7rem] text-ink-soft min-[1320px]:block min-[1320px]:justify-self-end"
                 >
-                  Scroll <ArrowDown className="size-3.5" aria-hidden="true" />
-                </button>
-              </motion.div>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("introduction")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    className="mr-14 inline-flex min-h-10 items-center gap-2 hover:text-ink"
+                  >
+                    Scroll <ArrowDown className="size-3.5" aria-hidden="true" />
+                  </button>
+                </motion.div>
+              </div>
             </div>
-          </Container>
-        </div>
-      </motion.div>
-    </section>
+          </div>
+        </motion.div>
+      </section>
+    </>
   );
 }
 
