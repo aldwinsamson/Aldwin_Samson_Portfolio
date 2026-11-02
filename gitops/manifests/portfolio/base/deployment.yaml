@@ -30,7 +30,7 @@ spec:
       containers:
         - name: web
           # Placeholder tag — the real one is set by the overlay (CI commits the new sha-<commit> tag).
-          image: ghcr.io/aldwinsamson/aldwinsamson_portfolio:latest
+          image: ghcr.io/aldwinsamson/aldwin_samson_portfolio:latest
           ports:
             - name: http
               containerPort: 8080
