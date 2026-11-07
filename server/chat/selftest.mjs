@@ -92,6 +92,8 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   const mockLambdaClient = mkMockClient("Hi!\nFOLLOWUPS: a | b");
   const res = await handler({ requestContext: { http: { method: "POST", sourceIp: "9.9.9.9" } }, headers: { Origin: "https://aldwinsamson.com" }, body: JSON.stringify({ messages: [{ role: "user", content: "hello" }] }), isBase64Encoded: false }, mockLambdaClient);
   ok("lambda adapter returns statusCode/headers/body", res.statusCode === 200 && JSON.parse(res.body).text === "Hi!" && res.headers["access-control-allow-origin"] === "https://aldwinsamson.com");
+  const b64 = await handler({ requestContext: { http: { method: "POST", sourceIp: "8.8.8.8" } }, headers: { origin: "https://aldwinsamson.com" }, body: Buffer.from(JSON.stringify({ messages: [{ role: "user", content: "hello" }] })).toString("base64"), isBase64Encoded: true }, mockLambdaClient);
+  ok("lambda adapter decodes base64 bodies", b64.statusCode === 200);
   delete process.env.GEMINI_API_KEY;
 }
 // 8. prompt never contains private data
