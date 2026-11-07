@@ -185,7 +185,7 @@ export async function handleChat(req, clientImpl = null) {
   if (limited) return json(429, { error: "rate limited", scope: limited }, { ...cors, "retry-after": "60" });
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = clientImpl || new GoogleGenAI({ apiKey: req.apiKey || process.env.GEMINI_API_KEY });
     
     // Map turns for Gemini: assistant role becomes model
     const contents = norm.turns.map((t) => ({
