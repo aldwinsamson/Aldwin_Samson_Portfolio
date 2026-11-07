@@ -5,14 +5,7 @@ import { BrandMark } from "./BrandMark";
 
 const SESSION_KEY = "jas-preloaded";
 
-/**
- * Cinematic Preloader v2 — full-screen reveal with:
- * - Gold monogram reveal
- * - Word-by-word name reveal
- * - Horizontal scan line
- * - Split-curtain exit (top + bottom panels slide apart revealing the site)
- * Plays once per session, skipped on repeat visits & reduced motion.
- */
+
 export function Preloader({ onComplete }: { onComplete: () => void }) {
   const reduce = usePrefersReducedMotion();
   const [phase, setPhase] = useState<"logo" | "text" | "exit" | "done">("logo");
@@ -45,13 +38,11 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[300] overflow-hidden" aria-hidden="true">
-        {/* Top panel */}
         <motion.div
           className="absolute inset-x-0 top-0 flex h-1/2 flex-col items-center justify-end pb-10 bg-[#09090a]"
           animate={exitActive ? { y: "-100%" } : { y: 0 }}
           transition={exitActive ? { duration: 0.6, ease: easing } : {}}
         >
-          {/* Personal monogram */}
           <motion.div
             className="relative"
             initial={{ opacity: 0, scale: 0.85 }}
@@ -63,13 +54,11 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
           </motion.div>
         </motion.div>
 
-        {/* Bottom panel */}
         <motion.div
           className="absolute inset-x-0 bottom-0 flex h-1/2 flex-col items-center justify-start pt-10 bg-[#09090a]"
           animate={exitActive ? { y: "100%" } : { y: 0 }}
           transition={exitActive ? { duration: 0.6, ease: easing } : {}}
         >
-          {/* Animated scan line at seam */}
           <div className="absolute -top-px left-0 right-0 h-px overflow-hidden">
             <motion.div
               className="h-px w-full bg-gradient-to-r from-transparent via-[#c9ae7c] to-transparent"
@@ -79,7 +68,6 @@ export function Preloader({ onComplete }: { onComplete: () => void }) {
             />
           </div>
 
-          {/* Name */}
           <div className="flex flex-col items-center gap-2 overflow-hidden">
             <motion.p
               className="font-display text-2xl italic text-[#ece7dc] sm:text-[2rem]"

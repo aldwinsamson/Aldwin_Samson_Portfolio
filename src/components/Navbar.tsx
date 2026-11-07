@@ -24,7 +24,6 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const isActive = (pathname: string, to: string) => (to === "/" ? pathname === "/" : pathname.startsWith(to));
 
-/** iOS-style spring for the island growing / shrinking. */
 const ISLAND = { type: "spring", stiffness: 380, damping: 32, mass: 0.9 } as const;
 const ISLAND_RADIUS = 28;
 const ISLAND_MAX_WIDTH = 380;
@@ -42,7 +41,6 @@ export function Navbar() {
   const [collapsedW, setCollapsedW] = useState<number | null>(null);
   const [expandedW, setExpandedW] = useState(ISLAND_MAX_WIDTH);
 
-  // Context-aware: condenses after scroll, tucks away when scrolling down, returns on scroll up.
   useMotionValueEvent(scrollY, "change", (y) => {
     const prev = scrollY.getPrevious() ?? 0;
     setScrolled(y > 24);
@@ -55,18 +53,16 @@ export function Navbar() {
     if (!isMobile) setOpen(false);
   }, [isMobile]);
 
-  // Measure the closed island (phones) so it can grow from its exact size.
   useLayoutEffect(() => {
     const row = rowRef.current;
     if (!row || !isMobile || open) return;
-    const measure = () => setCollapsedW(Math.ceil(row.getBoundingClientRect().width) + 12); // + p-1.5 on both sides
+    const measure = () => setCollapsedW(Math.ceil(row.getBoundingClientRect().width) + 12); 
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(row);
     return () => ro.disconnect();
   }, [isMobile, open]);
 
-  // Island open: lock page scroll, Escape closes, focus returns to the button.
   useEffect(() => {
     if (!open) return;
     setExpandedW(Math.min(Math.floor(window.innerWidth * 0.92), ISLAND_MAX_WIDTH));
@@ -92,7 +88,6 @@ export function Navbar() {
       <a
         href="#main"
         onClick={(e) => {
-          // Handled manually so it works with hash routing too.
           e.preventDefault();
           const main = document.getElementById("main");
           main?.focus({ preventScroll: true });
@@ -103,7 +98,6 @@ export function Navbar() {
         Skip to content
       </a>
 
-      {/* Tap outside the island to close it (phones only). */}
       <AnimatePresence>
         {open && (
           <motion.button
@@ -126,8 +120,6 @@ export function Navbar() {
         transition={{ duration: 0.4, ease: ease.lux }}
         className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-3 pt-3 sm:pt-4"
       >
-        {/* One centred capsule. On phones it behaves like an iOS Dynamic Island: the menu button grows it
-            downwards into a rotating word wheel; tapping a word goes straight to that page. */}
         <motion.div
           id="site-island"
           initial={false}
@@ -217,7 +209,6 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Expanded island: rotating word wheel (phones only) */}
           <AnimatePresence initial={false}>
             {open && isMobile && (
               <motion.div
@@ -237,9 +228,7 @@ export function Navbar() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Rotating word wheel                                                */
-/* ------------------------------------------------------------------ */
+//  Rotating word wheel
 const WORD_W = 176;
 const WORD_H = 76;
 const WHEEL_SPRING = { type: "spring", stiffness: 90, damping: 20, mass: 0.9 } as const;
@@ -269,7 +258,6 @@ function NavWheel({
     setFront((prev) => (prev === i ? prev : i));
   });
 
-  // Gentle idle rotation; pauses while the finger is down and for a moment after.
   const paused = useRef(true);
   const dragging = useRef(false);
   const resumeTimer = useRef<number | undefined>(undefined);
@@ -283,14 +271,12 @@ function NavWheel({
   useEffect(() => {
     resumeLater(1400);
     return () => window.clearTimeout(resumeTimer.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useAnimationFrame((_, delta) => {
     if (reduced || paused.current || dragging.current) return;
     auto.set(auto.get() - delta * 0.006); // 6° per second
   });
 
-  // Swipe to spin. Taps still reach the links (pointer capture only starts after a real drag).
   const gesture = useRef({ x: 0, start: 0, moved: false, id: -1 });
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     gesture.current = { x: e.clientX, start: drag.get(), moved: false, id: e.pointerId };
@@ -319,7 +305,6 @@ function NavWheel({
 
   return (
     <div className="pb-2 pt-1">
-      {/* Keyboard / screen-reader route: the wheel below is purely visual. */}
       <nav aria-label="Site menu" className="sr-only">
         <ul>
           {links.map((item) => (
@@ -338,7 +323,6 @@ function NavWheel({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onClickCapture={(e) => {
-          // A swipe must never count as a tap on a word.
           if (gesture.current.moved) {
             e.preventDefault();
             e.stopPropagation();
@@ -368,7 +352,6 @@ function NavWheel({
             </motion.div>
           </div>
         </div>
-        {/* Soft edges so the wheel melts into the island */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-[14%] bg-gradient-to-r from-elev to-transparent" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[14%] bg-gradient-to-l from-elev to-transparent" />
       </div>
@@ -400,7 +383,6 @@ function WheelWord({
   angle: MotionValue<number>;
   onNavigate: () => void;
 }) {
-  // 0 = facing the viewer. Depth cues live on the face (not the card) so preserve-3d stays intact.
   const rel = useTransform(angle, (v) => normalizeAngle(index * step + v));
   const opacity = useTransform(rel, (v) => 0.22 + 0.78 * Math.max(0, 1 - Math.abs(v) / 80));
   const scale = useTransform(rel, (v) => 1 - 0.14 * Math.min(1, Math.abs(v) / 60));

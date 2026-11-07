@@ -72,9 +72,9 @@ export default function HomePage() {
               id="intro-title"
               title={
                 <>
-                  Where software meets{" "}
+                  Cloud, hardware,{" "}
                   <em className="text-metal">
-                    <TextScramble text="physical systems." className="inline" />
+                    <TextScramble text="and the space between." className="inline" />
                   </em>
                 </>
               }
@@ -214,14 +214,7 @@ export default function HomePage() {
               index="03"
               label="Experience"
               id="exp-title"
-              title={
-                <>
-                  Hands-on, from{" "}
-                  <em className="text-metal">
-                    <TextScramble text="schematic to ship." />
-                  </em>
-                </>
-              }
+              title={<>A record of <em className="text-metal"><TextScramble text="building" /></em> things.</>}
               link={{ to: "/experience", label: "Full history" }}
             />
             <ExperienceRows entries={experience} />
@@ -239,9 +232,9 @@ export default function HomePage() {
               id="stack-title"
               title={
                 <>
-                  A toolkit spanning{" "}
+                  Capabilities,{" "}
                   <em className="text-metal">
-                    <TextScramble text="silicon to cloud." />
+                    <TextScramble text="grouped by discipline." />
                   </em>
                 </>
               }

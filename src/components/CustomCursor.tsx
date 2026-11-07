@@ -1,12 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useCanHover, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 
-/**
- * Minimal cursor: one small gold dot that grows into a ring over links and buttons.
- * Why this and not springs: the position is written straight to the element's transform in the
- * mousemove handler (no react state, no easing), so it can't trail behind the real pointer.
- * The grow/shrink is a css transition on the inner element only, which the gpu handles.
- */
 export function CustomCursor() {
   const canHover = useCanHover();
   const reduce = usePrefersReducedMotion();

@@ -3,10 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { useCanHover } from "@/hooks/useMediaQuery";
 import { cn } from "@/utils/cn";
 
-/**
- * SpotlightCard — a container where a soft spotlight follows the cursor.
- * Used to wrap grids or card collections for that premium collective glow.
- */
+// SpotlightCard — a container where a soft spotlight follows the cursor.
 export function SpotlightContainer({
   children,
   className,

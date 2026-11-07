@@ -5,11 +5,6 @@ import { Briefcase, Home, Layers, Mail, User, Zap } from "lucide-react";
 import { useCanHover, useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/utils/cn";
 
-/**
- * FloatingDock — a macOS-style magnifying dock at the bottom of the screen.
- * Icons magnify as the cursor approaches (distance-based scaling).
- * Only visible on larger screens; mobile uses the standard nav.
- */
 
 interface DockItem {
   icon: ReactNode;

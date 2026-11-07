@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 
-/**
- * TypeWriter — types out text character-by-character with a blinking cursor.
- * Used for dynamic headline effects. Cycles through multiple phrases.
- */
+// TypeWriter — types out text character-by-character with a blinking cursor.
 export function TypeWriter({
   phrases,
   className,

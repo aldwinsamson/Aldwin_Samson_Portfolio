@@ -2,12 +2,7 @@ import { useRef, type ReactNode } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useCinematic } from "@/hooks/useCinematic";
 
-/**
- * SectionTransition — scroll-scrubbed entrance for a content section.
- *  Desktop  → the section rises out of depth (scale + tilt + blur) as it enters and eases back as it leaves.
- *  Mobile / reduced motion → rendered in place with no scroll-linked transform (stable, fixed positions).
- * Don't wrap pinned (sticky) stages in this — a transform on a section that is being scrubbed would fight the pin.
- */
+// SectionTransition — scroll-scrubbed entrance for a content section.
 export function SectionTransition({ children, className }: { children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const cinematic = useCinematic();

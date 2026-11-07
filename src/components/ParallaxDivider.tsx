@@ -1,11 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
-/**
- * ParallaxDivider — a cinematic split between sections.
- * Large editorial text scrolls at a different rate than its background,
- * creating a beautiful depth illusion. Like Apple product pages.
- */
 export function ParallaxDivider({
   text,
   subtext,
@@ -33,7 +28,6 @@ export function ParallaxDivider({
       className={`relative overflow-hidden py-16 sm:py-28 lg:py-44 ${className ?? ""}`}
       aria-hidden="true"
     >
-      {/* Background shapes */}
       <motion.div
         style={{ y: y1 }}
         className="absolute inset-0 flex items-center justify-center"
@@ -44,7 +38,6 @@ export function ParallaxDivider({
         />
       </motion.div>
 
-      {/* Text */}
       <motion.div
         style={{ y: y2, scale, opacity }}
         className="relative flex flex-col items-center text-center"
@@ -57,7 +50,6 @@ export function ParallaxDivider({
         )}
       </motion.div>
 
-      {/* Hairline decorators */}
       <motion.div
         style={{ scaleX: scrollYProgress }}
         className="absolute left-[10%] right-[10%] top-1/2 h-px origin-left bg-gradient-to-r from-transparent via-accent/30 to-transparent"

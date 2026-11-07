@@ -1,10 +1,5 @@
 import type { SkillGroup } from "./types";
 
-/**
- * TECH STACK — grouped by discipline, most relevant first (the homepage shows the first six groups).
- * No proficiency percentages by design; `note` adds honest context where useful.
- * Only list tools you can discuss in an interview.
- */
 export const skillGroups: SkillGroup[] = [
   {
     id: "cloud",
@@ -53,7 +48,8 @@ export const skillGroups: SkillGroup[] = [
     items: [
       { name: "Python", note: "Automation, ML pipelines" },
       { name: "Bash", note: "Scripting and tooling" },
-      { name: "JavaScript & TypeScript", note: "Node.js, Express, React" },
+      { name: "JavaScript & TypeScript", note: "Node.js, Express" },
+      { name: "React, Vite & Tailwind CSS", note: "This portfolio, FluentPro, the wedding site" },
       { name: "C / C++", note: "Embedded firmware" },
       { name: "REST APIs" },
     ],

@@ -87,7 +87,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  // Only keyboard moves should auto-scroll the list; mouse hover must never fight the wheel.
   const viaKeyboard = useRef(false);
 
   const nav = useCallback(
@@ -158,7 +157,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
           try {
             await navigator.clipboard.writeText(profile.email);
           } catch {
-            /* fallback */
           }
           onClose();
         },
@@ -210,11 +208,9 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => setActive(0), [query]);
 
-  // Latest state for the single, long-lived key handler (no re-subscribing on every keystroke / hover).
   const live = useRef({ filtered, active });
   live.current = { filtered, active };
 
-  // Focus instantly (before paint) without letting the browser scroll the page behind.
   useLayoutEffect(() => {
     inputRef.current?.focus({ preventScroll: true });
   }, []);
@@ -242,7 +238,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Keep the keyboard-selected row in view by moving ONLY the list (never the page).
   useEffect(() => {
     if (!viaKeyboard.current) return;
     viaKeyboard.current = false;
@@ -256,9 +251,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       list.scrollTop = el.offsetTop + el.offsetHeight + pad - list.clientHeight;
   }, [active]);
 
-  // Scroll lock: while the palette is open the wheel / touch scrolls the results list, never the page.
-  // (Lenis smooth-scroll listens on the whole window, so it is told to ignore this overlay via
-  //  data-lenis-prevent, and anything outside the list is blocked here.)
   useEffect(() => {
     const list = listRef.current;
     const canScroll = (dir: "up" | "down") => {
@@ -269,8 +261,8 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
     const inList = (t: EventTarget | null) => !!list && t instanceof Node && list.contains(t);
 
     const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) return; // pinch / ctrl+wheel zoom
-      if (inList(e.target) && canScroll(e.deltaY < 0 ? "up" : "down")) return; // let the list scroll natively
+      if (e.ctrlKey) return; 
+      if (inList(e.target) && canScroll(e.deltaY < 0 ? "up" : "down")) return; 
       e.preventDefault();
     };
     let startY = 0;
@@ -278,7 +270,7 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
       startY = e.touches[0]?.clientY ?? 0;
     };
     const onTouchMove = (e: TouchEvent) => {
-      const dy = (e.touches[0]?.clientY ?? 0) - startY; // finger down → list scrolls up
+      const dy = (e.touches[0]?.clientY ?? 0) - startY; 
       if (inList(e.target) && canScroll(dy > 0 ? "up" : "down")) return;
       e.preventDefault();
     };
@@ -307,7 +299,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div data-lenis-prevent className="fixed inset-0 z-[250]">
-      {/* Backdrop — plain dim (no blur: a full-screen blur over the live 3D hero is what made it lag) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -318,7 +309,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 bg-black/65"
       />
 
-      {/* Centering layer — the palette is always dead-centre, on every screen size */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
         <motion.div
           role="dialog"
@@ -331,13 +321,11 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
           style={{ willChange: "transform, opacity" }}
           className="pointer-events-auto relative w-full max-w-[640px] transform-gpu overflow-hidden rounded-[1.75rem] border border-line bg-elev shadow-[0_40px_120px_-24px_rgba(0,0,0,0.7)]"
         >
-          {/* Accent hairline along the top edge */}
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-accent/70 to-transparent"
           />
 
-          {/* Search input */}
           <div className="flex items-center gap-3 border-b border-line px-5 transition-colors focus-within:border-accent/50">
             <Search className="size-[18px] shrink-0 text-accent" aria-hidden="true" />
             <input
@@ -347,7 +335,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search pages, projects…"
               aria-label="Search pages, projects and actions"
-              // The site-wide :focus-visible ring would draw a box around the field; the header underline shows focus instead.
               style={{ outline: "none" }}
               className="min-h-16 flex-1 bg-transparent text-base text-ink placeholder:text-muted"
               autoComplete="off"
@@ -356,7 +343,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
             <Kbd>ESC</Kbd>
           </div>
 
-          {/* Results — fixed height so the palette never jumps while you type */}
           <div ref={listRef} role="listbox" aria-label="Results" className="relative h-[min(400px,50svh)] overflow-y-auto overscroll-contain px-3 pb-3 pt-1 [contain:content]">
             {groups.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
@@ -415,7 +401,6 @@ function CommandPaletteModal({ onClose }: { onClose: () => void }) {
             ))}
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between gap-3 border-t border-line bg-sunken/40 px-5 py-3 text-[0.68rem] text-muted">
             <div className="hidden items-center gap-4 sm:flex">
               <span className="inline-flex items-center gap-1.5"><Kbd>↑</Kbd><Kbd>↓</Kbd> Navigate</span>

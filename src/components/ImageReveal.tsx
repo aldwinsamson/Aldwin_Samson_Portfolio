@@ -3,11 +3,7 @@ import { motion, useInView, useReducedMotion } from "motion/react";
 import { ease } from "@/styles/motion";
 import { cn } from "@/utils/cn";
 
-/**
- * ImageReveal — a curtain slides away to reveal the image.
- * The classic high-end agency reveal effect.
- * Direction can be left→right, right→left, or bottom→top.
- */
+// ImageReveal — a curtain slides away to reveal the image.
 export function ImageReveal({
   children,
   className,
@@ -48,7 +44,6 @@ export function ImageReveal({
 
   return (
     <div ref={ref} className={cn("relative overflow-hidden", className)}>
-      {/* Content — scale in after curtain passes */}
       <motion.div
         initial={imageInitial}
         animate={inView ? imageAnimate : imageInitial}
@@ -57,7 +52,6 @@ export function ImageReveal({
         {children}
       </motion.div>
 
-      {/* Curtain */}
       <motion.div
         aria-hidden="true"
         initial={curtainInitial}

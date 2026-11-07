@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 
-/**
- * AnimatedCounter — numbers count up from 0 when scrolled into view.
- * High-end agency "stats" effect. Eases with a deceleration curve.
- */
 export function AnimatedCounter({
   target,
   suffix = "",

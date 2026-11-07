@@ -1,14 +1,9 @@
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 
-/**
- * ProgressBar — a thin accent-colored bar at the top of the viewport.
- * Width = scroll progress. Height pulses slightly with scroll velocity
- * for a subtle "the site is alive" feel. Invisible at top of page.
- */
 export function ProgressBar() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  const scaleX = scrollYProgress; // Lenis already smooths the scroll — no extra springs needed
+  const scaleX = scrollYProgress;
   const opacity = useTransform(scrollYProgress, [0, 0.01, 0.02], [0, 0.5, 1]);
 
   if (reduce) return null;

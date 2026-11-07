@@ -1,32 +1,20 @@
 import { defineProject } from "./_define";
 
-/**
- * HOW TO ADD A PROJECT
- *  1. Run  npm run new:project -- aws-three-tier "AWS Three-Tier App"   (or copy this file by hand and rename it to your slug)
- *  2. Change the values below. Delete any optional field you don't need — the page hides empty sections.
- *  3. Save. That's it: it now appears on the homepage wheel, the Projects page, its own
- *     /projects/<slug> page, prev/next links and the ⌘K search.
- *
- * Images: put files in  public/images/projects/<slug>/  and refer to them as
- *  "/images/projects/<slug>/cover.webp"  (no image yet? just remove `cover` — a placeholder is shown).
- *
- * This file starts with "_" so the site ignores it. Don't rename it.
- */
 export default defineProject({
-  // ───────────── REQUIRED ─────────────
-  slug: "my-project", // lowercase-with-dashes; must match the file name (my-project.ts) — NOT the display name
+  // REQUIRED
+  slug: "my-project", 
   draft: true, // while true the project shows only in `npm run dev` (with a DRAFT badge). DELETE this line to publish it.
   title: "My Project",
   tagline: "One short line that sells the project.",
   summary: "Two or three sentences describing what it is and what it does.",
-  categories: ["Cloud & DevOps"], // Cloud & DevOps · Software · Web Development · Embedded Systems · Hardware · AI
-  status: "Completed", // "Completed" | "In progress" | "Concept"
+  categories: ["Cloud & DevOps"], 
+  status: "Completed", 
   period: "Jan 2026 — Mar 2026",
   role: "Your role on the project",
   stack: ["AWS", "Terraform", "GitLab CI/CD"],
 
-  // ───────────── OPTIONAL (delete what you don't need) ─────────────
-  order: 10, // lower = earlier. Leave out to place it after numbered projects.
+  // OPTIONAL (delete what you don't need)
+  order: 10, 
   featured: false, // only matters if you ever have more than 10 projects (featured ones get the wheel slots)
   fullTitle: "Longer descriptive name",
   cover: {

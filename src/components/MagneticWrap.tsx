@@ -2,11 +2,7 @@ import { useRef, type ReactNode, type MouseEvent } from "react";
 import { motion, useMotionValue, useSpring, useReducedMotion } from "motion/react";
 import { useCanHover } from "@/hooks/useMediaQuery";
 
-/**
- * MagneticWrap — children are magnetically pulled toward the cursor
- * when hovering. Premium UX detail seen on luxury agency sites.
- * No-ops on touch devices and reduced motion.
- */
+// MagneticWrap — children are magnetically pulled toward the cursor when hovering.
 export function MagneticWrap({
   children,
   strength = 0.35,

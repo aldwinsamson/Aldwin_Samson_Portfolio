@@ -167,7 +167,12 @@ export const STRINGS: Record<Lang, GuideStrings> = {
 /** Fixed text for the chat window. */
 export const GUIDE = {
   title: "Ask about John",
-  subtitle: "From this portfolio · runs in your browser",
+  /** Shown when the AI service is connected. */
+  subtitle: "AI assistant · answers from this portfolio",
+  /** Shown when the AI service is not reachable and the built-in search answers instead. */
+  subtitleOffline: "From this portfolio · offline search",
+  /** One line under the input while the AI service is in use. */
+  privacyNote: "Questions are sent to an AI service to write the answer. Please don't share personal information.",
   /** First message in a new chat. */
   welcome: STRINGS.en.greeting,
   placeholder: "Ask anything about John…",
@@ -228,9 +233,9 @@ export const knowledgeBase: KnowledgeEntry[] = [
     question: "How does this assistant work?",
     questionTl: "Paano gumagana ang assistant na ito?",
     answer:
-      "It's a smart search that runs entirely in your browser. It reads the information on this site — his experience, projects, skills, certifications and more — finds the most relevant parts of it and puts an answer together. Nothing you type is sent anywhere, and it never makes things up: if it can't find the answer, it tells you to contact John personally.",
+      "It is an AI assistant that only knows what is published on this site: John's experience, projects, skills and certifications. Your question and the recent messages are sent to an AI service, which writes the answer from that content. If the answer is not on the site, it says so and points you to John's email instead of guessing. If the AI service is unreachable, a built-in search that runs in your browser answers instead.",
     answerTl:
-      "Isa itong matalinong search na tumatakbo nang buo sa browser mo. Binabasa nito ang impormasyon sa site na ito — ang karanasan, proyekto, skills, sertipikasyon at iba pa ni John — hinahanap ang pinakaangkop na bahagi at binubuo ang sagot. Walang ipinapadala saanman ang itinitype mo, at hindi ito gumagawa ng sagot na wala sa site: kapag wala itong makita, sasabihan ka nitong makipag-ugnayan kay John nang personal.",
+      "Isa itong AI assistant na ang alam lang ay ang nakalathala sa site na ito: ang karanasan, proyekto, skills at sertipikasyon ni John. Ipinapadala ang tanong mo at ang mga huling mensahe sa isang AI service, na bumubuo ng sagot mula sa nilalamang iyon. Kapag wala sa site ang sagot, sasabihin nito iyon at ituturo ka sa email ni John sa halip na manghula. Kapag hindi maabot ang AI service, sasagot ang built-in na search na tumatakbo sa browser mo.",
     keywords: ["assistant", "bot", "chatbot", "chatgpt", "gpt", "privacy", "private"],
   },
 ];

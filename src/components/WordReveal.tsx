@@ -2,10 +2,6 @@ import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { ease } from "@/styles/motion";
 
-/**
- * WordReveal — each word slides up from below with a stagger.
- * Elegant, cinematic, and plays only once. Used for key headings.
- */
 export function WordReveal({
   text,
   className,

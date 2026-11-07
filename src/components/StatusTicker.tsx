@@ -4,14 +4,6 @@ import { MapPin, Clock, Wifi } from "lucide-react";
 import { profile } from "@/content/profile";
 import { ease } from "@/styles/motion";
 
-/**
- * StatusTicker — a live-feeling ambient bar.
- * Shows local time in Manila, location, and availability.
- * Updates every minute. No API calls — just local Date math.
- *
- *  variant="ticker" (default) → compact, rotates through the items (phones).
- *  variant="readable"         → desktop / landscape: always visible, larger, high-contrast text.
- */
 function getManilaTime() {
   const now = new Date();
   const manila = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Manila" }));
@@ -49,7 +41,7 @@ export function StatusTicker({ className, variant = "ticker" }: { className?: st
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    if (variant === "readable") return; // the pill shows everything at once — no rotation needed
+    if (variant === "readable") return; 
     const id = setInterval(() => setActive((i) => (i + 1) % items.length), 4000);
     return () => clearInterval(id);
   }, [items.length, variant]);
@@ -63,8 +55,6 @@ export function StatusTicker({ className, variant = "ticker" }: { className?: st
     </span>
   );
 
-  /* Desktop / landscape — high-contrast and always fully visible (no rotating text).
-     Wide screens: two stacked lines in the left corner. Narrower landscape: one centred line above the contact bar. */
   if (variant === "readable") {
     const status = isBusinessHours ? "Likely online" : "Probably offline";
     return (

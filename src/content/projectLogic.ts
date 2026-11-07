@@ -1,10 +1,5 @@
 import type { Project, ProjectCategory, ProjectInput } from "./types";
 
-/**
- * Pure project helpers (no file-system magic here, so they are easy to unit-test).
- * The auto-discovery of project files lives in `./projects/index.ts`.
- */
-
 export const ALL_CATEGORIES: ProjectCategory[] = [
   "Cloud & DevOps",
   "Software",
@@ -15,16 +10,10 @@ export const ALL_CATEGORIES: ProjectCategory[] = [
 ];
 
 export const DEFAULT_ORDER = 100;
-/** The homepage wheel never shows more than this many projects (the rest live on /projects). */
-export const MAX_RING = 10;
+export const MAX_RING = 20;
 
-/** Drafts exist only in development; the live (production) site never shows them. */
 export const isVisible = (p: Pick<ProjectInput, "draft">, production: boolean): boolean => !(production && p.draft);
 
-/**
- * Spots the classic mistake of copying a project file and forgetting to rewrite it: two projects
- * with the same summary or tagline. Returns plain-language warnings (empty array = all good).
- */
 export function findCopiedText(list: readonly Pick<ProjectInput, "slug" | "summary" | "tagline">[]): string[] {
   const seen = new Map<string, string>();
   const warnings: string[] = [];
@@ -41,7 +30,6 @@ export function findCopiedText(list: readonly Pick<ProjectInput, "slug" | "summa
   return warnings;
 }
 
-/** Fills in defaults so components never have to null-check lists. */
 export function resolveProject(input: ProjectInput): Project {
   return {
     ...input,
@@ -55,20 +43,14 @@ export function resolveProject(input: ProjectInput): Project {
   };
 }
 
-/** Lower `order` first; ties are broken alphabetically by slug so the result is always predictable. */
 export function sortProjects<T extends { order: number; slug: string }>(list: readonly T[]): T[] {
   return [...list].sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
 }
 
-/** Categories that actually have at least one project (so empty filter chips never appear). */
 export function usedCategories(list: readonly Project[]): ProjectCategory[] {
   return ALL_CATEGORIES.filter((c) => list.some((p) => p.categories.includes(c)));
 }
 
-/**
- * Picks the projects for the homepage wheel. Everything fits up to `max`; beyond that, featured
- * projects win the slots and the original order is preserved.
- */
 export function selectRingProjects<T extends { featured: boolean }>(list: readonly T[], max = MAX_RING): T[] {
   if (list.length <= max) return [...list];
   const picked = new Set<T>();
@@ -77,7 +59,6 @@ export function selectRingProjects<T extends { featured: boolean }>(list: readon
   return list.filter((p) => picked.has(p));
 }
 
-/** Pure filter used by the Projects page (unit-tested in tests/). */
 export function filterProjects(list: Project[], query: string, category: ProjectCategory | "All"): Project[] {
   const q = query.trim().toLowerCase();
   return list.filter((p) => {
@@ -95,7 +76,6 @@ export function filterProjects(list: Project[], query: string, category: Project
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const STATUSES = ["Completed", "In progress", "Concept"];
 
-/** Returns human-readable problems with a project file (empty array = all good). */
 export function validateProject(p: ProjectInput): string[] {
   const problems: string[] = [];
   const need = (key: keyof ProjectInput) => {

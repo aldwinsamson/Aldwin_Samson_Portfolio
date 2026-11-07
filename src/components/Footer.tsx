@@ -48,18 +48,6 @@ export function Footer() {
         <div className="rule mt-12" aria-hidden="true" />
         <div className="t-meta mt-6 flex flex-col gap-2 text-[0.58rem] text-muted sm:gap-3 sm:text-[0.66rem] md:flex-row md:items-center md:justify-between">
           <p>© {year} {profile.name}. All rights reserved.</p>
-          <p>
-            No trackers · No cookies ·{" "}
-            {heroImage.isPlaceholder && heroImage.credit && (
-              <>
-                Hero placeholder by{" "}
-                <ExternalLink href={heroImage.credit.url} className="underline underline-offset-2 hover:text-ink">
-                  {heroImage.credit.name}
-                </ExternalLink>{" "}
-                · Imagery via Pexels
-              </>
-            )}
-          </p>
         </div>
       </Container>
     </footer>

@@ -7,9 +7,6 @@ import { cn } from "@/utils/cn";
 import { responsiveSrcSet } from "@/utils/image";
 import { ease, spring, stagger as staggerTokens } from "@/styles/motion";
 
-/* ------------------------------------------------------------------ */
-/* Safe external link — always noopener/noreferrer, opens in new tab   */
-/* ------------------------------------------------------------------ */
 export const ExternalLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement>>(
   function ExternalLink({ children, href, className, ...rest }, ref) {
     const safe = typeof href === "string" && /^(https:|mailto:)/.test(href) ? href : undefined;
@@ -29,9 +26,6 @@ export const ExternalLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<H
   },
 );
 
-/* ------------------------------------------------------------------ */
-/* Buttons                                                             */
-/* ------------------------------------------------------------------ */
 type Variant = "primary" | "ghost" | "quiet";
 
 const base =
@@ -94,9 +88,6 @@ export function ButtonAnchor({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Section header (wireframe: LABEL ··· "All projects ›")              */
-/* ------------------------------------------------------------------ */
 export function SectionHeader({
   index,
   label,
@@ -136,9 +127,6 @@ export function SectionHeader({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Reveal — staggered on-scroll reveal; inert under reduced motion     */
-/* ------------------------------------------------------------------ */
 export function Reveal({
   children,
   className,
@@ -150,7 +138,6 @@ export function Reveal({
   className?: string;
   delay?: number;
   y?: number;
-  /** @deprecated kept for API compatibility — blur was removed for performance. */
   blur?: boolean;
   as?: "div" | "li" | "section" | "article";
 }) {
@@ -164,7 +151,6 @@ export function Reveal({
     <Comp
       data-reveal
       className={className}
-      // No filter: a leftover `filter: blur(0px)` promotes every revealed element to its own GPU layer for good.
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -8% 0px" }}
@@ -177,9 +163,6 @@ export function Reveal({
 
 export const staggerDelay = (i: number) => Math.min(i * staggerTokens.base, 0.5);
 
-/* ------------------------------------------------------------------ */
-/* SmartImage — lazy, fades in, aspect-stable, graceful fallback        */
-/* ------------------------------------------------------------------ */
 export function SmartImage({
   src,
   alt,
@@ -199,7 +182,6 @@ export function SmartImage({
   eager?: boolean;
   position?: string;
   label?: string;
-  /** How wide the image is shown, so the browser downloads the right size (only used for resizable stock photos). */
   sizes?: string;
 }) {
   const [state, setState] = useState<"loading" | "loaded" | "error">("loading");
@@ -248,9 +230,6 @@ export function SmartImage({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Small atoms                                                         */
-/* ------------------------------------------------------------------ */
 export function Tag({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "tech" | "accent" }) {
   return (
     <span
@@ -280,7 +259,6 @@ export function Container({ children, className }: { children: ReactNode; classN
   return <div className={cn("mx-auto w-full max-w-[1320px] px-5 sm:px-8 lg:px-12", className)}>{children}</div>;
 }
 
-/** Per-page metadata — updates the existing head tags from index.html (no duplicates). */
 export function Seo({ title, description }: { title?: string; description?: string }) {
   useEffect(() => {
     const full = title ? siteConfig.titleTemplate(title) : `${siteConfig.title} — Cloud & DevOps Engineer · Embedded Systems`;

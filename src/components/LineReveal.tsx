@@ -2,10 +2,7 @@ import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { ease } from "@/styles/motion";
 
-/**
- * LineReveal — an animated horizontal line that draws itself on scroll.
- * Used as a refined divider between sections. Much classier than a static <hr>.
- */
+// LineReveal — an animated horizontal line that draws itself on scroll. 
 export function LineReveal({
   className,
   delay = 0,
@@ -27,7 +24,6 @@ export function LineReveal({
         transition={reduce ? { duration: 0 } : { duration, ease: ease.lux, delay }}
         className="absolute inset-0 origin-left bg-gradient-to-r from-transparent via-line-strong to-transparent"
       />
-      {/* Accent dot at center */}
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={inView || reduce ? { scale: 1, opacity: 1 } : {}}

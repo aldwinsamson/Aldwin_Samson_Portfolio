@@ -2,8 +2,7 @@ import { cn } from "@/utils/cn";
 
 /**
  * The personal gold monogram, in two tonal versions so it always has contrast:
- * bright gold on the dark theme, deep bronze on the light theme (switched in CSS — no flash, no JS).
- * `variant="dark"` forces the bright version for surfaces that are always dark (preloader).
+ * bright gold on the dark theme, deep bronze on the light theme.
  */
 export function BrandMark({
   className,

@@ -3,11 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { useCanHover } from "@/hooks/useMediaQuery";
 import { cn } from "@/utils/cn";
 
-/**
- * GlowCard — a card with a luminous gradient border that follows
- * the pointer. The glow appears only on hover and fades out smoothly.
- * Completely static under reduced motion or touch-only devices.
- */
+// GlowCard — a card with a luminous gradient border that follows the pointer.
 export function GlowCard({
   children,
   className,
@@ -51,7 +47,6 @@ export function GlowCard({
       onMouseLeave={onLeave}
       className={cn("group relative overflow-hidden rounded-[24px]", className)}
     >
-      {/* Glow layer behind the border */}
       {canHover && !reduce && (
         <motion.div
           aria-hidden="true"
@@ -59,7 +54,6 @@ export function GlowCard({
           style={{ background, opacity: smoothOpacity }}
         />
       )}
-      {/* Inner card */}
       <div className="relative overflow-hidden rounded-[23px] border border-line bg-bg transition-colors duration-500 group-hover:border-transparent">
         {children}
       </div>

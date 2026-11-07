@@ -1,9 +1,6 @@
 import { motion, useReducedMotion } from "motion/react";
 
-/**
- * TechBadge — a technology pill with a fill animation on hover.
- * The accent color bleeds in from the left creating a liquid fill effect.
- */
+// TechBadge — a technology pill with a fill animation on hover.
 export function TechBadge({
   label,
   note,

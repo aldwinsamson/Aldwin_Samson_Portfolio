@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 
-/**
- * TextScramble — letters decode from random chars into the real text.
- * Plays ONCE on scroll into view. No hover replay (that was annoying).
- * Falls back to plain text under reduced motion.
- */
-
+// TextScramble — letters decode from random chars into the real text.
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 export function TextScramble({

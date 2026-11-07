@@ -1,73 +1,108 @@
-import { defineProject, px } from "./_define";
+import { defineProject } from "./_define";
 
 export default defineProject({
   slug: "ligtas",
   title: "L.I.G.T.A.S.",
-  fullTitle: "Leakage Identification using Groundwater Testing and AI-Based Sensing",
-  tagline: "A remote-controlled flood-detection vessel with live video and AI hazard classification.",
+  fullTitle: "Leakage Identification using Groundwater Testing and AI-based Sensing",
+  tagline: "A remote-controlled amphibious vehicle that checks floodwater for electrical leakage and sends alerts.",
   summary:
-    "An amphibious, remote-controlled sensing vehicle built around an ESP32 that measures water conditions and electrical leakage, classifies hazards as “Safe” or “Danger” with a Python ML pipeline, and streams telemetry and live video to a mobile app.",
+    "Floodwater can become energized when power lines fall into it, and flood monitors only track water level. L.I.G.T.A.S. is our thesis prototype: it drives into floodwater, measures voltage, classifies it as Safe or Danger with a Random Forest model (96.54% accuracy on the test set), and alerts responders by SMS and a live dashboard.",
   categories: ["Embedded Systems", "Hardware", "AI"],
   status: "Completed",
-  period: "Aug 2025 — May 2026",
+  period: "Aug 2025 – May 2026",
   role: "Thesis Group Leader & Lead Hardware Developer",
+  stack: ["ESP32", "C/C++", "Python", "Random Forest", "LoRa", "SIM800L GSM", "React", "Spring Boot", "MySQL"],
   featured: true,
-order: 1,
+  order: 1,
+
   cover: {
-    src: px(39457985),
-    alt: "Representative image: a swollen river flowing through a flooded urban park",
-    kind: "representative",
-    credit: "Engin Akyurt / Pexels",
+    src: "/public/images/projects/ligtas/cover.webp",
+    alt: "The L.I.G.T.A.S. prototype vehicle",
+    kind: "authentic",
   },
   gallery: [
     {
-      src: px(18734769),
-      alt: "Representative image: a hand holding a populated green circuit board",
-      caption: "Representative — custom sensing electronics",
-      kind: "representative",
-      credit: "Arturo A / Pexels",
+      src: "/public/images/projects/ligtas/cover.webp",
+      alt: "The L.I.G.T.A.S. prototype and controller",
+      caption: "The L.I.G.T.A.S. prototype and controller",
+      kind: "authentic",
     },
     {
-      src: px(14562092),
-      alt: "Representative image: a flooded road with a submerged bridge",
-      caption: "Representative — flood environment the vehicle is designed for",
-      kind: "representative",
-      credit: "Magda Ehlers / Pexels",
+      src: "/public/images/projects/ligtas/prototype.webp",
+      alt: "The L.I.G.T.A.S. prototype vehicle",
+      caption: "The L.I.G.T.A.S. prototype vehicle",
+      kind: "authentic",
+    },
+    {
+      src: "/public/images/projects/ligtas/controller.webp",
+      alt: "The L.I.G.T.A.S. handheld controller",
+      caption: "The L.I.G.T.A.S. handheld controller",
+      kind: "authentic",
+    },
+    {
+      src: "/public/images/projects/ligtas/team.webp",
+      alt: "The L.I.G.T.A.S. team",
+      caption: "The L.I.G.T.A.S. team",
+      kind: "authentic",
     },
   ],
+
   overview:
-    "L.I.G.T.A.S. is my undergraduate thesis: a mobile sensing node that can be driven into flooded areas to assess hazards — including possible electrical leakage in the water — before people enter.",
+    "L.I.G.T.A.S. was our BSCpE thesis at PLM. Five of us built a small amphibious vehicle that can be driven into floodwater, read the voltage in the water, decide whether it is safe, and warn people before they wade in. I led the team and built the hardware and the microcontroller firmware.",
   objective:
-    "Give responders and residents a safer way to evaluate flood water by sending a remotely operated vessel first, and returning a clear, real-time hazard assessment with live visual context.",
+    "Detect electrical hazards in floodwater and warn residents and responders in time, using parts a barangay could afford.",
   problem:
-    "Flood water can hide electrical leakage and other hazards that are invisible to the eye. Assessing it in person exposes people to the very risk being checked.",
+    "During floods in the Philippines, damaged power lines can energize the water, which adds an electrocution risk on top of drowning and property damage. Existing flood monitoring tracks water level and rainfall. It does not check for electrical leakage, and it is not mobile.",
+
   contributions: [
-    "Led and coordinated a five-member engineering team across research, hardware prototyping and system testing toward strict engineering milestones.",
-    "Prototyped the remote-controlled amphibious vehicle around an ESP32 microcontroller with custom voltage sensor arrays, operating as a distributed mobile node for environmental testing.",
-    "Deployed a Python-based machine learning pipeline that analyzes water conditions and classifies live data streams as “Safe” or “Danger” in real time.",
-    "Implemented Wi-Fi data transmission to stream telemetry, classification logs and live video to a dedicated mobile application.",
+    "Led the five-member team through research, prototyping, testing and the thesis paper, and set the milestones.",
+    "Designed and built the vehicle hardware: ESP32 boards, voltage and current sensing, GPS, IMU, a waterproof ultrasonic sensor, motor drivers, LoRa and GSM modules, and the power supply.",
+    "Wrote the microcontroller firmware for sensing, motor control and communication on the vehicle and the handheld controller.",
+    "Worked with the group on the other parts: the Random Forest model and the web dashboard were built by the team, and my hardware feeds both.",
   ],
+
   architecture: [
-    { label: "Vessel node", detail: "ESP32 controller, custom voltage sensor arrays, onboard camera, RC drive." },
-    { label: "Wireless link", detail: "Wi-Fi transport for telemetry, classification logs and live video." },
-    { label: "Inference", detail: "Python ML pipeline classifying the live sensor stream as Safe / Danger." },
-    { label: "Mobile app", detail: "Dedicated user application for telemetry, hazard status and video." },
+    {
+      label: "Vehicle",
+      detail:
+        "Two ESP32 boards: one for sensing, motion and monitoring, one for communication. Sensors are a ZMPT101B voltage sensor, ACS712 current sensor, JSN-SR04T waterproof ultrasonic sensor, MPU9250 IMU and NEO-6M GPS. Two L298N drivers run the DC motors.",
+    },
+    {
+      label: "Controller",
+      detail:
+        "A handheld unit with two ESP32 boards, a joystick, tactile switches, a real-time clock, an SD card for logging and a 3.5-inch LCD.",
+    },
+    {
+      label: "Links",
+      detail:
+        "LoRa (SX1278) carries telemetry and drive commands. A SIM800L GSM module is the backup link and sends SMS alerts. A Wi-Fi camera streams video to a phone.",
+    },
+    {
+      label: "Classifier",
+      detail:
+        "A Random Forest model using eight features per reading: voltage, voltage squared, a voltage zone, a danger score, a noise estimate, the change since the last reading, a five-reading average and the count of consecutive readings above 30 V.",
+    },
   ],
-  stack: ["ESP32", "C++ / Arduino IDE", "Custom voltage sensors", "Python", "Machine Learning", "Wi-Fi telemetry", "Live video streaming", "Mobile application"],
+
   implementation: [
-    "Sensor interfacing and firmware on the ESP32 to sample voltage-sensor arrays and drive the vehicle remotely.",
-    "Telemetry packaged and transmitted over Wi-Fi alongside the camera feed so operators see conditions and classification together.",
-    "Classification results surfaced as simple, unambiguous states — “Safe” or “Danger” — to support quick decisions.",
+    "Voltage is sampled every 500 ms. A reading at or above 30 V counts as dangerous, and a three-reading debounce filter keeps a single spike from setting off a false alarm.",
+    "The server also marks any reading above 30 V as DANGER before saving it, so a sensor or transmission fault cannot hide a hazard.",
+    "The model was trained on 21,095 synthetic voltage samples (6,841 Safe and 14,254 Dangerous) with an 80/20 train and test split.",
+    "SMS alerts go to contacts saved on the controller, and phone numbers are masked in the dashboard API.",
   ],
+
   challenges: [
-    "Integrating sensitive sensing electronics on a vehicle that operates on water.",
-    "Keeping telemetry, classification output and live video usable over a single wireless link.",
-    "Coordinating hardware, ML and application work in parallel across a five-person team.",
+    "The ZMPT101B reports an averaged (RMS) value, so a few short spikes were missed or misread in testing. The temporal features and the debounce filter reduce this, and the paper lists it as a known limit of the sensor approach.",
+    "SMS was the weakest link, with 87.5% of alerts delivered. The paper recommends a backup alert channel.",
+    "All testing was done in lab simulations and controlled trials, not in a real flood. The paper names real-flood testing as the next step.",
   ],
+
   outcomes: [
-    "Delivered a working prototype integrating remote control, sensing, ML classification and live video.",
-    "Recognized with four awards, including Top 2 Best Thesis (listed below).",
+    "On 4,219 held-out samples the model reached 96.54% accuracy, 97.54% precision, 97.33% recall and a 97.44% F1-score.",
+    "End-to-end classification time stayed under 100 ms.",
+    "SMS alerts were classified correctly every time and took 5.32 seconds on average from reading to message.",
+    "In a survey of 60 residents of flood-prone barangays in Manila, 96.7% found the system useful and 100% would recommend it for community use.",
   ],
+
   awards: ["Top 2 Best Thesis", "Best Thesis Paper", "Best Booth", "Best Poster"],
-  linkNote: "Source code and thesis documentation are not publicly published.",
 });

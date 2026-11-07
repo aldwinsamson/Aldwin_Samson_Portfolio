@@ -2,7 +2,6 @@ import type { SVGProps } from "react";
 import { CircuitBoard, CodeXml, Cpu, Database, Layers, Sparkles, Terminal, type LucideIcon } from "lucide-react";
 import type { SkillGroup } from "@/content/types";
 
-/** Brand icons (Lucide v1 no longer ships them). Simple, monochrome, currentColor. */
 export function GitHubIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>

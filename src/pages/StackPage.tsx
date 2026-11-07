@@ -24,9 +24,6 @@ export default function StackPage() {
                 </>
               }
             />
-            <p className="t-lead -mt-4 mb-10 max-w-2xl text-ink-soft sm:mb-14">
-              No percentage bars — just the tools I've used on real projects, with context where it helps. Details of how each was applied live in the project case studies.
-            </p>
             <SpotlightContainer>
               <StackGrid groups={skillGroups} />
             </SpotlightContainer>

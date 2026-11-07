@@ -213,9 +213,9 @@ export function ProjectRing() {
           </Link>
         </div>
         <h2 id="work-title" className="mt-4 max-w-4xl text-balance font-display text-[clamp(1.8rem,3.4vw,3.1rem)] leading-[1.05] sm:mt-5">
-          Case studies from the{" "}
+          Work across{" "}
           <em className="text-metal">
-            <TypeWriter phrases={["bench.", "breadboard.", "browser.", "command line."]} className="inline" />
+            <TypeWriter phrases={["hardware", "hardware, software", "hardware, software, cloud & devops", "hardware, software"]} className="inline" />
           </em>
         </h2>
       </Container>
