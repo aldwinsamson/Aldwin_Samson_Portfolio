@@ -5,8 +5,6 @@ resources:
   - ../../base
 patches:
   - path: service-nodeport.yaml
-# .github/workflows/container.yml rewrites `newTag` on every push to main; Argo CD then rolls it out.
 images:
   - name: ghcr.io/aldwinsamson/aldwin_samson_portfolio
-    newName: ghcr.io/aldwinsamson/aldwin_samson_portfolio
-    newTag: sha-3606cc1
+    newTag: latest
