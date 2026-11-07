@@ -22,7 +22,7 @@ monitoring = {
 
 # Step 1 (day 1): website + monitoring only (lab.enabled = false).  Step 2: set enabled = true (see infra/README.md).
 lab = {
-  enabled        = true
+  enabled        = false
   instance_type  = "t4g.small" # Free-plan eligible; see infra/README.md before choosing a bigger one
   root_volume_gb = 30
   schedule = {
