@@ -1,29 +1,17 @@
 // server/chat/core.mjs
-// The whole chat backend, written without any AWS- or Vercel-specific code so it can move hosts.
-// Adapters (lambda.mjs, adapters/vercel-api-chat.js) only translate their platform's request/response shape.
-//
-// What it does for each request:
-//   1. checks the origin, the method and the body size
-//   2. cleans the conversation (length caps, roles, last 8 turns only)
-//   3. applies a per-visitor rate limit (best effort, see note below)
-//   4. calls the Anthropic Messages API with a system prompt built from knowledge.generated.txt
-//   5. returns { text, followUps }
-//
-// RATE LIMIT NOTE: the counters live in memory, so each warm server instance has its own and a cold start resets them.
-// That includes the "daily" counter: it is per instance, NOT a global budget. It slows down casual abuse only.
-// The real money cap is the monthly spend limit you set in the Anthropic Console (plus max_tokens below, and on AWS
-// the throttling in infra/terraform/modules/chat-api).
+// The whole chat backend, updated for Google Gemini API via @google/genai.
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { GoogleGenAI } from "@google/genai";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
 /* ------------------------------ configuration ------------------------------ */
 
 const cfg = () => ({
-  model: process.env.CLAUDE_MODEL || "claude-haiku-5-5",
+  model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
   maxTokens: Number(process.env.MAX_OUTPUT_TOKENS) || 450,
   allowedOrigins: (process.env.ALLOWED_ORIGINS || "https://aldwinsamson.com,https://www.aldwinsamson.com")
     .split(",")
@@ -86,22 +74,19 @@ function corsHeaders(origin, c, host) {
 }
 
 function isAllowedOrigin(origin, c, host = "") {
-  if (!origin) return true; // curl, server-to-server, same-origin requests without an Origin header
+  if (!origin) return true;
   if (c.allowedOrigins.includes(origin)) return true;
-  // Same-origin: the page that sends the request is served by this very host (production, a Vercel preview, ...).
-  // This replaces listing every preview address by hand. Browsers cannot forge the Origin header.
   if (host) {
     try {
       if (new URL(origin).host === host.toLowerCase()) return true;
     } catch {
-      /* not a URL: fall through */
+      /* not a URL */
     }
   }
   if (c.allowLocalhost && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return false;
 }
 
-// Strips control characters and collapses runs of whitespace.
 const clean = (s) =>
   String(s)
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
@@ -109,7 +94,6 @@ const clean = (s) =>
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
-/** Validates and normalises the conversation. Returns { turns } or { error }. */
 export function normaliseTurns(input) {
   if (!Array.isArray(input) || input.length === 0 || input.length > 40) return { error: "messages must be a non-empty list" };
   const turns = [];
@@ -119,7 +103,7 @@ export function normaliseTurns(input) {
     const content = clean(m.content).slice(0, max);
     if (!content) continue;
     const last = turns[turns.length - 1];
-    if (last && last.role === m.role) last.content = content; // keep roles alternating: the newer message wins
+    if (last && last.role === m.role) last.content = content;
     else turns.push({ role: m.role, content });
   }
   while (turns.length && turns[0].role !== "user") turns.shift();
@@ -129,7 +113,6 @@ export function normaliseTurns(input) {
   return { turns: recent };
 }
 
-/** Splits the model's reply into the answer text and the follow-up chips. */
 export function parseReply(raw) {
   const text = String(raw || "").trim();
   const i = text.lastIndexOf("FOLLOWUPS:");
@@ -146,7 +129,7 @@ export function parseReply(raw) {
 
 /* ------------------------------ rate limiting ------------------------------ */
 
-const hits = new Map(); // ip -> number[] of timestamps (ms)
+const hits = new Map();
 let day = { key: "", count: 0 };
 
 function rateLimited(ip, c, now = Date.now()) {
@@ -173,10 +156,9 @@ export const _test = { rateLimited, reset: () => { hits.clear(); day = { key: ""
 
 /**
  * @param {{ method: string, origin?: string, host?: string, ip?: string, bodyText?: string, apiKey?: string }} req
- * @param {typeof fetch} [fetchImpl]  injectable for tests
- * @returns {Promise<{ status: number, headers: Record<string,string>, body: string }>}
+ * @param {any} [clientImpl] injectable Gemini client for tests
  */
-export async function handleChat(req, fetchImpl = fetch) {
+export async function handleChat(req, clientImpl = null) {
   const c = cfg();
   const origin = req.origin || "";
   const cors = corsHeaders(origin, c, req.host);
@@ -202,45 +184,32 @@ export async function handleChat(req, fetchImpl = fetch) {
   const limited = rateLimited(req.ip || "unknown", c);
   if (limited) return json(429, { error: "rate limited", scope: limited }, { ...cors, "retry-after": "60" });
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
-  let status = 0;
   try {
-    const res = await fetchImpl("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": req.apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: c.model,
-        max_tokens: c.maxTokens,
+    const ai = clientImpl || new GoogleGenAI({ apiKey: req.apiKey });
+    
+    // Map turns for Gemini: assistant role becomes model
+    const contents = norm.turns.map((t) => ({
+      role: t.role === "assistant" ? "model" : "user",
+      parts: [{ text: t.content }],
+    }));
+
+    const response = await ai.models.generateContent({
+      model: c.model,
+      contents,
+      config: {
+        systemInstruction: buildSystemPrompt(c.contactEmail),
         temperature: 0.3,
-        // The system prompt is identical on every call, so mark it cacheable (ignored if it is too short to cache).
-        system: [{ type: "text", text: buildSystemPrompt(c.contactEmail), cache_control: { type: "ephemeral" } }],
-        messages: norm.turns,
-      }),
+        maxOutputTokens: c.maxTokens,
+      },
     });
-    status = res.status;
-    if (!res.ok) {
-      console.error(JSON.stringify({ evt: "upstream_error", status }));
-      return json(status === 429 || status === 529 ? 503 : 502, { error: "upstream" }, cors);
-    }
-    const data = await res.json();
-    const raw = Array.isArray(data?.content)
-      ? data.content.filter((b) => b?.type === "text").map((b) => b.text).join("")
-      : "";
+
+    const raw = response.text || "";
     const reply = parseReply(raw);
     if (!reply.text) return json(502, { error: "empty reply" }, cors);
     console.log(JSON.stringify({ evt: "chat", ms: Date.now() - started, turns: norm.turns.length, out: reply.text.length }));
     return json(200, reply, cors);
   } catch (err) {
-    const timedOut = err?.name === "AbortError";
-    console.error(JSON.stringify({ evt: "chat_failed", timedOut, status }));
-    return json(timedOut ? 504 : 502, { error: timedOut ? "timeout" : "upstream" }, cors);
-  } finally {
-    clearTimeout(timer);
+    console.error(JSON.stringify({ evt: "chat_failed", error: err?.message }));
+    return json(502, { error: "upstream" }, cors);
   }
 }
