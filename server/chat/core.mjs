@@ -1,7 +1,7 @@
 // server/chat/core.mjs
 // The whole chat backend, updated for Google Gemini API via @google/genai.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
@@ -28,12 +28,29 @@ const MAX_USER_CHARS = 300;
 const MAX_ASSISTANT_CHARS = 1500;
 const MAX_TURNS = 8;
 const MAX_BODY_BYTES = 8 * 1024;
-const UPSTREAM_TIMEOUT_MS = 18_000;
 
 /* ------------------------------ system prompt ------------------------------ */
 
 let knowledgeCache;
-const knowledge = () => (knowledgeCache ??= readFileSync(join(here, "knowledge.generated.txt"), "utf8"));
+const knowledge = () => {
+  if (knowledgeCache) return knowledgeCache;
+  
+  // Resilient path checking for Vercel Serverless environment
+  const possiblePaths = [
+    join(here, "knowledge.generated.txt"),
+    join(process.cwd(), "server", "chat", "knowledge.generated.txt"),
+    join(process.cwd(), "knowledge.generated.txt"),
+  ];
+
+  for (const p of possiblePaths) {
+    if (existsSync(p)) {
+      knowledgeCache = readFileSync(p, "utf8");
+      return knowledgeCache;
+    }
+  }
+
+  return "John Aldwin R. Samson is a Cloud and DevOps Engineer.";
+};
 
 export function buildSystemPrompt(email = cfg().contactEmail) {
   return `You are the assistant on the portfolio website of John Aldwin R. Samson. On the site he is called "John". You answer visitors' questions about John using only the KNOWLEDGE section below.
@@ -167,7 +184,9 @@ export async function handleChat(req, clientImpl = null) {
   if (!isAllowedOrigin(origin, c, req.host)) return json(403, { error: "origin not allowed" }, cors);
   if (req.method === "OPTIONS") return { status: 204, headers: cors, body: "" };
   if (req.method !== "POST") return json(405, { error: "use POST" }, cors);
-  if (!req.apiKey) return json(503, { error: "not configured" }, cors);
+
+  const apiKey = req.apiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey) return json(503, { error: "not configured" }, cors);
 
   const bodyText = req.bodyText || "";
   if (Buffer.byteLength(bodyText, "utf8") > MAX_BODY_BYTES) return json(413, { error: "request too large" }, cors);
@@ -185,13 +204,12 @@ export async function handleChat(req, clientImpl = null) {
   if (limited) return json(429, { error: "rate limited", scope: limited }, { ...cors, "retry-after": "60" });
 
   try {
-    const apiKey = req.apiKey || process.env.GEMINI_API_KEY;
     const ai = clientImpl || new GoogleGenAI({ apiKey });
     
-    // Map turns for Gemini: assistant role becomes model
+    // Format turns correctly for the @google/genai SDK
     const contents = norm.turns.map((t) => ({
       role: t.role === "assistant" ? "model" : "user",
-      parts: [{ text: t.content }],
+      parts: [{ text: String(t.content) }],
     }));
 
     const response = await ai.models.generateContent({
@@ -210,7 +228,9 @@ export async function handleChat(req, clientImpl = null) {
     console.log(JSON.stringify({ evt: "chat", ms: Date.now() - started, turns: norm.turns.length, out: reply.text.length }));
     return json(200, reply, cors);
   } catch (err) {
-    console.error(JSON.stringify({ evt: "chat_failed", error: err?.message }));
-    return json(502, { error: "upstream" }, cors);
+    const errMsg = err?.message || String(err);
+    console.error(JSON.stringify({ evt: "chat_failed", error: errMsg }));
+    // Return exact error message temporarily so we can see any runtime issues immediately
+    return json(502, { error: "upstream", details: errMsg }, cors);
   }
 }
