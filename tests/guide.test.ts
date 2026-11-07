@@ -189,7 +189,7 @@ describe("understands Filipino, Tagalog and Taglish", () => {
     ["Ikuwento mo ang KidVerse", ["MongoDB"]],
     ["Ano ang tesis niya?", ["L.I.G.T.A.S."]],
     ["Ano ang mga skills niya?", ["Cloud"]],
-    ["Anong cloud experience ang meron siya?", ["Stratpoint"]],
+    ["Anong cloud experience ang meron siya?", ["AWS"]], // same as the english twin: the cloud skills answer is the right one
     ["What's his experience with Terraform po?", ["Terraform"]],
     ["Ano yung ArgoCD?", ["Kubernetes"]],
   ];
@@ -321,7 +321,11 @@ describe("judgement questions, texting spellings and durations", () => {
     has(ask("pls explain kubernetes sa simpleng salita"), "containerized");
   });
   it("does not claim certifications that aren't listed", () => {
-    expect(ask("May certificate ba siya sa AWS?").kind).toBe("fallback");
+    // aws fundamentals is on the list now, so aws must answer; something unlisted must still fall back
+    const listed = ask("May certificate ba siya sa AWS?");
+    expect(listed.kind, listed.text).toBe("answer");
+    has(listed, "AWS Fundamentals");
+    expect(ask("May certificate ba siya sa Azure?").kind).toBe("fallback");
   });
 });
 
@@ -341,9 +345,10 @@ describe("smarter questions: counts, latest, compare, follow-ups", () => {
   it("answers 'latest' and 'current' questions with the right project or role", () => {
     has(ask("What is his latest project?"), "most recent project", "This Portfolio");
     has(ask("Ano ang pinakabago niyang proyekto?"), "Ang pinakabago niyang proyekto", "This Portfolio");
-    has(ask("What is he working on now?"), "working on at the moment");
+    // no project is "in progress" any more, so "now" falls back to the most recent one
+    has(ask("What is he working on now?"), "most recent project", "This Portfolio");
     has(ask("Where did he work most recently?"), "most recent role", "Stratpoint");
-    has(ask("Ano ang kasalukuyan niyang ginagawa?"), "kasalukuyan niyang ginagawa");
+    has(ask("Ano ang kasalukuyan niyang ginagawa?"), "pinakabago niyang proyekto", "This Portfolio");
   });
   it("compares two things", () => {
     has(ask("Compare Terraform and CloudFormation"), "about each", "Infrastructure as Code");
@@ -357,7 +362,8 @@ describe("smarter questions: counts, latest, compare, follow-ups", () => {
   it("understands more Filipino, including typos", () => {
     has(ask("ano po ang sertifikasyon nya"), "sertipikasyon");
     has(ask("Tell me about his AWS setup"), "AWS");
-    expect(ask("Ano natutunan niya sa internship?").kind).toBe("answer");
+    // the site doesn't say what he learned, so the honest reply is a fallback; what matters is that the phrase is understood
+    expect(guide.explain("Ano natutunan niya sa internship?").english).toContain("learned");
   });
   describe("remembers the topic of the conversation", () => {
     it("follow-up about a project stays on that project", () => {
@@ -411,7 +417,7 @@ describe("follow-up memory never hijacks a question that names its own subject",
 describe("more Filipino phrasing", () => {
   it("handles the Filipino '-ng' ending (pinakabagong, kasalukuyang)", () => {
     has(ask("Anong pinakabagong sertipikasyon niya?"), "sertipikasyon");
-    has(ask("Ano ang kasalukuyang proyekto niya?"), "ginagawa");
+    has(ask("Ano ang kasalukuyang proyekto niya?"), "pinakabago niyang proyekto");
   });
   it("judgement words other than 'good' also get the honest note", () => {
     has(ask("Is he better at hardware or cloud?"), "can't judge");

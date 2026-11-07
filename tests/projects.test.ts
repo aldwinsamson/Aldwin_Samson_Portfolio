@@ -124,10 +124,12 @@ describe("selectRingProjects (homepage wheel)", () => {
   });
 
   it("caps the wheel and lets featured projects win the slots, keeping order", () => {
-    const ring = selectRingProjects(make(14, [12, 13]), MAX_RING);
+    // always build a few more than the cap, so the test keeps working if MAX_RING changes
+    const total = MAX_RING + 4;
+    const ring = selectRingProjects(make(total, [total - 2, total - 1]), MAX_RING);
     expect(ring).toHaveLength(MAX_RING);
-    expect(ring.map((p) => p.slug)).toContain("p12");
-    expect(ring.map((p) => p.slug)).toContain("p13");
+    expect(ring.map((p) => p.slug)).toContain(`p${total - 2}`);
+    expect(ring.map((p) => p.slug)).toContain(`p${total - 1}`);
     const idx = ring.map((p) => Number(p.slug.slice(1)));
     expect([...idx].sort((a, b) => a - b)).toEqual(idx);
   });

@@ -1,19 +1,11 @@
-name: Deploy site
+name: Deploy to AWS (manual)
 
-# Builds the site, publishes it to the private S3 bucket and invalidates CloudFront.
-# Roll back: Actions -> "Deploy site" -> Run workflow -> enter an older commit SHA in "ref".
+# DORMANT PATH. The live site is served by Vercel, which deploys itself on every push to main.
+# This workflow publishes the same build to the private S3 bucket + CloudFront ONLY when you run it by hand:
+#   Actions -> "Deploy to AWS (manual)" -> Run workflow.
+# Use it to keep the dormant AWS copy current, or as the deploy step when switching back (docs/switch-hosting.md).
+# Roll back: pass an older commit SHA in "ref".
 on:
-  push:
-    branches: [main]
-    paths:
-      - src/**
-      - public/**
-      - index.html
-      - package.json
-      - package-lock.json
-      - vite.config.ts
-      - tsconfig.json
-      - .github/workflows/deploy.yml
   workflow_dispatch:
     inputs:
       ref:
@@ -46,7 +38,12 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run check:knowledge
       - run: npm run build
+        env:
+          # Only needed when the AWS chat API is enabled (Terraform: chat.enabled). Empty = the assistant uses its offline search.
+          # A value set here beats .env.production (Vite gives real environment variables the highest priority).
+          VITE_CHAT_API_URL: ${{ vars.CHAT_API_URL }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: site-dist
@@ -99,29 +96,8 @@ jobs:
                 --query Invalidation.Id --output text)
           aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$ID"
 
-      - name: Smoke test production
-        run: bash scripts/smoke-test.sh "${{ vars.SITE_URL }}"
-
-  lighthouse:
-    name: Lighthouse (non-blocking)
-    needs: deploy
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-      - name: Audit production
-        env:
-          SITE_URL: ${{ vars.SITE_URL }}
-        run: npx --yes @lhci/cli@0.15.1 autorun --config=.lighthouserc.json --collect.url="$SITE_URL/"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: lighthouse-report
-          path: .lighthouseci
-          retention-days: 14
+      - name: Smoke test the CloudFront address (works even while the domain points to Vercel)
+        run: |
+          set -euo pipefail
+          CF_DOMAIN=$(aws cloudfront get-distribution --id "$DISTRIBUTION_ID" --query Distribution.DomainName --output text)
+          bash scripts/smoke-test.sh "https://$CF_DOMAIN"

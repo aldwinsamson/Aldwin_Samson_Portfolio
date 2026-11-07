@@ -172,6 +172,8 @@ export const TL = {
   availability: /\bavailable ba\b|\bbakante ba\b|\bnaghahanap ba (siya |si john )?(ng )?(trabaho|work)\b|\b(pwede|puwede|maaari) (ko|ba|bang) (ba )?(siyang )?(i )?(hire|kunin|upahan|tanggapin)\b/,
   whyHire: /\bbakit\b.*\b(hire|kunin|piliin|upahan|tanggapin|pumili)\b|\bano (ang )?(lakas|kalakasan|strengths?|nagpapaiba)\b/,
   resume: /\bbio ?data\b/,
+  /** "Anong mga proyekto ang ginawa niya?" / "Ano ang mga ginawa niyang proyekto?" — the whole project list, like the English "What projects has he built?". */
+  projectsBuilt: /^\s*(ano|anong|ano ang)?\s*(mga )?proyekto(ng)?\s+(ang\s+)?(ginawa|binuo|nagawa|nabuo)\s+(niya|nya|ni john)\s*$|^\s*(ano|anong|ano ang)?\s*(mga )?(ginawa|binuo|nagawa|nabuo)(ng)?\s+(niya|nya|ni john)(ng)?\s+(mga )?proyekto\s*$/,
   location: /\bnasaan (ba )?(siya|si john)\b|\bsaan (ang )?(lokasyon|location|base)\b/,
   /** Pronouns that point back at the previous topic: "doon", "dito", "niyan", "iyon"… */
   anaphora: /\b(doon|dun|dito|diyan|dyan|dito|niyan|nito|noon|iyon|iyan|ito|yan|yun|yon|ganun|ganon|parehas|pareho)\b/,

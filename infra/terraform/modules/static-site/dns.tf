@@ -36,21 +36,35 @@ resource "aws_acm_certificate_validation" "site" {
   validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
 }
 
-resource "aws_route53_record" "alias" {
-  for_each = {
+locals {
+  # "aws": A + AAAA aliases to CloudFront. "external": only A records (the external host serves IPv4 on the apex),
+  # so the AAAA records simply disappear instead of sending IPv6 visitors to a site that no longer answers.
+  alias_records = {
     for pair in setproduct(local.aliases, ["A", "AAAA"]) : "${pair[0]}-${pair[1]}" => {
       name = pair[0]
       type = pair[1]
-    }
+    } if var.dns_target == "aws" || pair[1] == "A"
   }
+}
 
-  zone_id = var.zone_id
-  name    = each.value.name
-  type    = each.value.type
+resource "aws_route53_record" "alias" {
+  for_each = local.alias_records
 
-  alias {
-    name                   = aws_cloudfront_distribution.site.domain_name
-    zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
-    evaluate_target_health = false
+  zone_id         = var.zone_id
+  name            = each.value.name
+  type            = each.value.type
+  allow_overwrite = true
+
+  ttl     = var.dns_target == "aws" ? null : var.external_ttl
+  records = var.dns_target == "aws" ? null : var.external_ipv4
+
+  dynamic "alias" {
+    for_each = var.dns_target == "aws" ? [1] : []
+
+    content {
+      name                   = aws_cloudfront_distribution.site.domain_name
+      zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
+      evaluate_target_health = false
+    }
   }
 }

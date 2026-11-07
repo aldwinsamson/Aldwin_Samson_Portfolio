@@ -69,5 +69,34 @@ variable "hsts" {
 
 variable "permissions_policy" {
   type    = string
-  default = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()"
+  default = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), interest-cohort=()"
+}
+
+variable "dns_target" {
+  description = <<-EOT
+    Where the domain points.
+      "aws"      = alias A + AAAA records to this CloudFront distribution (the normal setup).
+      "external" = plain A records to another host (for example Vercel). The AWS site stays deployed but dormant.
+    Switching between the two is an in-place update of the same record resources, so Terraform never has to delete
+    and create the same record in parallel.
+  EOT
+  type        = string
+  default     = "aws"
+
+  validation {
+    condition     = contains(["aws", "external"], var.dns_target)
+    error_message = "dns_target must be \"aws\" or \"external\"."
+  }
+}
+
+variable "external_ipv4" {
+  description = "A-record targets used when dns_target = \"external\". Copy them exactly from the other host's DNS instructions (Vercel > Project > Settings > Domains)."
+  type        = list(string)
+  default     = ["76.76.21.21"]
+}
+
+variable "external_ttl" {
+  description = "TTL in seconds for the external A records. Keep it low (60) so switching back is fast."
+  type        = number
+  default     = 60
 }

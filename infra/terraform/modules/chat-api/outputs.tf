@@ -1,14 +1,18 @@
 output "chat_api_url" {
-  description = "Put this in .env.production as VITE_CHAT_API_URL."
+  description = "Full URL the browser calls. Use as VITE_CHAT_API_URL for the AWS build."
   value       = "${aws_apigatewayv2_api.chat.api_endpoint}/chat"
 }
 
-output "lambda_function_name" {
-  description = "Name of the chat Lambda function."
-  value       = aws_lambda_function.chat.function_name
+output "chat_api_origin" {
+  description = "Origin to add to the site's CSP (site.csp.connect_hosts) when the browser calls this API cross-origin."
+  value       = aws_apigatewayv2_api.chat.api_endpoint
 }
 
-output "log_group" {
-  description = "CloudWatch log group with the request logs (no message text is logged)."
-  value       = aws_cloudwatch_log_group.chat.name
+output "ssm_parameter_name" {
+  description = "Create this SecureString parameter with the AWS CLI before the first apply."
+  value       = local.ssm_parameter
+}
+
+output "lambda_function_name" {
+  value = aws_lambda_function.chat.function_name
 }

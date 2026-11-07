@@ -1,4 +1,5 @@
-// Run with: node server/chat/core.test.mjs   (needs Node 20+; calls no real API, fetch is mocked)
+// Run with: npm run test:chat   (= node server/chat/selftest.mjs; needs Node 20+; calls no real API, fetch is mocked)
+// Named selftest.mjs on purpose: a *.test.mjs name would be picked up by vitest (`npm test`) and fail the suite.
 import { handleChat, normaliseTurns, parseReply, buildSystemPrompt, _test } from "./core.mjs";
 import { handler } from "./lambda.mjs";
 let pass = 0, fail = 0;
@@ -39,6 +40,14 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   process.env.ALLOW_LOCALHOST = "true";
   ok("localhost allowed when ALLOW_LOCALHOST=true", (await handleChat(post([{role:"user",content:"hi"}], { origin: "http://localhost:5173" }), mkFetch("ok"))).status === 200);
   delete process.env.ALLOW_LOCALHOST;
+}
+// 2b. same-origin (Vercel production and previews) without listing each address
+{ _test.reset();
+  const msg = [{ role: "user", content: "hi" }];
+  const preview = "https://aldwinsamson-portfolio-git-x-me.vercel.app";
+  ok("same-origin preview allowed via Host", (await handleChat(post(msg, { origin: preview, host: "aldwinsamson-portfolio-git-x-me.vercel.app", ip: "6.6.6.6" }), mkFetch("ok"))).status === 200);
+  ok("foreign origin still blocked when Host differs", (await handleChat(post(msg, { origin: "https://evil.example", host: "aldwinsamson.com", ip: "6.6.6.7" }), mkFetch("ok"))).status === 403);
+  ok("a look-alike Host does not match", (await handleChat(post(msg, { origin: "https://aldwinsamson.com.evil.example", host: "aldwinsamson.com", ip: "6.6.6.8" }), mkFetch("ok"))).status === 403);
 }
 // 3. normalisation
 {

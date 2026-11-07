@@ -186,6 +186,7 @@ const TL_SHORTCUTS: { test: RegExp; ids: string[] }[] = [
   { test: TL.resume, ids: ["faq:resume"] },
   { test: TL.location, ids: ["location"] },
   { test: TL.who, ids: ["faq:who", "focus-list"] },
+  { test: TL.projectsBuilt, ids: ["projects-list"] },
 ];
 
 /** Judgement questions ("is he good at AWS?") — the assistant can show the facts but not rate his level. */
@@ -429,7 +430,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
   };
 
   /** Writes the answer: the best fact, plus the most relevant supporting points from the same topic. */
-  const compose = (ranked: Ranked[], opts: { yes?: boolean; groups: QueryGroup[]; ctx: GuideContext; lang: Lang }): GuideAnswer => {
+  const compose = (ranked: Ranked[], opts: { yes?: boolean; stay?: boolean; groups: QueryGroup[]; ctx: GuideContext; lang: Lang }): GuideAnswer => {
     const S = STRINGS[opts.lang];
     const top = ranked[0];
     const best = top.fact;
@@ -483,7 +484,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
 
     // A strong answer from a different topic is worth a second paragraph (e.g. a skill AND the project that used it).
     const other = ranked.find((r) => r.fact.group !== best.group && r.score >= 0.85 * top.score && r.fact.kind !== "glossary" && !used.includes(r.fact));
-    if (other && best.kind !== "list" && other.fact.kind !== "list" && lines.length < 4) {
+    if (other && !opts.stay && best.kind !== "list" && other.fact.kind !== "list" && lines.length < 4) {
       lines.push(other.fact.kind === "detail" ? txt(other.fact, opts.lang) : txt(other.fact, opts.lang).split("\n")[0]);
       used.push(other.fact);
     }
@@ -690,12 +691,14 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
       usedGlossaryFallback = true;
     }
     // Follow-ups like "what tech did he use?" or "ano ang challenges doon?" stay inside the topic of the last answer.
+    let stay = false; // set when a follow-up is answered from the topic just discussed
     const inProject = Boolean(ctx.group && /^(proj|exp):/.test(ctx.group));
     const topical = inProject && /\b(use|used|using|tech|technologies|stack|tools?|role|challenges?|outcomes?|results?|team|teammates|duration|link|links|github|demo|repo|code|source|built|highlights?)\b/.test(en);
     if (ctx.group && (anaphoric || topical)) {
       const inCtx = rank(groups, (f) => f.group === ctx.group && f.kind !== "glossary" && f.kind !== "list");
       if (inCtx.length && inCtx[0].score >= MIN_SCORE * 0.8 && (!ranked.length || inCtx[0].score >= 0.45 * ranked[0].score)) {
         ranked = [...inCtx, ...ranked.filter((r) => r.fact.group !== ctx.group)];
+        stay = true;
       } else if (topical && groups.every((g) => TOPICAL_TOKENS.has(g.orig) || isGeneric(g))) {
         // "what tech did he use?" / "what was his role?" — the project's own summary line already says it ("Role: …  Built with …").
         const overview = corpus.find((f) => f.group === ctx.group && f.kind === "overview");
@@ -732,8 +735,8 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     // A glossary definition only makes sense for a "what is …" question.
     const answer =
       usedGlossaryFallback && top.fact.kind === "glossary" && !definitional
-        ? compose(ranked, { groups, ctx, lang })
-        : compose(ranked, { yes: isYesNo && top.fact.kind !== "glossary", groups, ctx, lang });
+        ? compose(ranked, { stay, groups, ctx, lang })
+        : compose(ranked, { yes: isYesNo && top.fact.kind !== "glossary", stay, groups, ctx, lang });
     return evaluative ? { ...answer, text: `${S.evalNote}\n${answer.text}` } : answer;
   }
 

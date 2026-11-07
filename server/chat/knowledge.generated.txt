@@ -7,7 +7,7 @@ Email: aldwinsamsonn@gmail.com.
 Availability: Open to Cloud, DevOps, SRE & Embedded roles · Hybrid or onsite in Metro Manila · Remote where eligible.
 Headline: Computer engineer specializing in AWS infrastructure as code, GitOps delivery and observability — with a hardware and firmware background that lets me reason about reliability from the device to the dashboard.
 
-I'm John Aldwin Samson, a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM, 2026). I work on cloud infrastructure, DevOps and monitoring, and I came to it from hardware and embedded systems.
+I'm a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps and site reliability, with a strong foundation in embedded systems and hardware design.
 At Stratpoint Technologies I built a three-tier AWS environment across availability zones with Terraform and CloudFormation, set up GitLab CI/CD and Argo CD for delivery, and ran Prometheus, Grafana, Loki and Tempo for monitoring and tracing. My capstone there was a task manager app that deploys to Kubernetes through Argo CD.
 Before that, at USHER Technologies, I designed circuit boards in KiCAD and wrote ESP32 firmware that sends sensor data to the cloud over MQTT and REST.
 For my thesis, L.I.G.T.A.S., I led a team of five and built the hardware for a vehicle that tests floodwater for electrical leakage. It won Top 2 Best Thesis, Best Thesis Paper, Best Booth and Best Poster.
@@ -27,11 +27,11 @@ Links:
 
 === EXPERIENCE (newest first) ===
 Cloud & DevOps Engineer Intern at Stratpoint Technologies (Internship), Jun 2026 to Sep 2026, Mandaluyong, Philippines.
-Built AWS infrastructure as code, GitOps delivery pipelines and a monitoring stack, and finished with a capstone that deploys an app to Kubernetes.
+Built and documented AWS infrastructure as code, GitOps delivery pipelines and an observability stack for staging and production environments.
 - Designed and documented a three-tier, multi-AZ AWS architecture with modular Terraform and CloudFormation.
 - Split the network into public, private and database subnets, with internet and NAT gateways and route tables, following the AWS Well-Architected Framework.
 - Set up Application Load Balancers for path-based HTTP and HTTPS routing, and Network Load Balancers for TCP microservices.
-- Created multi-AZ RDS databases and S3 buckets with lifecycle rules, KMS encryption and cross-region replication.
+- Provisioned multi-AZ Amazon RDS databases and hardened S3 buckets with lifecycle rules, KMS encryption at rest and cross-region replication.
 - Built GitLab CI/CD pipelines for static analysis, tests, artifact bundling and container image builds.
 - Installed and ran Argo CD on Kubernetes so the cluster stays in sync with Git, and set up blue/green rollout strategies.
 - Deployed Loki, Grafana, Tempo and Prometheus with dashboards for CPU, memory, network, p95/p99 latency and error rate. Added Alertmanager webhooks and linked Loki logs to Tempo traces.
@@ -40,7 +40,7 @@ Skills used: AWS, Terraform, CloudFormation, GitLab CI/CD, Argo CD, Kubernetes, 
 
 Hardware Engineer Intern at USHER Technologies Inc. (Internship), Jan 2026 to Mar 2026, Makati, Philippines.
 Hardware and firmware work on commercial structural-health and vibration monitoring devices, from PCB layout to getting sensor data to the cloud.
-- Designed, routed and bench-tested multi-layer PCBs in KiCAD for structural-health and vibration monitoring devices.
+- Designed, routed and bench-tested multi-layer PCBs in KiCAD for real-time structural-health and vibration monitoring devices.
 - Sourced components, prepared the bill of materials and worked with PCB fabrication houses on production runs.
 - Soldered SMD parts and validated boards with an oscilloscope, including frequency analysis and signal-integrity checks.
 - Wrote C/C++ firmware for ESP32 and Raspberry Pi boards that reads sensors over I2C and SPI.
@@ -63,7 +63,7 @@ Built the backend, database and portals of a learning platform for nursery and k
 Skills used: Node.js, MongoDB, REST APIs, JavaScript.
 
 === EDUCATION ===
-B.S. Computer Engineering, Pamantasan ng Lungsod ng Maynila (PLM), Aug 2022 to Aug 2026. Bachelor of Science in Computer Engineering (BSCpE).
+Bachelor of Science in Computer Engineering, Pamantasan ng Lungsod ng Maynila (PLM), Aug 2022 to Aug 2026. Bachelor of Science in Computer Engineering (BSCpE).
 - Dean's Lister, College of Engineering and Technology.
 
 Senior High School — STEM Strand, Arellano University (AU), Jul 2020 to Aug 2022. Science, Technology, Engineering and Mathematics strand.
@@ -153,7 +153,6 @@ How it is built:
 - Vehicle: Two ESP32 boards: one for sensing, motion and monitoring, one for communication. Sensors are a ZMPT101B voltage sensor, ACS712 current sensor, JSN-SR04T waterproof ultrasonic sensor, MPU9250 IMU and NEO-6M GPS. Two L298N drivers run the DC motors.
 - Controller: A handheld unit with two ESP32 boards, a joystick, tactile switches, a real-time clock, an SD card for logging and a 3.5-inch LCD.
 - Links: LoRa (SX1278) carries telemetry and drive commands. A SIM800L GSM module is the backup link and sends SMS alerts. A Wi-Fi camera streams video to a phone.
-- Command Center: A React and Vite dashboard on a Spring Boot API with WebSocket updates and a MySQL database. It has a live telemetry view, data table with CSV export, Leaflet map, incident log and SMS panel.
 - Classifier: A Random Forest model using eight features per reading: voltage, voltage squared, a voltage zone, a danger score, a noise estimate, the change since the last reading, a five-reading average and the count of consecutive readings above 30 V.
 Implementation notes:
 - Voltage is sampled every 500 ms. A reading at or above 30 V counts as dangerous, and a three-reading debounce filter keeps a single spike from setting off a false alarm.
@@ -177,104 +176,14 @@ Awards:
 
 ---
 
-PROJECT: 3-Tier App with GitOps Delivery (Task Manager: React, Node.js and PostgreSQL delivered by GitLab CI and Argo CD)
-Page: /projects/3-tier-app
-Tagline: A three-tier task manager that GitLab CI builds and Argo CD deploys to Kubernetes.
-Status: Completed. Period: Jun 2026 – Sep 2026. John's role: Cloud & DevOps Intern (solo capstone).
-Categories: Cloud & DevOps, Software.
-Stack: React, Node.js, Express, PostgreSQL, Docker, GitLab CI, Helm, Argo CD, Kubernetes, Prometheus.
-Summary: My capstone for the Stratpoint DevOps internship. A task manager in three tiers, packaged with Docker, built and published by a GitLab CI pipeline, and deployed to Kubernetes by Argo CD from a separate manifest repository. The backend exposes Prometheus metrics.
-Overview: The app itself is simple on purpose. The work is in the delivery: a push to main produces versioned container images and an updated deployment config, and the cluster picks it up without anyone running kubectl or helm by hand.
-Objective: Build a complete path from a code change to a running Kubernetes deployment, with every step automated and traceable.
-Problem: Deploying by hand makes it hard to say what is running or which code produced it. I wanted every deployed image to point back to an exact commit, and I wanted the app repository to have no access to the cluster.
-What John did:
-- Wrote a Dockerfile for the frontend and the backend, plus a docker-compose file that runs the full stack locally with one command.
-- Built the GitLab CI pipeline: two parallel jobs build and push the images, tagged with the commit SHA, then a second stage updates the image tags in the manifest repository.
-- Kept the Helm chart and Kubernetes config in a separate manifest repository that Argo CD watches, so the app repository never touches the cluster.
-- Added a /metrics endpoint to the Express backend with prom-client, for Prometheus.
-- Stored the database password in a Kubernetes Secret, and kept the SSH key for the manifest push in a masked CI variable.
-How it is built:
-- Frontend: React task list UI, in its own container.
-- Backend: Node.js and Express REST API with a Prometheus metrics endpoint.
-- Database: PostgreSQL 17, with the schema and seed data in init.sql.
-- Delivery: GitLab CI builds and pushes images to the GitLab Container Registry, then commits new tags to the manifest repo. Argo CD syncs the cluster to that repo.
-Implementation notes:
-- Images are tagged with the short commit SHA instead of latest, so any running image can be traced to the code that built it.
-- The manifest update commit carries [skip ci], so it does not start a second pipeline.
-- The pipeline pushes to the manifest repo with an SSH key. A password in a CI script would end up in job logs, and a key can be revoked without changing the pipeline.
-Challenges and limits:
-- The first runner was a shell executor, and the build jobs failed with permission denied on the Docker socket. I switched to a Docker-executor runner and wrote that requirement into the README.
-- The frontend container still runs the React development server. A production build would be the next improvement.
-Results:
-- Every push to main produces images tagged with the commit SHA and an updated manifest, and Argo CD deploys the change without manual kubectl or helm commands.
-Code: https://github.com/aldwinsamson/Devops-capstone-3tier-app
-
----
-
-PROJECT: Fault-Tolerant AWS Web Architecture (Three-tier, multi-AZ web architecture on AWS)
-Page: /projects/fault-tolerant-architecture
-Tagline: A web architecture spread over availability zones, built with Terraform and CloudFormation.
-Status: Completed. Period: Jun 2026 – Sep 2026. John's role: Cloud & DevOps Intern (solo).
-Categories: Cloud & DevOps.
-Stack: AWS, Terraform, CloudFormation, VPC, ALB, NLB, RDS Multi-AZ, S3, KMS.
-Summary: A three-tier AWS design built so that losing one availability zone does not take the application down. It has separate public, private and database subnets, load balancers for HTTP and TCP traffic, a multi-AZ database and hardened S3 storage. I built it as my final project at Stratpoint.
-Overview: The goal was a design where each layer survives a failure in another zone, written as code so it can be rebuilt and reviewed.
-Objective: Design, build and document a resilient web architecture on AWS that follows the Well-Architected Framework.
-What John did:
-- Designed the network: separate public, private and database subnets across availability zones, with internet gateways, NAT gateways and route tables.
-- Set up Application Load Balancers for path-based HTTP and HTTPS routing and Network Load Balancers for TCP traffic to microservices.
-- Provisioned a multi-AZ Amazon RDS database for the data tier.
-- Hardened S3 buckets with lifecycle rules, encryption at rest with KMS and cross-region replication.
-- Wrote the infrastructure as modular Terraform and CloudFormation templates and documented the design.
-How it is built:
-- Network: Public, private and database subnets in each availability zone. NAT gateways give private subnets outbound access.
-- Traffic: ALB for path-based HTTP and HTTPS routing. NLB for high-throughput TCP services.
-- Data: RDS in a multi-AZ setup, and S3 with lifecycle rules, KMS encryption and cross-region replication.
-Results:
-- The whole environment can be created from code, with the design and the steps written down for the next person.
-
----
-
-PROJECT: Portfolio Infrastructure on AWS (Terraform-built hosting and delivery for aldwinsamson.com)
-Page: /projects/portfolio-aws-infrastructure
-Tagline: Private S3 behind CloudFront, deploys without stored AWS keys, and a small Kubernetes lab for monitoring.
-Status: Completed. Period: Oct 2026 – Nov 2026. John's role: Solo: design, Terraform, pipeline and runbook.
-Categories: Cloud & DevOps.
-Stack: AWS, Terraform, S3, CloudFront, ACM, Route 53, GitHub Actions, Checkov, k3s, Argo CD, Prometheus, Grafana.
-Summary: The hosting and delivery setup for this portfolio, written as code. Terraform creates a private S3 bucket served through CloudFront over HTTPS, GitHub Actions deploys it without stored AWS keys, security checks run on every change, and a small k3s cluster runs Argo CD, Prometheus and Grafana as a monitoring lab.
-Overview: I treated my own site as a production workload. Everything that runs it is in Terraform, the deploy pipeline has no long-lived AWS keys, and the repo has a runbook for deploys, rollbacks and costs.
-Objective: Host a static site the way I would run a real one: repeatable, private by default, cheap and easy to roll back.
-Problem: A static site does not need a server, but clicking it together in the AWS console would leave nothing repeatable and nothing to review. I wanted the setup to be code that someone else could read and rebuild.
-What John did:
-- Wrote the Terraform modules for storage, CDN, certificate, DNS and the deploy role, with one variables file holding everything specific to this project.
-- Set up GitHub Actions to deploy through OIDC, so no AWS access keys are stored in GitHub. The deploy role is limited to a reviewed production environment.
-- Added checks to the pipeline: type check, tests, npm audit and Checkov scanning of the Terraform.
-- Wrote a runbook covering deploys, rollback, costs and troubleshooting.
-- Built and ran a small k3s cluster with Argo CD, Prometheus and Grafana to practice GitOps and monitoring.
-How it is built:
-- Hosting: An S3 bucket with public access blocked, served only through CloudFront using origin access control. ACM and Route 53 provide HTTPS on the custom domain.
-- Edge: A CloudFront Function maps clean URLs to index.html for the single-page app, and security headers are set at the edge. The Content Security Policy started in report-only mode.
-- Deploy: GitHub Actions assumes an AWS role through OIDC. Assets upload first and index.html last, then the cache is invalidated and a smoke test runs.
-- Lab: k3s on a small instance with Argo CD, Prometheus and Grafana, kept separate from the production hosting.
-Implementation notes:
-- Rollback is a re-run of the deploy workflow with an older commit SHA.
-- Controls I chose to skip, such as a web application firewall and bucket-level KMS, are written down in .checkov.yaml with the reason, instead of being ignored silently.
-- I chose k3s over EKS because the EKS control plane alone costs about $73 a month, which a static site cannot justify.
-Results:
-- Estimated running cost is about $3 a month for production, and about $18 to $20 with the lab running.
-- Adding another environment, such as staging, means adding a variables file instead of new code.
-Code: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio/tree/main/infra
-
----
-
 PROJECT: KidVerse (KidVerse: A Magical World Edutainment for Growing Minds)
 Page: /projects/kidverse
 Tagline: A learning management system for nursery and kindergarten students, built for Wesleyan College of Manila.
-Status: Completed. Period: 2023 – 2024. John's role: Full-Stack Developer.
+Status: Completed. Period: August 2023 – May 2024. John's role: Full-Stack Developer.
 Categories: Web Development, Software.
 Stack: Node.js, MongoDB, REST API, JavaScript, HTML/CSS.
 Summary: KidVerse is a web platform where children aged 5 to 7 take lessons and quizzes, teachers manage classes and grades, and parents help with enrollment. A five-person team built it for CPE Elective 1 at PLM, with Wesleyan College of Manila as the partner school.
-Overview: Early-years teachers at Wesleyan College of Manila needed a classroom tool made for children who are five to seven years old, not an adult LMS with a bright theme. KidVerse gives students a simple, colorful space for lessons, quizzes and games, and gives teachers a place to manage lessons, a calendar, grades and chat.
+Overview: KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals for lessons, quizzes, grades and communication. It was built as a team project for CPE Elective 1 at PLM, with Wesleyan College of Manila as the partner school.
 Objective: Put lessons, quizzes and games on one platform that children can use, that teachers can manage without a developer, and that follows learning standards.
 Problem: Young learners lose focus quickly and most online platforms are not designed for their age. Teachers have limited training with digital tools, and parents struggle to guide online classes while working. Many platforms also favor entertainment over actual learning content.
 What John did:
@@ -297,7 +206,29 @@ Challenges and limits:
 Results:
 - Delivered working faculty, student and enrollment flows with chat, a calendar, grades, quizzes and games.
 - The paper recommends next steps: a screen-time limit that notifies parents, a way for teachers to build their own games and quizzes, and stronger real-time chat.
-Note: Source code is not public.
+Code: https://github.com/aldwinsamson/Kidverse
+
+---
+
+PROJECT: Wedding Invitation (Custom wedding invitation website)
+Page: /projects/wedding-invitation
+Tagline: A password-protected wedding invitation with a prenup slideshow, built for phones first.
+Status: Completed. Period: Apr 2026 – Jun 2026. John's role: Solo designer & developer.
+Categories: Web Development, Software.
+Stack: React, Vite, Vercel.
+Summary: A custom invitation website for a couple's wedding. Guests enter a password, then see the event details, a prenup photo slideshow with a lightbox and a music toggle. It has light and dark modes and a layout tuned for phones.
+Overview: A full invitation site for one wedding, with a password gate, event details, and a prenup slideshow. It is designed for phones first, since most guests will open it on one.
+Objective: Give guests one private page with everything they need, in a design that matches the couple's style.
+What John did:
+- Designed the site from wireframes and reference sites, and went through several redesigns before the final look.
+- Added a password gate so only invited guests can open it. It is there for the couple's privacy.
+- Built the prenup slideshow with a dark lightbox, a music toggle and the page animations.
+- Made it work in light and dark mode and tuned the layout for phones, since most guests will open it on one.
+- Deployed it on Vercel.
+Results:
+- Finished and deployed in June 2026, before the wedding.
+Live link: https://ace-aps-wedding-invitation.vercel.app/
+Note: Source code is private.
 
 ---
 
@@ -308,14 +239,14 @@ Status: Completed. Period: Oct 2026 – Nov 2026. John's role: Designer & Develo
 Categories: Software, Web Development.
 Stack: React, TypeScript, Vite, Tailwind CSS, Three.js, Motion, Claude API.
 Summary: A solo-built React, TypeScript and Vite app where every page is generated from typed content files. It has an adaptive Three.js hero, light and dark themes, reduced-motion support, and an assistant that answers questions in English or Filipino.
-Overview: A personal site built like a small product: content lives in typed files, pages are generated from them, and adding a project means adding one file.
+Overview: A personal portfolio engineered as a small product: content-driven, accessible and built to grow.
 Objective: Show my work as case studies instead of a list of links, and let the site itself show how I build and run software.
 Problem: Template portfolios look alike and say little about how software and hardware work fit together. I also wanted one place that stays accurate when my CV changes.
 What John did:
 - Designed the visual system, the motion rules and the responsive layouts.
 - Built an adaptive Three.js hero that picks a quality level from device signals, lowers it if the frame rate drops, and falls back to a still image.
 - Moved all content into typed files (profile, experience, skills, one file per project) with checks that catch missing fields and copied text.
-- Built the assistant: a local search engine over the site content that also understands Filipino, plus an AI layer for open-ended questions.
+- Built the assistant: a local search engine over the site content, plus an AI layer for open-ended questions.
 - Set up the hosting and deployment myself. That part is covered in its own project, Portfolio Infrastructure on AWS.
 Implementation notes:
 - Rendering pauses when the hero is off-screen or the tab is hidden.
@@ -324,55 +255,8 @@ Implementation notes:
 - The AI layer runs on a small serverless function that holds the API key, limits message length and request rate, and falls back to the local search if the service fails.
 Results:
 - Live at aldwinsamson.com.
-- Adding a project takes one file and no layout changes.
+Live link: https://aldwinsamson.com/
 Code: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio
-
----
-
-PROJECT: Delay-Tolerant Role-Aware Messenger (DTRM: a LoRa field messenger that stores and forwards messages)
-Page: /projects/delay-tolerant-messenger
-Tagline: A battery-powered LoRa messenger that keeps messages until someone is in range.
-Status: Completed. Period: CPE 0411 Embedded Systems, PLM. John's role: Hardware engineer & firmware developer (team of 8).
-Categories: Embedded Systems, Hardware.
-Stack: Arduino Uno R3, LoRa 433 MHz, SD card module, C/C++.
-Summary: DTRM is a field messenger built on an Arduino Uno and a LoRa module. A user presses a button to send one of four preset messages. If a receiver is in range it shows right away, and if not, the message is saved and sent when another device or gateway appears. We built it for the Armed Forces of the Philippines as the intended user.
-Overview: Field teams often work where there is no mobile signal or internet. DTRM is a small unit that sends short, predefined messages over LoRa and does not lose them when nobody is in range.
-Objective: Keep vital messages moving in areas with limited or unstable connectivity, using affordable parts that are easy to buy locally.
-Problem: Normal messaging fails without a stable network. In field and emergency work a message such as SAFE or SEND HELP still has to arrive, even if it arrives late.
-What John did:
-- Part of Group 3, a team of eight. I handled the hardware engineering and the microcontroller firmware.
-- Assembled the hardware: an Arduino Uno R3, a LoRa module with a 433 MHz antenna, tactile buttons, an SD card module and a battery, in a clear case.
-- Wrote the firmware that encodes a button press, sends it over LoRa, and keeps the message in storage when no receiver answers.
-How it is built:
-- Messages: Four preset messages: SAFE, SEND HELP, ENEMY SPOTTED and AFFIRMATIVE.
-- Modes: Real-time delivery when a receiver is in range, and delay-tolerant store-and-forward when it is not.
-- Priority: Messages are prioritized by the sender's role.
-- Hardware: Arduino Uno R3, LoRa module, 433 MHz antenna and cable, tactile buttons, SD card module, battery and case.
-Implementation notes:
-- A message that cannot be delivered is stored. When another device or a gateway is detected, it is forwarded automatically.
-- No internet or mobile network is needed. LoRa handles the radio link between nearby units.
-Results:
-- Delivered a working prototype that combines real-time and delay-tolerant messaging in one low-cost unit.
-
----
-
-PROJECT: UW Management System (Inventory, purchase request and purchase order system)
-Page: /projects/uw-management-system
-Tagline: An internal web system for inventory control, purchase requests and purchase orders.
-Status: Completed. Period: Jan 2026 – Mar 2026. John's role: Frontend developer (team, company task).
-Categories: Software, Web Development.
-Stack: Web frontend.
-Summary: A management system built for a company to track inventory and handle purchase requests and purchase orders across several modules: USHER, WEHLO, USHERETTE, HOCLOMAC and an ALL view. The aim was more accurate stock records and fewer entry errors. Built by a team, with the frontend as my part.
-Overview: Inventory, purchase requests and purchase orders were handled separately for each business module. The system brings them into one place so the same item is not entered, counted or ordered twice.
-Objective: Make inventory control and purchasing more accurate and cut down on manual entry mistakes.
-What John did:
-- Worked in a team on a company task, as a frontend developer.
-- Built the screens users work in for inventory, purchase requests and purchase orders.
-- Followed the planning document the team wrote first: purpose, modules and workflow before any screens.
-How it is built:
-- Modules: USHER, WEHLO, USHERETTE, HOCLOMAC, and an ALL view across them.
-- Functions: Inventory control, purchase requests and purchase orders.
-Note: This is an internal company tool, so there is no public link or code.
 
 ---
 
@@ -399,10 +283,152 @@ Note: Source code is private.
 
 ---
 
+PROJECT: UW Management System (Inventory, purchase request and purchase order system)
+Page: /projects/uw-management-system
+Tagline: An internal web system for inventory control, purchase requests and purchase orders.
+Status: Completed. Period: Jan 2026 – Mar 2026. John's role: Frontend developer (team, company task).
+Categories: Software, Web Development.
+Stack: Web frontend.
+Summary: A management system built for a company to track inventory and handle purchase requests and purchase orders across several modules: USHER, WEHLO, USHERETTE, HOCLOMAC and an ALL view. The aim was more accurate stock records and fewer entry errors. Built by a team, with the frontend as my part.
+Overview: Inventory, purchase requests and purchase orders were handled separately for each business module. The system brings them into one place so the same item is not entered, counted or ordered twice.
+Objective: Make inventory control and purchasing more accurate and cut down on manual entry mistakes.
+What John did:
+- Worked in a team on a company task, as a frontend developer.
+- Built the screens users work in for inventory, purchase requests and purchase orders.
+- Followed the planning document the team wrote first: purpose, modules and workflow before any screens.
+How it is built:
+- Modules: USHER, WEHLO, USHERETTE, HOCLOMAC, and an ALL view across them.
+- Functions: Inventory control, purchase requests and purchase orders.
+Note: This is an internal company tool, so there is no public link or code.
+
+---
+
+PROJECT: Fault-Tolerant AWS Web Architecture (Three-tier, multi-AZ web architecture on AWS)
+Page: /projects/fault-tolerant-architecture
+Tagline: A web architecture spread over availability zones, built with Terraform and CloudFormation.
+Status: Completed. Period: Jun 2026 – Sep 2026. John's role: Cloud & DevOps Intern (solo, company task).
+Categories: Cloud & DevOps.
+Stack: AWS, Terraform, CloudFormation, VPC, ALB, NLB, RDS Multi-AZ, S3, KMS.
+Summary: A three-tier AWS design built so that losing one availability zone does not take the application down. It has separate public, private and database subnets, load balancers for HTTP and TCP traffic, a multi-AZ database and hardened S3 storage. I built it as my final project at Stratpoint.
+Overview: The goal was a design where each layer survives a failure in another zone, written as code so it can be rebuilt and reviewed.
+Objective: Design, build and document a resilient web architecture on AWS that follows the Well-Architected Framework.
+What John did:
+- Designed the network: separate public, private and database subnets across availability zones, with internet gateways, NAT gateways and route tables.
+- Set up Application Load Balancers for path-based HTTP and HTTPS routing and Network Load Balancers for TCP traffic to microservices.
+- Provisioned a multi-AZ Amazon RDS database for the data tier.
+- Hardened S3 buckets with lifecycle rules, encryption at rest with KMS and cross-region replication.
+- Wrote the infrastructure as modular Terraform and CloudFormation templates and documented the design.
+How it is built:
+- Network: Public, private and database subnets in each availability zone. NAT gateways give private subnets outbound access.
+- Traffic: ALB for path-based HTTP and HTTPS routing. NLB for high-throughput TCP services.
+- Data: RDS in a multi-AZ setup, and S3 with lifecycle rules, KMS encryption and cross-region replication.
+Results:
+- The whole environment can be created from code, with the design and the steps written down for the next person.
+Note: This is an internal company tool, so there is no public link or code.
+
+---
+
+PROJECT: 3-Tier App with GitOps Delivery (Task Manager: React, Node.js and PostgreSQL delivered by GitLab CI and Argo CD)
+Page: /projects/3-tier-app
+Tagline: A three-tier task manager that GitLab CI builds and Argo CD deploys to Kubernetes.
+Status: Completed. Period: Jun 2026 – Sep 2026. John's role: Cloud & DevOps Intern (solo, company task).
+Categories: Cloud & DevOps, Software.
+Stack: React, Node.js, Express, PostgreSQL, Docker, GitLab CI, Helm, Argo CD, Kubernetes, Prometheus.
+Summary: My capstone for the Stratpoint DevOps internship. A task manager in three tiers, packaged with Docker, built and published by a GitLab CI pipeline, and deployed to Kubernetes by Argo CD from a separate manifest repository. The backend exposes Prometheus metrics.
+Overview: The app itself is simple on purpose. The work is in the delivery: a push to main produces versioned container images and an updated deployment config, and the cluster picks it up without anyone running kubectl or helm by hand.
+Objective: Build a complete path from a code change to a running Kubernetes deployment, with every step automated and traceable.
+Problem: Deploying by hand makes it hard to say what is running or which code produced it. I wanted every deployed image to point back to an exact commit, and I wanted the app repository to have no access to the cluster.
+What John did:
+- Wrote a Dockerfile for the frontend and the backend, plus a docker-compose file that runs the full stack locally with one command.
+- Built the GitLab CI pipeline: two parallel jobs build and push the images, tagged with the commit SHA, then a second stage updates the image tags in the manifest repository.
+- Kept the Helm chart and Kubernetes config in a separate manifest repository that Argo CD watches, so the app repository never touches the cluster.
+- Added a /metrics endpoint to the Express backend with prom-client, for Prometheus.
+- Stored the database password in a Kubernetes Secret, and kept the SSH key for the manifest push in a masked CI variable.
+How it is built:
+- Frontend: React task list UI, in its own container.
+- Backend: Node.js and Express REST API with a Prometheus metrics endpoint.
+- Database: PostgreSQL 17, with the schema and seed data in init.sql.
+- Delivery: GitLab CI builds and pushes images to the GitLab Container Registry, then commits new tags to the manifest repo. Argo CD syncs the cluster to that repo.
+Implementation notes:
+- Images are tagged with the short commit SHA instead of latest, so any running image can be traced to the code that built it.
+- The manifest update commit carries, so it does not start a second pipeline.
+- The pipeline pushes to the manifest repo with an SSH key. A password in a CI script would end up in job logs, and a key can be revoked without changing the pipeline.
+Challenges and limits:
+- The first runner was a shell executor, and the build jobs failed with permission denied on the Docker socket. I switched to a Docker-executor runner and wrote that requirement into the README.
+- The frontend container still runs the React development server. A production build would be the next improvement.
+Results:
+- Every push to main produces images tagged with the commit SHA and an updated manifest, and Argo CD deploys the change without manual kubectl or helm commands.
+Note: This is an internal company tool, so there is no public link or code.
+
+---
+
+PROJECT: Portfolio Infrastructure on AWS (Terraform-built hosting and delivery for aldwinsamson.com)
+Page: /projects/portfolio-aws-infrastructure
+Tagline: Terraform-built S3 and CloudFront hosting with keyless deploys and monitoring. It ran this site and now stays in the repo as a switchable option.
+Status: Completed. Period: Oct 2026 – Nov 2026. John's role: Solo: design, Terraform, pipeline and runbook.
+Categories: Cloud & DevOps.
+Stack: AWS, Terraform, S3, CloudFront, ACM, Route 53, CloudWatch, GitHub Actions, Checkov, k3s, Argo CD, Prometheus, Grafana.
+Summary: The hosting and delivery setup this portfolio ran on first, written as code. Terraform created a private S3 bucket served through CloudFront over HTTPS, GitHub Actions deployed it without stored AWS keys, security checks ran on every change, and a small k3s cluster ran Argo CD, Prometheus and Grafana as a monitoring lab. The site now runs on Vercel's free plan, and the AWS setup stays in the repository so the domain can be pointed back at it.
+Overview: I treated my own site as a production workload. Everything that ran it is in Terraform, the deploy pipeline had no long-lived AWS keys, and the repo has a runbook for deploys, rollbacks, costs and switching hosts.
+Objective: Host a static site the way I would run a real one: repeatable, private by default, cheap and easy to roll back.
+Problem: A static site does not need a server, but clicking it together in the AWS console would leave nothing repeatable and nothing to review. I wanted the setup to be code that someone else could read and rebuild.
+What John did:
+- Wrote the Terraform modules for storage, CDN with security headers, certificate and DNS, monitoring and the GitHub deploy roles, with one environment file holding the project name, domain, region and e-mail.
+- Set up GitHub Actions to deploy through OIDC, so no AWS access keys are stored in GitHub. Infrastructure changes need my approval in a protected GitHub environment, and the site deploy role can only write one bucket and clear one CloudFront cache.
+- Added checks to the pipeline: type check, tests, npm audit and Checkov scanning of the Terraform, with every skipped check explained in .checkov.yaml.
+- Added production monitoring: a health check from six regions, CloudWatch alarms with e-mail alerts, and a monthly budget alert.
+- Built a small k3s cluster with Argo CD, Prometheus and Grafana to practice GitOps and monitoring.
+- Wrote a runbook covering deploys, rollback, costs, troubleshooting and switching the domain between AWS and Vercel.
+How it is built:
+- Hosting: An S3 bucket with public access blocked, served only through CloudFront using origin access control. ACM and Route 53 provide HTTPS on the custom domain.
+- Edge: A CloudFront Function maps clean URLs to index.html for the single-page app, and security headers are set at the edge. The Content Security Policy started in report-only mode and was enforced after I checked the browser console on every page.
+- Deploy: GitHub Actions assumes an AWS role through OIDC. Assets upload first and index.html last, then the cache is invalidated and a smoke test runs.
+- Lab: k3s on a small instance with Argo CD, Prometheus and Grafana, reachable only through AWS Systems Manager and kept separate from the production hosting.
+Implementation notes:
+- Rollback is a re-run of the deploy workflow with an older commit SHA.
+- Controls I chose to skip, such as a web application firewall and bucket-level KMS, are written down in .checkov.yaml with the reason, instead of being ignored silently.
+- I chose k3s over EKS because the EKS control plane alone lists at about $73 a month, which a static site cannot justify.
+- One Terraform setting points the domain at AWS or at Vercel, so the AWS copy can stay deployed but idle.
+Results:
+- Ran the live site on this setup from launch until I moved it to Vercel's free plan to cut the monthly bill.
+- The runbook estimated about $3 a month for production hosting, and about $18 to $20 with the lab running. These were estimates, not a bill.
+- Moving to Vercel needed a vercel.json for the redirect rules and security headers, a small serverless function for the chatbot, and a DNS change. The site code itself has no AWS-specific parts.
+- The modules are written so another environment, such as staging, needs a new environment folder and variables file but no module changes. I have not used that yet.
+Code: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio/tree/main/infra
+
+---
+
+PROJECT: Delay-Tolerant Role-Aware Messenger (DTRM: a LoRa field messenger that stores and forwards messages)
+Page: /projects/delay-tolerant-messenger
+Tagline: A battery-powered LoRa messenger that keeps messages until someone is in range.
+Status: Completed. Period: October 2025. John's role: Hardware engineer & firmware developer (team of 8).
+Categories: Embedded Systems, Hardware.
+Stack: Arduino Uno R3, LoRa 433 MHz, SD card module, C/C++.
+Summary: DTRM is a field messenger built on an Arduino Uno and a LoRa module. A user presses a button to send one of four preset messages. If a receiver is in range it shows right away, and if not, the message is saved and sent when another device or gateway appears. We built it for the Armed Forces of the Philippines as the intended user.
+Overview: Field teams often work where there is no mobile signal or internet. DTRM is a small unit that sends short, predefined messages over LoRa and does not lose them when nobody is in range.
+Objective: Keep vital messages moving in areas with limited or unstable connectivity, using affordable parts that are easy to buy locally.
+Problem: Normal messaging fails without a stable network. In field and emergency work a message such as SAFE or SEND HELP still has to arrive, even if it arrives late.
+What John did:
+- Part of Group, a team of eight. I handled the hardware engineering and the microcontroller firmware.
+- Assembled the hardware: an Arduino Uno R3, a LoRa module with a 433 MHz antenna, tactile buttons, an SD card module and a battery, in a clear case.
+- Wrote the firmware that encodes a button press, sends it over LoRa, and keeps the message in storage when no receiver answers.
+How it is built:
+- Messages: Four preset messages: SAFE, SEND HELP, ENEMY SPOTTED and AFFIRMATIVE.
+- Modes: Real-time delivery when a receiver is in range, and delay-tolerant store-and-forward when it is not.
+- Priority: Messages are prioritized by the sender's role.
+- Hardware: Arduino Uno R3, LoRa module, 433 MHz antenna and cable, tactile buttons, SD card module, battery and case.
+Implementation notes:
+- A message that cannot be delivered is stored. When another device or a gateway is detected, it is forwarded automatically.
+- No internet or mobile network is needed. LoRa handles the radio link between nearby units.
+Results:
+- Delivered a working prototype that combines real-time and delay-tolerant messaging in one low-cost unit.
+
+---
+
 PROJECT: SumoBot (Bluetooth-controlled sumo robot)
 Page: /projects/sumobot
 Tagline: A phone-controlled sumo robot that took 2nd place in a school competition.
-Status: Completed. Period: School competition. John's role: Hardware engineer & firmware developer (team).
+Status: Completed. Period: September 2025. John's role: Hardware engineer & firmware developer (team).
 Categories: Embedded Systems, Hardware.
 Stack: ESP32, L298 motor driver, DC motors, Bluetooth, C/C++.
 Summary: A sumo-fighting robot our team built and drove in our school's competition. An ESP32 runs two DC motors through an L298 motor driver and takes commands from a phone app over Bluetooth. It won 2nd place.
@@ -419,28 +445,6 @@ Results:
 - Won 2nd place in our school's sumo robot competition.
 Awards:
 - 2nd place, school sumo robot competition
-
----
-
-PROJECT: Wedding Invitation (Custom wedding invitation website)
-Page: /projects/wedding-invitation
-Tagline: A password-protected wedding invitation with a prenup slideshow, built for phones first.
-Status: Completed. Period: Apr 2026 – Jun 2026. John's role: Solo designer & developer.
-Categories: Web Development, Software.
-Stack: React, Vite, Vercel.
-Summary: A custom invitation website for a couple's wedding. Guests enter a password, then see the event details, a prenup photo slideshow with a lightbox and a music toggle. It has light and dark modes and a layout tuned for phones.
-Overview: A full invitation site for one wedding, designed around a palette of midnight navy, French blue, soft gold and warm ivory. I designed and built all of it.
-Objective: Give guests one private page with everything they need, in a design that matches the couple's style.
-What John did:
-- Designed the site from wireframes and reference sites, and went through several redesigns before the final look.
-- Added a password gate so only invited guests can open it. It is there for the couple's privacy, not as strong security.
-- Built the prenup slideshow with a dark lightbox, a music toggle and the page animations.
-- Made it work in light and dark mode and tuned the layout for phones, since most guests will open it on one.
-- Deployed it on Vercel.
-Results:
-- Finished and deployed in June 2026, before the wedding.
-Live link: https://ace-aps-wedding-invitation.vercel.app/
-Note: Source code is private.
 
 === NOT ON THE SITE (say it is not listed, and suggest emailing John) ===
 - Phone number, home address, salary expectations and rates.

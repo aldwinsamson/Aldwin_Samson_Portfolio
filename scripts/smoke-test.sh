@@ -23,7 +23,10 @@ for path in / /projects /robots.txt /sitemap.xml /theme-init.js; do
 done
 check "missing asset is a real 404" status_is 404 "$BASE/assets/does-not-exist.js"
 check "http -> https redirect" status_in "http://$HOST/" 301 302 308
-check "www -> apex 301" status_is 301 "https://www.$HOST/"
+case "$HOST" in
+  *.cloudfront.net) echo "  skip  www -> apex (the CloudFront default domain has no www)" ;;
+  *) check "www -> apex 301" status_is 301 "https://www.$HOST/" ;;
+esac
 
 check "HSTS header present" has_header "$BASE/" 'strict-transport-security:'
 check "X-Content-Type-Options present" has_header "$BASE/" 'x-content-type-options:'

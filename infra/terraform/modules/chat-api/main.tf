@@ -1,27 +1,29 @@
 # Chat API for the portfolio assistant:
 #   browser -> API Gateway (HTTP API, throttled) -> Lambda (server/chat) -> Anthropic API
 #
-# The Anthropic API key is stored in SSM Parameter Store (SecureString). Create it once with the AWS CLI
-# BEFORE running terraform apply, so the key never appears in the Terraform state:
-#   aws ssm put-parameter --region ap-southeast-1 --name /portfolio/chat/anthropic-api-key --type SecureString --value "sk-ant-..."
+# The Anthropic API key lives in SSM Parameter Store (SecureString). Create it ONCE with the AWS CLI before the first apply,
+# so the key never appears in the Terraform state:
+#   aws ssm put-parameter --region <region> --name <ssm_parameter_name> --type SecureString --value "sk-ant-..."
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# The AWS-managed key that encrypts SecureString parameters. It exists once the parameter has been created.
-data "aws_kms_alias" "ssm" {
-  name = "alias/aws/ssm"
+locals {
+  name          = "${var.context.prefix}-chat" # e.g. aldwinsamson-prod-chat (matches the CI role's IAM name prefix)
+  ssm_parameter = coalesce(var.ssm_parameter_name, "/${var.context.project}/${var.context.environment}/chat/anthropic-api-key")
 }
 
 data "archive_file" "chat" {
   type        = "zip"
   source_dir  = var.source_dir
-  output_path = "${path.module}/${var.name_prefix}.zip"
-  excludes    = ["adapters", "core.test.mjs"]
+  output_path = "${path.module}/.build/${local.name}.zip"
+  # Same bytes on Windows and on the GitHub runner, so the Lambda is not "changed" by merely planning somewhere else.
+  output_file_mode = "0666"
+  excludes         = ["adapters", "selftest.mjs", "core.test.mjs"]
 }
 
 resource "aws_iam_role" "chat" {
-  name = "${var.name_prefix}-lambda"
+  name = "${local.name}-lambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -31,8 +33,6 @@ resource "aws_iam_role" "chat" {
       Action    = "sts:AssumeRole"
     }]
   })
-
-  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "logs" {
@@ -40,36 +40,29 @@ resource "aws_iam_role_policy_attachment" "logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# Least privilege: read exactly one parameter, and decrypt it.
+# Least privilege: read exactly one parameter. No kms:Decrypt statement is needed: the AWS-managed key aws/ssm lets SSM
+# decrypt for any principal in the account that may read the parameter.
 resource "aws_iam_role_policy" "read_key" {
   name = "read-anthropic-key"
   role = aws_iam_role.chat.id
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["ssm:GetParameter"]
-        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_parameter_name}"
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["kms:Decrypt"]
-        Resource = data.aws_kms_alias.ssm.target_key_arn
-      }
-    ]
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ssm:GetParameter"]
+      Resource = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_parameter}"
+    }]
   })
 }
 
 resource "aws_cloudwatch_log_group" "chat" {
-  name              = "/aws/lambda/${var.name_prefix}"
+  name              = "/aws/lambda/${local.name}"
   retention_in_days = var.log_retention_days
-  tags              = var.tags
 }
 
 resource "aws_lambda_function" "chat" {
-  function_name = var.name_prefix
+  function_name = local.name
   role          = aws_iam_role.chat.arn
   runtime       = "nodejs22.x"
   handler       = "lambda.handler"
@@ -82,19 +75,18 @@ resource "aws_lambda_function" "chat" {
 
   environment {
     variables = {
-      ANTHROPIC_API_KEY_PARAM = var.ssm_parameter_name
+      ANTHROPIC_API_KEY_PARAM = local.ssm_parameter
       CLAUDE_MODEL            = var.model
       ALLOWED_ORIGINS         = join(",", var.allowed_origins)
     }
   }
 
   depends_on = [aws_cloudwatch_log_group.chat, aws_iam_role_policy_attachment.logs]
-  tags       = var.tags
 }
 
 # HTTP API: answers CORS preflight itself and throttles the whole API, so a flood of requests cannot run up a bill.
 resource "aws_apigatewayv2_api" "chat" {
-  name          = var.name_prefix
+  name          = local.name
   protocol_type = "HTTP"
 
   cors_configuration {
@@ -103,8 +95,6 @@ resource "aws_apigatewayv2_api" "chat" {
     allow_headers = ["content-type"]
     max_age       = 86400
   }
-
-  tags = var.tags
 }
 
 resource "aws_apigatewayv2_integration" "chat" {
@@ -129,8 +119,6 @@ resource "aws_apigatewayv2_stage" "default" {
     throttling_rate_limit  = var.throttle_rate_limit
     throttling_burst_limit = var.throttle_burst_limit
   }
-
-  tags = var.tags
 }
 
 resource "aws_lambda_permission" "api" {
@@ -145,7 +133,7 @@ resource "aws_lambda_permission" "api" {
 resource "aws_cloudwatch_metric_alarm" "invocations" {
   count = var.alarm_topic_arn == null ? 0 : 1
 
-  alarm_name          = "${var.name_prefix}-high-invocations"
+  alarm_name          = "${local.name}-high-invocations"
   alarm_description   = "The portfolio chat Lambda ran more than ${var.daily_invocation_alarm} times in a day."
   namespace           = "AWS/Lambda"
   metric_name         = "Invocations"
@@ -157,5 +145,4 @@ resource "aws_cloudwatch_metric_alarm" "invocations" {
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
   alarm_actions       = [var.alarm_topic_arn]
-  tags                = var.tags
 }

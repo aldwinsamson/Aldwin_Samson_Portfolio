@@ -10,8 +10,9 @@
 //   5. returns { text, followUps }
 //
 // RATE LIMIT NOTE: the counters live in memory, so each warm server instance has its own and a cold start resets them.
-// It slows down casual abuse. The real money cap is the monthly spend limit you set in the Anthropic Console,
-// plus the throttling in infra/terraform/modules/chat-api.
+// That includes the "daily" counter: it is per instance, NOT a global budget. It slows down casual abuse only.
+// The real money cap is the monthly spend limit you set in the Anthropic Console (plus max_tokens below, and on AWS
+// the throttling in infra/terraform/modules/chat-api).
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -72,8 +73,8 @@ const json = (status, body, headers = {}) => ({
   body: JSON.stringify(body),
 });
 
-function corsHeaders(origin, c) {
-  const ok = isAllowedOrigin(origin, c);
+function corsHeaders(origin, c, host) {
+  const ok = isAllowedOrigin(origin, c, host);
   if (!ok || !origin) return { vary: "Origin" };
   return {
     "access-control-allow-origin": origin,
@@ -84,9 +85,18 @@ function corsHeaders(origin, c) {
   };
 }
 
-function isAllowedOrigin(origin, c) {
+function isAllowedOrigin(origin, c, host = "") {
   if (!origin) return true; // curl, server-to-server, same-origin requests without an Origin header
   if (c.allowedOrigins.includes(origin)) return true;
+  // Same-origin: the page that sends the request is served by this very host (production, a Vercel preview, ...).
+  // This replaces listing every preview address by hand. Browsers cannot forge the Origin header.
+  if (host) {
+    try {
+      if (new URL(origin).host === host.toLowerCase()) return true;
+    } catch {
+      /* not a URL: fall through */
+    }
+  }
   if (c.allowLocalhost && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
   return false;
 }
@@ -162,17 +172,17 @@ export const _test = { rateLimited, reset: () => { hits.clear(); day = { key: ""
 /* ------------------------------ main entry ------------------------------ */
 
 /**
- * @param {{ method: string, origin?: string, ip?: string, bodyText?: string, apiKey?: string }} req
+ * @param {{ method: string, origin?: string, host?: string, ip?: string, bodyText?: string, apiKey?: string }} req
  * @param {typeof fetch} [fetchImpl]  injectable for tests
  * @returns {Promise<{ status: number, headers: Record<string,string>, body: string }>}
  */
 export async function handleChat(req, fetchImpl = fetch) {
   const c = cfg();
   const origin = req.origin || "";
-  const cors = corsHeaders(origin, c);
+  const cors = corsHeaders(origin, c, req.host);
   const started = Date.now();
 
-  if (!isAllowedOrigin(origin, c)) return json(403, { error: "origin not allowed" }, cors);
+  if (!isAllowedOrigin(origin, c, req.host)) return json(403, { error: "origin not allowed" }, cors);
   if (req.method === "OPTIONS") return { status: 204, headers: cors, body: "" };
   if (req.method !== "POST") return json(405, { error: "use POST" }, cors);
   if (!req.apiKey) return json(503, { error: "not configured" }, cors);

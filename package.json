@@ -11,7 +11,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "new:project": "node scripts/new-project.mjs",
-    "check": "npm run typecheck && npm test"
+    "check": "npm run typecheck && npm test",
+    "test:chat": "node server/chat/selftest.mjs",
+    "build:knowledge": "vite-node scripts/build-knowledge.ts",
+    "check:knowledge": "vite-node scripts/build-knowledge.ts --check"
   },
   "dependencies": {
     "clsx": "2.1.1",
@@ -34,6 +37,7 @@
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.3.7",
+    "vite-node": "^6.0.0",
     "vitest": "^4.1.11"
   },
   "engines": {

@@ -43,3 +43,14 @@ skip-check:
   - CKV_K8S_43    # Digest pinning: tag is immutable per commit (sha-<commit>); digest pinning is a candidate follow-up
   # -- GitHub Actions ---------------------------------------------------------------------------------------
   - CKV_GHA_7    # deploy.yml takes a `ref` input on purpose: it is the one-click rollback (re-deploy an older commit). Only runs from main; the AWS role is limited to the site bucket.
+  # -- chat-api module (Lambda + API Gateway) — a tiny public chat endpoint ---------------------------------------------
+  - CKV_AWS_158   # Log group KMS: the logs hold sizes and timings only, never message text; a CMK costs ~US$1/month
+  - CKV_AWS_338   # 1-year log retention: 14 days by design (privacy and cost); configurable with log_retention_days
+  - CKV_AWS_116   # DLQ: the function is called synchronously through API Gateway; there are no async invocations to dead-letter
+  - CKV_AWS_117   # Lambda in a VPC: it must reach api.anthropic.com, which would need a NAT gateway (~US$32/month)
+  - CKV_AWS_115   # Reserved concurrency: new accounts have a very low concurrency quota; API-level throttling is the cost guard
+  - CKV_AWS_272   # Code signing: single-author function deployed from this repo; AWS Signer setup is not worth it here
+  - CKV_AWS_173   # Env-var KMS: the variables hold no secret (the API key is in SSM, only its name is here)
+  - CKV_AWS_50    # X-Ray: extra cost and complexity; CloudWatch logs are enough
+  - CKV_AWS_309   # Route authorizer: the endpoint is public on purpose (a website chat); origin check, throttling and a provider spend cap protect it
+  - CKV_AWS_76    # API access logs would record visitor IPs; the site deliberately keeps no visitor tracking

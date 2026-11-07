@@ -32,3 +32,12 @@ lab = {
     start_cron = "cron(0 7 * * ? *)"
   }
 }
+
+# Where the domain points: "aws" or "vercel" (docs/switch-hosting.md)
+hosting = {
+  target = "aws"
+  vercel = {
+    ipv4 = ["76.76.21.21"]
+    ttl  = 60
+  }
+}

@@ -25,3 +25,5 @@ terraform.tfvars
 *.auto.tfvars
 # NOTE: commit .terraform.lock.hcl (provider version pinning) and the non-secret prod.tfvars / bootstrap.tfvars
 .lighthouseci/
+
+infra/terraform/modules/chat-api/.build/

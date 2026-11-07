@@ -1,24 +1,28 @@
-variable "name_prefix" {
-  description = "Name used for the Lambda function, API and IAM role."
-  type        = string
-  default     = "portfolio-chat"
+variable "context" {
+  description = "Shared naming/tagging context built once per environment (see environments/*/locals.tf)."
+  type = object({
+    project     = string
+    environment = string
+    region      = string
+    prefix      = string
+    tags        = map(string)
+  })
 }
 
 variable "source_dir" {
-  description = "Path to the server/chat folder of the repo (it must contain lambda.mjs, core.mjs and knowledge.generated.txt)."
+  description = "Absolute path to the repo's server/chat folder (it must contain lambda.mjs, core.mjs and knowledge.generated.txt)."
   type        = string
 }
 
 variable "allowed_origins" {
-  description = "Sites allowed to call the API from a browser. Add http://localhost:5173 only while testing locally."
+  description = "Sites allowed to call the API from a browser (CORS)."
   type        = list(string)
-  default     = ["https://aldwinsamson.com", "https://www.aldwinsamson.com"]
 }
 
 variable "ssm_parameter_name" {
-  description = "Name of the SecureString parameter that holds the Anthropic API key. Create it with the AWS CLI; Terraform never sees the key."
+  description = "SecureString parameter holding the Anthropic API key. null = /<project>/<environment>/chat/anthropic-api-key. Create it with the AWS CLI; Terraform never sees the key."
   type        = string
-  default     = "/portfolio/chat/anthropic-api-key"
+  default     = null
 }
 
 variable "model" {
@@ -28,7 +32,7 @@ variable "model" {
 }
 
 variable "throttle_rate_limit" {
-  description = "Average requests per second the whole API accepts (a cost guard). Extra requests get HTTP 429."
+  description = "Average requests per second the WHOLE API accepts (a cost guard, not per visitor). Extra requests get HTTP 429."
   type        = number
   default     = 2
 }
@@ -40,9 +44,8 @@ variable "throttle_burst_limit" {
 }
 
 variable "memory_size" {
-  description = "Lambda memory in MB."
-  type        = number
-  default     = 256
+  type    = number
+  default = 256
 }
 
 variable "timeout" {
@@ -52,25 +55,21 @@ variable "timeout" {
 }
 
 variable "log_retention_days" {
-  description = "How long CloudWatch keeps the function logs. The logs hold no message text."
+  description = "How long CloudWatch keeps the function logs. They hold sizes and timings only, never message text."
   type        = number
   default     = 14
 }
 
 variable "alarm_topic_arn" {
-  description = "Optional SNS topic ARN. When set, an alarm sends a message if the function is invoked more than daily_invocation_alarm times in a day."
+  description = <<-EOT
+    Optional SNS topic ARN for an invocation alarm. It must be in the SAME region as this module (ap-southeast-1).
+    The shared alerts topic of this repo is in us-east-1, so do not pass that one unless you have confirmed cross-region alarm actions work.
+  EOT
   type        = string
   default     = null
 }
 
 variable "daily_invocation_alarm" {
-  description = "Invocations per day that trigger the alarm."
-  type        = number
-  default     = 500
-}
-
-variable "tags" {
-  description = "Tags added to every resource."
-  type        = map(string)
-  default     = {}
+  type    = number
+  default = 500
 }

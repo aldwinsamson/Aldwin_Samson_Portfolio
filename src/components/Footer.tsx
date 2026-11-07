@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { siteConfig } from "@/config/site";
-import { heroImage } from "@/config/hero";
 import { profile, socials } from "@/content/profile";
 import { Container, ExternalLink } from "./ui";
 import { BrandMark } from "./BrandMark";

@@ -21,6 +21,11 @@ module "static_site" {
   hsts = {
     preload = var.site.hsts_preload
   }
+
+  # One switch for where the domain points (see hosting.tf)
+  dns_target    = var.hosting.target == "aws" ? "aws" : "external"
+  external_ipv4 = var.hosting.vercel.ipv4
+  external_ttl  = var.hosting.vercel.ttl
 }
 
 # --- Monitoring & alerting -----------------------------------------------------------------------------------------
@@ -61,7 +66,7 @@ data "aws_iam_policy_document" "site_deploy" {
 
   statement {
     sid       = "InvalidateCache"
-    actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:ListInvalidations"]
+    actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:ListInvalidations", "cloudfront:GetDistribution"]
     resources = [module.static_site.distribution_arn]
   }
 }
