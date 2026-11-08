@@ -31,11 +31,13 @@ export default defineConfig({
   build: {
     target: "es2020",
     chunkSizeWarningLimit: 700,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          react: ["react", "react-dom", "react-router-dom"],
-          motion: ["motion"],
+        codeSplitting: {
+          groups: [
+            { name: "react", test: /node_modules[\\/](react|react-dom|react-router-dom|react-router|scheduler)[\\/]/, priority: 20 },
+            { name: "motion", test: /node_modules[\\/](motion|motion-dom|motion-utils|framer-motion)[\\/]/, priority: 10 },
+          ],
         },
       },
     },

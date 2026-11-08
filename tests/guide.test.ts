@@ -129,7 +129,7 @@ describe("when it cannot answer: contact Aldwin personally", () => {
     it(`"${q}"`, () => {
       const a = ask(q);
       expect(a.kind, a.text).toBe("fallback");
-      expect(a.text.toLowerCase()).toContain("contact Aldwin personally");
+      expect(a.text.toLowerCase()).toContain("contact aldwin personally");
       expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
       expect(a.links.some((l) => l.to === "/contact")).toBe(true);
     });

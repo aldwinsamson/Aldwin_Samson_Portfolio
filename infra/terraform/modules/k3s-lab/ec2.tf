@@ -16,8 +16,8 @@ resource "aws_instance" "lab" {
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.lab.id]
   iam_instance_profile        = aws_iam_instance_profile.lab.name
-  associate_public_ip_address = true  
-  monitoring                  = false 
+  associate_public_ip_address = true
+  monitoring                  = false
   ebs_optimized               = true
 
   user_data = templatefile("${path.module}/templates/user-data.sh.tftpl", {

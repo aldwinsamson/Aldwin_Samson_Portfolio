@@ -18,7 +18,7 @@ monitoring = {
 
 lab = {
   enabled        = false
-  instance_type  = "t4g.small" 
+  instance_type  = "t4g.small"
   root_volume_gb = 30
   schedule = {
     enabled    = true

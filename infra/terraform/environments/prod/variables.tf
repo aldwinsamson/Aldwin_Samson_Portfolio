@@ -77,7 +77,7 @@ variable "lab" {
     root_volume_gb = optional(number, 30)
     k3s_version    = optional(string, "v1.36.5+k3s1")
     argocd_version = optional(string, "v3.5.5")
-    gitops_repo    = optional(string) 
+    gitops_repo    = optional(string)
     gitops_branch  = optional(string, "main")
     schedule = optional(object({
       enabled    = optional(bool, true)

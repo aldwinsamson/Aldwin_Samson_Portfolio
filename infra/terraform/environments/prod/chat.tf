@@ -5,7 +5,7 @@ variable "chat" {
     model                = optional(string, "claude-haiku-5-5")
     throttle_rate_limit  = optional(number, 2)
     throttle_burst_limit = optional(number, 5)
-    alarm_topic_arn      = optional(string) 
+    alarm_topic_arn      = optional(string)
   })
   default = {}
 }
