@@ -18,14 +18,14 @@ const cfg = () => ({
   contactEmail: process.env.CONTACT_EMAIL || "aldwinsamsonn@gmail.com",
   debug: /^(true|1|yes|on)$/i.test((process.env.CHAT_DEBUG || "").trim().replace(/^["']|["']$/g, "")),
   // The website gives up after 22 s, so the server answers (or fails) well before that.
-  modelTimeoutMs: Number(process.env.MODEL_TIMEOUT_MS) || 7000,
-  totalBudgetMs: Number(process.env.TOTAL_BUDGET_MS) || 17000,
+  modelTimeoutMs: Number(process.env.MODEL_TIMEOUT_MS) || 10000,
+  totalBudgetMs: Number(process.env.TOTAL_BUDGET_MS) || 19000,
 });
 
-// Tried in order. GEMINI_MODEL (if set) goes first. Lite models first: they answer in 1-3 s, which is plenty for
-// questions about a CV. We move to the next model when Google says the model does not exist / is not offered to this
+// Tried in order. GEMINI_MODEL (if set) goes first. We move to the next model when Google says the model does not exist / is not offered to this
 // key (404, "no longer available", ...) or when a model is too slow (timeout). Never on auth, quota or server errors.
-const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.5-flash"];
+// gemini-3.8-flash is the model Google's own error message names as the replacement for the retired 2.5 models.
+const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash"];
 
 export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
 

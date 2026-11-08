@@ -25,7 +25,7 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("text has no FOLLOWUPS line", !b.text.includes("FOLLOWUPS") && b.text.startsWith("John built"));
   ok("3 follow-ups parsed", b.followUps.length === 3 && b.followUps[0] === "What is his capstone?", JSON.stringify(b.followUps));
   ok("CORS header for allowed origin", r.headers["access-control-allow-origin"] === "https://aldwinsamson.com");
-  ok("model defaults to the fast lite alias", spy.params.model === "gemini-flash-lite-latest", spy.params.model);
+  ok("model defaults to gemini-3.8-flash", spy.params.model === "gemini-3.8-flash", spy.params.model);
   ok("system instruction includes knowledge + rules", spy.params.config.systemInstruction.includes("=== PROJECTS (") && spy.params.config.systemInstruction.includes("RULES"));
   ok("maxOutputTokens capped", spy.params.config.maxOutputTokens === 1024);
   ok("thinking kept low on newer models", spy.params.config.thinkingConfig.thinkingLevel === "LOW");
@@ -103,11 +103,14 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   const denied = { models: { generateContent: async (p) => { seen3.push(p.model); const e = new Error("forbidden"); e.status = 403; throw e; } } };
   await handleChat(post([{role:"user",content:"hi"}], { ip: "4.4.4.4" }), denied);
   ok("does not retry other models on 403", seen3.length === 1);
+  process.env.GEMINI_MODEL = "gemini-2.5-flash";
   const seen4 = [];
   const twoFive = { models: { generateContent: async (p) => { seen4.push(p); const e = new Error("x"); e.status = 404; throw e; } } };
   await handleChat(post([{role:"user",content:"hi"}], { ip: "5.5.5.5" }), twoFive);
   const p25 = seen4.find((p) => p.model.includes("2.5"));
   ok("thinkingBudget 0 on the 2.5 models", p25 && p25.config.thinkingConfig.thinkingBudget === 0);
+  ok("GEMINI_MODEL goes first", seen4[0].model === "gemini-2.5-flash");
+  delete process.env.GEMINI_MODEL;
 }
 // 6c. slow models do not hang the request
 { _test.reset(); process.env.MODEL_TIMEOUT_MS = "40"; process.env.TOTAL_BUDGET_MS = "5000";
