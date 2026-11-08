@@ -14,6 +14,11 @@ import { CommandPaletteProvider } from "@/components/CommandPalette";
 import { GuideProvider } from "@/features/guide/PortfolioGuide";
 import { ease } from "@/styles/motion";
 import HomePage from "@/pages/HomePage";
+
+// Vercel Telemetry Components
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+
 const ProjectsPage = lazy(() => import("@/pages/ProjectsPage"));
 const ProjectDetailPage = lazy(() => import("@/pages/ProjectDetailPage"));
 const ExperiencePage = lazy(() => import("@/pages/ExperiencePage"));
@@ -89,6 +94,9 @@ function Shell() {
           <AnimatedRoutes />
           <Footer />
           {siteConfig.features.backToTop && <BackToTop />}
+          {/* Vercel Telemetry */}
+          <Analytics />
+          <SpeedInsights />
         </div>
       </CommandPaletteProvider>
     </GuideProvider>
