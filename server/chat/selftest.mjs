@@ -25,7 +25,7 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("text has no FOLLOWUPS line", !b.text.includes("FOLLOWUPS") && b.text.startsWith("John built"));
   ok("3 follow-ups parsed", b.followUps.length === 3 && b.followUps[0] === "What is his capstone?", JSON.stringify(b.followUps));
   ok("CORS header for allowed origin", r.headers["access-control-allow-origin"] === "https://aldwinsamson.com");
-  ok("model defaults to gemini-3.8-flash", spy.params.model === "gemini-3.8-flash", spy.params.model);
+  ok("model defaults to gemini-3.1-flash-lite", spy.params.model === "gemini-3.1-flash-lite", spy.params.model);
   ok("system instruction includes knowledge + rules", spy.params.config.systemInstruction.includes("=== PROJECTS (") && spy.params.config.systemInstruction.includes("RULES"));
   ok("maxOutputTokens capped", spy.params.config.maxOutputTokens === 1024);
   ok("thinking kept low on newer models", spy.params.config.thinkingConfig.thinkingLevel === "LOW");
@@ -111,6 +111,13 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("thinkingBudget 0 on the 2.5 models", p25 && p25.config.thinkingConfig.thinkingBudget === 0);
   ok("GEMINI_MODEL goes first", seen4[0].model === "gemini-2.5-flash");
   delete process.env.GEMINI_MODEL;
+}
+// 6b2. overloaded / out-of-quota models move on to the next one
+{ _test.reset();
+  const order = [];
+  const busy = { models: { generateContent: async (p) => { order.push(p.model); if (order.length === 1) { const e = new Error("high demand"); e.status = 503; throw e; } if (order.length === 2) { const e = new Error("quota"); e.status = 429; throw e; } return { text: "ok" }; } } };
+  const r = await handleChat(post([{role:"user",content:"hi"}], { ip: "9.1.1.1" }), busy);
+  ok("503 and 429 fall through to the next model", r.status === 200 && order.length === 3, JSON.stringify(order));
 }
 // 6c. slow models do not hang the request
 { _test.reset(); process.env.MODEL_TIMEOUT_MS = "40"; process.env.TOTAL_BUDGET_MS = "5000";

@@ -23,9 +23,10 @@ const cfg = () => ({
 });
 
 // Tried in order. GEMINI_MODEL (if set) goes first. We move to the next model when Google says the model does not exist / is not offered to this
-// key (404, "no longer available", ...) or when a model is too slow (timeout). Never on auth, quota or server errors.
-// gemini-3.8-flash is the model Google's own error message names as the replacement for the retired 2.5 models.
-const FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash"];
+// 3.1 Flash-Lite is the fastest and the least busy; 3.8 Flash is the model Google's own error message names as the
+// replacement for the retired 2.5 models. Each model has its own free-tier quota and its own load, so any failure of one
+// model (missing, overloaded, slow, out of quota) just moves on to the next. Only a rejected key (401/403) stops everything.
+const FALLBACK_MODELS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash"];
 
 export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
 
@@ -47,8 +48,8 @@ const isTimeout = (err) => err?.name === "TimeoutError" || err?.name === "AbortE
 export function shouldTryNextModel(err) {
   if (isTimeout(err)) return true;
   const status = Number(err?.status ?? err?.code);
-  if ([401, 403, 429].includes(status) || status >= 500) return false;
-  if (status === 404) return true;
+  if (status === 401 || status === 403) return false;
+  if (status === 404 || status === 429 || status >= 500) return true;
   return /not found|no longer available|not available|not supported|unsupported|deprecated|new users|has been shut down/i.test(
     String(err?.message || ""),
   );

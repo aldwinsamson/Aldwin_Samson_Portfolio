@@ -1,4 +1,3 @@
-# AWS website switched off: Vercel serves aldwinsamson.com. See docs/zero-cost-aws.md ("R. Come back to AWS").
 aws_site_enabled = false
 
 site = {
