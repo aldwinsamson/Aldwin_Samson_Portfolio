@@ -1,6 +1,6 @@
 site = {
   include_www  = true
-  price_class  = "PriceClass_All" 
+  price_class  = "PriceClass_All"
   hsts_preload = false
 
   csp = {
