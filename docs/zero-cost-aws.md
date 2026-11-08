@@ -36,7 +36,7 @@ and always quote the var files.
    ```
 2. In Vercel: **Settings > Domains > aldwinsamson.com > Edit** (or Team **Domains**) and choose **Use Vercel DNS / Nameservers**. Vercel shows two name servers
    (normally `ns1.vercel-dns.com` and `ns2.vercel-dns.com`). In Vercel's DNS records page, re-create any `MX`/`TXT` records from step 1 that are not for the website.
-3. At your registrar, replace the name servers with Vercel's two. Do not touch anything else.
+3. At your registrar (Namecheap): **Domain List > Manage** next to aldwinsamson.com > **Nameservers** dropdown > **Custom DNS** > enter `ns1.vercel-dns.com` and `ns2.vercel-dns.com` > click the green check. Do not touch anything else. If you use Namecheap email forwarding or Private Email, add those `MX`/`TXT` records in Vercel DNS first.
 4. Wait until the world sees it (usually under an hour, up to 48 h):
    ```powershell
    nslookup -type=NS aldwinsamson.com 8.8.8.8

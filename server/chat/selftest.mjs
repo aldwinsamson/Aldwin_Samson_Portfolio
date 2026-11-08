@@ -25,10 +25,11 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("text has no FOLLOWUPS line", !b.text.includes("FOLLOWUPS") && b.text.startsWith("John built"));
   ok("3 follow-ups parsed", b.followUps.length === 3 && b.followUps[0] === "What is his capstone?", JSON.stringify(b.followUps));
   ok("CORS header for allowed origin", r.headers["access-control-allow-origin"] === "https://aldwinsamson.com");
-  ok("model defaults to the gemini-flash-latest alias", spy.params.model === "gemini-flash-latest", spy.params.model);
+  ok("model defaults to the fast lite alias", spy.params.model === "gemini-flash-lite-latest", spy.params.model);
   ok("system instruction includes knowledge + rules", spy.params.config.systemInstruction.includes("=== PROJECTS (") && spy.params.config.systemInstruction.includes("RULES"));
   ok("maxOutputTokens capped", spy.params.config.maxOutputTokens === 1024);
-  ok("no thinkingConfig for non-2.5 models", !("thinkingConfig" in spy.params.config));
+  ok("thinking kept low on newer models", spy.params.config.thinkingConfig.thinkingLevel === "LOW");
+  ok("every call has a timeout signal", spy.params.config.abortSignal instanceof AbortSignal);
 }
 // 2. origin / method / config / size / json
 { _test.reset();
@@ -106,7 +107,23 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   const twoFive = { models: { generateContent: async (p) => { seen4.push(p); const e = new Error("x"); e.status = 404; throw e; } } };
   await handleChat(post([{role:"user",content:"hi"}], { ip: "5.5.5.5" }), twoFive);
   const p25 = seen4.find((p) => p.model.includes("2.5"));
-  ok("thinkingBudget 0 only on the 2.5 model", p25 && p25.config.thinkingConfig.thinkingBudget === 0 && seen4.filter((p) => "thinkingConfig" in p.config).length === 1);
+  ok("thinkingBudget 0 on the 2.5 models", p25 && p25.config.thinkingConfig.thinkingBudget === 0);
+}
+// 6c. slow models do not hang the request
+{ _test.reset(); process.env.MODEL_TIMEOUT_MS = "40"; process.env.TOTAL_BUDGET_MS = "5000";
+  const calls = [];
+  const slowThenFast = { models: { generateContent: async (p) => { calls.push(p.model); if (calls.length === 1) return new Promise(() => {}); return { text: "fast\nFOLLOWUPS: a | b" }; } } };
+  const t0 = Date.now();
+  const r = await handleChat(post([{role:"user",content:"hi"}], { ip: "7.7.7.7" }), slowThenFast);
+  ok("a hanging model times out and the next model answers", r.status === 200 && calls.length === 2 && Date.now() - t0 < 1000, JSON.stringify(calls));
+  const allHang = { models: { generateContent: () => new Promise(() => {}) } };
+  const r2 = await handleChat(post([{role:"user",content:"hi"}], { ip: "7.7.7.8" }), allHang);
+  ok("504 timeout (not a platform crash) when every model hangs", r2.status === 504 && JSON.parse(r2.body).error === "timeout", r2.status + r2.body);
+  const thinkRej = []; 
+  const rejectsThinking = { models: { generateContent: async (p) => { thinkRej.push("thinkingConfig" in p.config); if (p.config.thinkingConfig) { const e = new Error("thinking level is not allowed"); e.status = 400; throw e; } return { text: "ok" }; } } };
+  const r3 = await handleChat(post([{role:"user",content:"hi"}], { ip: "7.7.7.9" }), rejectsThinking);
+  ok("retries the same model without thinking config", r3.status === 200 && thinkRej.join() === "true,false", thinkRej.join());
+  delete process.env.MODEL_TIMEOUT_MS; delete process.env.TOTAL_BUDGET_MS;
 }
 // 7. lambda adapter (payload v2) with env key
 { _test.reset(); process.env.GEMINI_API_KEY = "sk-lambda";

@@ -17,22 +17,40 @@ const cfg = () => ({
   perDayGlobal: Number(process.env.DAILY_LIMIT) || 400,
   contactEmail: process.env.CONTACT_EMAIL || "aldwinsamsonn@gmail.com",
   debug: process.env.CHAT_DEBUG === "true",
+  // The website gives up after 22 s, so the server answers (or fails) well before that.
+  modelTimeoutMs: Number(process.env.MODEL_TIMEOUT_MS) || 7000,
+  totalBudgetMs: Number(process.env.TOTAL_BUDGET_MS) || 17000,
 });
 
-// Tried in order. GEMINI_MODEL (if set) goes first. We only move to the next model when Google says the model
-// does not exist / is not offered to this key (404, "no longer available", "not supported", ...), never on
-// auth, quota or network errors. "gemini-flash-latest" is Google's own alias for the current Flash model.
-const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"];
+// Tried in order. GEMINI_MODEL (if set) goes first. Lite models first: they answer in 1-3 s, which is plenty for
+// questions about a CV. We move to the next model when Google says the model does not exist / is not offered to this
+// key (404, "no longer available", ...) or when a model is too slow (timeout). Never on auth, quota or server errors.
+const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.5-flash"];
 
 export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
 
+const isTimeout = (err) => err?.name === "TimeoutError" || err?.name === "AbortError" || Number(err?.status) === 504;
+
 export function shouldTryNextModel(err) {
+  if (isTimeout(err)) return true;
   const status = Number(err?.status ?? err?.code);
   if ([401, 403, 429].includes(status) || status >= 500) return false;
   if (status === 404) return true;
   return /not found|no longer available|not available|not supported|unsupported|deprecated|new users|has been shut down/i.test(
     String(err?.message || ""),
   );
+}
+
+// Keep the model's internal "thinking" minimal: it is the main reason answers get slow.
+const thinkingFor = (model) => (model.includes("2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "LOW" });
+
+function withTimeout(promise, ms) {
+  promise.catch(() => {}); // the losing side of the race must never become an unhandled rejection
+  let timer;
+  const limit = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Object.assign(new Error(`model timed out after ${ms} ms`), { name: "TimeoutError", status: 504 })), ms);
+  });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
 }
 
 const MAX_USER_CHARS = 300;
@@ -180,26 +198,43 @@ export async function handleChat(req, clientImpl = null) {
   let response = null;
   let lastErr = null;
   try {
+    const deadline = Date.now() + c.totalBudgetMs;
     for (const model of modelChain(c)) {
+      const left = deadline - Date.now();
+      if (left < 1500) break;
+      const timeoutMs = Math.min(c.modelTimeoutMs, left);
       tried.push(model);
-      try {
-        response = await ai.models.generateContent({
-          model,
-          contents,
-          config: {
-            systemInstruction: buildSystemPrompt(c.contactEmail),
-            temperature: 0.3,
-            maxOutputTokens: c.maxTokens,
-            // Only Gemini 2.5 accepts thinkingBudget; newer models use a different setting, so we leave it out there.
-            ...(model.includes("2.5") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
-          },
-        });
-        break;
-      } catch (err) {
-        lastErr = err;
-        console.error("chat_model_failed", { model, status: err?.status, message: err?.message });
-        if (!shouldTryNextModel(err)) throw err;
+      let withThinking = true;
+      for (;;) {
+        try {
+          response = await withTimeout(
+            ai.models.generateContent({
+              model,
+              contents,
+              config: {
+                systemInstruction: buildSystemPrompt(c.contactEmail),
+                temperature: 0.3,
+                maxOutputTokens: c.maxTokens,
+                abortSignal: AbortSignal.timeout(timeoutMs),
+                ...(withThinking ? { thinkingConfig: thinkingFor(model) } : {}),
+              },
+            }),
+            timeoutMs,
+          );
+          break;
+        } catch (err) {
+          lastErr = err;
+          console.error("chat_model_failed", { model, status: err?.status, name: err?.name, message: err?.message });
+          // A model that rejects the thinking setting gets one more try without it.
+          if (withThinking && /thinking/i.test(String(err?.message || ""))) {
+            withThinking = false;
+            continue;
+          }
+          if (!shouldTryNextModel(err)) throw err;
+          break;
+        }
       }
+      if (response) break;
     }
     if (!response) throw lastErr || new Error("no model available");
 
@@ -228,10 +263,10 @@ export async function handleChat(req, clientImpl = null) {
     });
 
     return json(
-      502,
+      isTimeout(err) ? 504 : 502,
       c.debug
         ? { error: "upstream", name: err?.name, message: err?.message, status: err?.status, code: err?.code, tried }
-        : { error: "upstream" },
+        : { error: isTimeout(err) ? "timeout" : "upstream" },
       cors
     );
   }
