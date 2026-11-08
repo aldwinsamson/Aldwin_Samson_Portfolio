@@ -35,9 +35,9 @@ lab = {
 
 # Where the domain points: "aws" or "vercel" (docs/switch-hosting.md)
 hosting = {
-  target = "aws"
+  target = "vercel"
   vercel = {
-    ipv4 = ["76.76.21.21"]
+    ipv4 = ["216.198.79.1"]
     ttl  = 60
   }
 }
