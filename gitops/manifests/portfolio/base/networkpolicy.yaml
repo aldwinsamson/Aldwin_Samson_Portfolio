@@ -1,4 +1,3 @@
-# Static web server: accepts traffic on 8080 only, may not initiate any connection.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

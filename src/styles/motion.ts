@@ -1,7 +1,4 @@
-/**
- * Shared motion tokens — every animation in the site draws from these values
- * so the motion language stays consistent.
- */
+// Shared motion tokens — every animation in the site draws from these values so the motion language stays consistent.
 import type { Transition } from "motion/react";
 
 export const ease = {
@@ -19,13 +16,9 @@ export const duration = {
 };
 
 export const spring = {
-  /** Pointer-follow — soft, settles naturally. */
   pointer: { stiffness: 110, damping: 20, mass: 0.6 },
-  /** UI press/hover */
   ui: { type: "spring", stiffness: 420, damping: 30 } as Transition,
-  /** Layout indicators (nav underline, filters) */
   layout: { type: "spring", stiffness: 380, damping: 34 } as Transition,
-  /** Gentle zoom states */
   zoom: { stiffness: 60, damping: 18, mass: 1 },
 };
 

@@ -1,12 +1,3 @@
-# Optional AWS chat backend (Lambda + API Gateway) for the portfolio assistant.
-#
-# OFF by default: while the site runs on Vercel, Vercel's own function (api/chat.mjs) answers /api/chat.
-# Turn it on only when the site is served from AWS and you want the AI assistant there too:
-#   1. aws ssm put-parameter --region ap-southeast-1 --name /aldwinsamson/prod/chat/anthropic-api-key --type SecureString --value "sk-ant-..."
-#   2. set  chat = { enabled = true }  in prod.tfvars and apply
-#   3. add the origin from `terraform output chat_api_origin` to site.csp.connect_hosts and apply again
-#   4. build the AWS site with VITE_CHAT_API_URL=<chat_api_url> (the manual Deploy site workflow reads the repo variable CHAT_API_URL)
-
 variable "chat" {
   description = "Optional AWS chat backend. Off by default."
   type = object({
@@ -14,7 +5,7 @@ variable "chat" {
     model                = optional(string, "claude-haiku-5-5")
     throttle_rate_limit  = optional(number, 2)
     throttle_burst_limit = optional(number, 5)
-    alarm_topic_arn      = optional(string) # must be an SNS topic in the SAME region as the Lambda
+    alarm_topic_arn      = optional(string) 
   })
   default = {}
 }

@@ -6,10 +6,6 @@ import { cn } from "@/utils/cn";
 const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const randomChar = () => POOL[Math.floor(Math.random() * POOL.length)];
 
-/**
- * Chrome lettering that scrambles and then lands letter by letter (a nod to the reference reel).
- * Decorative only — the real accessible name lives in the parent <h1>.
- */
 export function HeroWord({
   text,
   reduced,
@@ -38,7 +34,6 @@ export function HeroWord({
       if (el >= settleAt[settleAt.length - 1]) window.clearInterval(id);
     }, 55);
     return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, reduced, startDelay]);
 
   return (

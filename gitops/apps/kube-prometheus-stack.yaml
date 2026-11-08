@@ -8,7 +8,6 @@ metadata:
 spec:
   project: default
   sources:
-    # Source 1: the upstream Helm chart.
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
       targetRevision: 92.10.1
@@ -16,7 +15,6 @@ spec:
         releaseName: kube-prometheus-stack
         valueFiles:
           - $values/gitops/values/kube-prometheus-stack.yaml
-    # Source 2: this repo, only to read the values file above.
     - repoURL: https://github.com/aldwinsamson/Aldwin_Samson_Portfolio.git
       targetRevision: main
       ref: values
@@ -29,4 +27,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true   # the operator CRDs are too large for client-side apply
+      - ServerSideApply=true  

@@ -1,14 +1,8 @@
-/**
- * Plain-English explanations of the technologies mentioned on the site.
- * When a visitor asks "What is GitOps?", the assistant gives this definition and then adds
- * how John actually used it (found automatically from his experience and projects).
- * Add a term any time — `aliases` are other words people might type.
- */
+
 export interface GlossaryTerm {
   term: string;
   aliases?: string[];
   definition: string;
-  /** Other words used to find how John actually used it (e.g. GitOps → ArgoCD). */
   related?: string[];
 }
 

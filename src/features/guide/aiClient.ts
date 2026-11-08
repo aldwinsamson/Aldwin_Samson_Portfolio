@@ -1,8 +1,7 @@
 /**
  * Browser client for the AI layer of the assistant.
- *
- * The API address comes from VITE_CHAT_API_URL (set it in .env.production). When it is empty the assistant
- * runs in offline mode and only uses the built-in search (see engine.ts), so the site never breaks without a backend.
+ * The API address comes from VITE_CHAT_API_URL. When it is empty the assistant
+ * runs in offline mode and only uses the built-in search, so the site never breaks without a backend.
  */
 
 export interface AiTurn {
@@ -25,7 +24,6 @@ export class AiError extends Error {
 
 const url = (import.meta.env.VITE_CHAT_API_URL as string | undefined)?.trim() ?? "";
 
-/** True when a chat backend address is configured. */
 export const aiConfigured = url.length > 0;
 
 const TIMEOUT_MS = 22_000;

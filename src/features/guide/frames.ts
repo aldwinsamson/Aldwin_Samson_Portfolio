@@ -1,9 +1,3 @@
-/**
- * The sentence "frames" the assistant wraps around your content: "Role: …", "Built with …", "John's skills by area:".
- * English is the source of truth; the Filipino frames are what a visitor who writes in Tagalog / Taglish sees.
- * The content itself (your summaries, highlights, definitions) is translated in src/content/tagalogContent.ts.
- */
-
 import type { Lang } from "@/content/knowledge";
 
 export interface Frames {
@@ -11,13 +5,12 @@ export interface Frames {
   projectOverview: (o: { label: string; summary: string; role: string; status: string; period: string; stack: string }) => string;
   goal: string;
   problem: string;
-  didJohn: string;
+  didAldwin: string;
   howItWorks: string;
   challenge: string;
   outcome: string;
   awards: (list: string) => string;
   whereToSee: (labels: string[]) => string;
-  /** Used instead of a project's `linkNote` when that note is a developer note ("add a link under links: …"). */
   noPublicLink: string;
   inHisWords: (p: string) => string;
   principle: (title: string, detail: string) => string;
@@ -49,7 +42,7 @@ export const FRAMES: Record<Lang, Frames> = {
     projectOverview: (o) => `${o.label} — ${o.summary} Role: ${o.role}. Status: ${o.status} (${o.period}). Built with ${o.stack}.`,
     goal: "Goal: ",
     problem: "The problem it solves: ",
-    didJohn: "What John did: ",
+    didAldwin: "What Aldwin did: ",
     howItWorks: "How it works: ",
     challenge: "A challenge: ",
     outcome: "Outcome: ",
@@ -58,23 +51,23 @@ export const FRAMES: Record<Lang, Frames> = {
     noPublicLink: "There isn't a public link for this yet.",
     inHisWords: (p) => `In his own words: “${p}”`,
     principle: (t, d) => `One of his working principles — ${t}: ${d}`,
-    focusList: "John's main focus areas:\n",
+    focusList: "Aldwin's main focus areas:\n",
     availability: (o) => `${o.availability} He is based in ${o.location}. The best way to discuss an opportunity is to contact him directly.`,
-    location: (loc) => `John is based in ${loc}.`,
+    location: (loc) => `Aldwin is based in ${loc}.`,
     contact: (o) =>
-      `You can email John at ${o.email}, or find him on LinkedIn (${o.linkedin}) and GitHub (${o.github}). The contact page has one-click Gmail compose and copy-email actions.`,
-    githubIs: (h) => `John's GitHub is ${h}.`,
-    linkedinIs: (h) => `John is on LinkedIn as ${h}.`,
+      `You can email Aldwin at ${o.email}, or find him on LinkedIn (${o.linkedin}) and GitHub (${o.github}). The contact page has one-click Gmail compose and copy-email actions.`,
+    githubIs: (h) => `Aldwin's GitHub is ${h}.`,
+    linkedinIs: (h) => `Aldwin is on LinkedIn as ${h}.`,
     roleAt: (role, org, when, rest) => `${role} at ${org} (${when}). ${rest}`.trim(),
     atOrg: (org, role, text) => `At ${org} (${role}): ${text}`,
-    experienceList: "John's experience:\n",
-    educationList: "John's education:\n",
-    certsList: "John's certifications and training:\n",
-    honorsList: "John's awards and honors:\n",
+    experienceList: "Aldwin's experience:\n",
+    educationList: "Aldwin's education:\n",
+    certsList: "Aldwin's certifications and training:\n",
+    honorsList: "Aldwin's awards and honors:\n",
     skillsOverview: (o) => `${o.title}: ${o.description} It includes ${o.items}.`,
-    skillDetail: (name, group) => `${name} is part of John's ${group} skills.`,
-    skillsList: "John's skills by area:\n",
-    projectsList: (n) => (n === 1 ? "John's project:\n" : `John's ${n} projects:\n`),
+    skillDetail: (name, group) => `${name} is part of Aldwin's ${group} skills.`,
+    skillsList: "Aldwin's skills by area:\n",
+    projectsList: (n) => (n === 1 ? "Aldwin's project:\n" : `Aldwin's ${n} projects:\n`),
     and: "and",
   },
   tl: {
@@ -82,7 +75,7 @@ export const FRAMES: Record<Lang, Frames> = {
     projectOverview: (o) => `${o.label} — ${o.summary} Tungkulin: ${o.role}. Katayuan: ${o.status} (${o.period}). Ginawa gamit ang ${o.stack}.`,
     goal: "Layunin: ",
     problem: "Ang problemang nilulutas nito: ",
-    didJohn: "Ang ginawa ni John: ",
+    didAldwin: "Ang ginawa ni Aldwin: ",
     howItWorks: "Paano ito gumagana: ",
     challenge: "Isang challenge: ",
     outcome: "Resulta: ",
@@ -91,23 +84,23 @@ export const FRAMES: Record<Lang, Frames> = {
     noPublicLink: "Wala pang public link para dito.",
     inHisWords: (p) => `Sa sarili niyang mga salita: “${p}”`,
     principle: (t, d) => `Isa sa mga prinsipyo niya sa trabaho — ${t}: ${d}`,
-    focusList: "Ang mga pangunahing focus ni John:\n",
+    focusList: "Ang mga pangunahing focus ni Aldwin:\n",
     availability: (o) => `${o.availability} Nakabase siya sa ${o.location}. Pinakamainam na makipag-ugnayan nang direkta sa kanya para pag-usapan ang oportunidad.`,
-    location: (loc) => `Nakabase si John sa ${loc}.`,
+    location: (loc) => `Nakabase si Aldwin sa ${loc}.`,
     contact: (o) =>
-      `Puwede mong i-email si John sa ${o.email}, o hanapin siya sa LinkedIn (${o.linkedin}) at GitHub (${o.github}). May one-click Gmail compose at copy-email sa contact page.`,
-    githubIs: (h) => `Ang GitHub ni John ay ${h}.`,
-    linkedinIs: (h) => `Nasa LinkedIn si John bilang ${h}.`,
+      `Puwede mong i-email si Aldwin sa ${o.email}, o hanapin siya sa LinkedIn (${o.linkedin}) at GitHub (${o.github}). May one-click Gmail compose at copy-email sa contact page.`,
+    githubIs: (h) => `Ang GitHub ni Aldwin ay ${h}.`,
+    linkedinIs: (h) => `Nasa LinkedIn si Aldwin bilang ${h}.`,
     roleAt: (role, org, when, rest) => `${role} sa ${org} (${when}). ${rest}`.trim(),
     atOrg: (org, role, text) => `Sa ${org} (${role}): ${text}`,
-    experienceList: "Ang karanasan ni John:\n",
-    educationList: "Ang edukasyon ni John:\n",
-    certsList: "Ang mga sertipikasyon at training ni John:\n",
-    honorsList: "Ang mga parangal at karangalan ni John:\n",
+    experienceList: "Ang karanasan ni Aldwin:\n",
+    educationList: "Ang edukasyon ni Aldwin:\n",
+    certsList: "Ang mga sertipikasyon at training ni Aldwin:\n",
+    honorsList: "Ang mga parangal at karangalan ni Aldwin:\n",
     skillsOverview: (o) => `${o.title}: ${o.description} Kasama rito ang ${o.items}.`,
-    skillDetail: (name, group) => `Bahagi ang ${name} ng ${group} skills ni John.`,
-    skillsList: "Ang mga skills ni John ayon sa larangan:\n",
-    projectsList: (n) => (n === 1 ? "Ang proyekto ni John:\n" : `Ang ${n} proyekto ni John:\n`),
+    skillDetail: (name, group) => `Bahagi ang ${name} ng ${group} skills ni Aldwin.`,
+    skillsList: "Ang mga skills ni Aldwin ayon sa larangan:\n",
+    projectsList: (n) => (n === 1 ? "Ang proyekto ni Aldwin:\n" : `Ang ${n} proyekto ni Aldwin:\n`),
     and: "at",
   },
 };
@@ -121,7 +114,7 @@ const LINK_TL: Record<string, string> = {
   "Get in touch": "Makipag-ugnayan",
   "Go to the contact page": "Pumunta sa contact page",
   "Go to contact": "Pumunta sa contact page",
-  "Email John": "I-email si John",
+  "Email Aldwin": "I-email si Aldwin",
   "Read the about page": "Basahin ang about page",
   "See all projects": "Tingnan ang lahat ng proyekto",
   "See his experience": "Tingnan ang karanasan niya",
@@ -129,7 +122,6 @@ const LINK_TL: Record<string, string> = {
   "Open LinkedIn": "Buksan ang LinkedIn",
 };
 
-/** The text on a link button, in Filipino ("Open the X case study" → "Buksan ang case study ng X"). Unknown labels stay as they are. */
 export function linkLabelTl(label: string): string {
   const m = label.match(/^Open the (.+) case study$/);
   return m ? `Buksan ang case study ng ${m[1]}` : LINK_TL[label] ?? label;

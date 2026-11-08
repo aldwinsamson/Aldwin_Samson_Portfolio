@@ -6,7 +6,6 @@ provider "aws" {
   }
 }
 
-# CloudFront certificates and CloudFront/Route 53 CloudWatch metrics live in us-east-1.
 provider "aws" {
   alias  = "use1"
   region = "us-east-1"

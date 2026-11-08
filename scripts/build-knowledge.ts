@@ -1,13 +1,3 @@
-/**
- * Builds server/chat/knowledge.generated.txt from the same content files that render the site,
- * so the AI assistant never knows something the site doesn't say.
- *
- *   npm run build:knowledge          writes the file
- *   npm run check:knowledge          exits 1 if the file is out of date (use it in CI)
- *
- * It is run with vite-node (not plain node) because the content uses Vite features such as import.meta.glob.
- * Phone numbers and street addresses are not in the content files, so they cannot end up here.
- */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { profile, socials } from "../src/content/profile";

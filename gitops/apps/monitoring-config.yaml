@@ -1,5 +1,3 @@
-# Probes, alert rules and the Grafana dashboard (plain manifests). Waits for the
-# Prometheus Operator CRDs from kube-prometheus-stack via a retrying sync.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

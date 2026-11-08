@@ -5,7 +5,6 @@ data "aws_route53_zone" "primary" {
   private_zone = false
 }
 
-# --- Public website: private S3 + CloudFront + ACM + Route 53 ---------------------------------------------------
 module "static_site" {
   count  = var.aws_site_enabled ? 1 : 0
   source = "../../modules/static-site"
@@ -25,13 +24,11 @@ module "static_site" {
     preload = var.site.hsts_preload
   }
 
-  # One switch for where the domain points (see hosting.tf)
   dns_target    = var.hosting.target == "aws" ? "aws" : "external"
   external_ipv4 = var.hosting.vercel.ipv4
   external_ttl  = var.hosting.vercel.ttl
 }
 
-# --- Monitoring & alerting -----------------------------------------------------------------------------------------
 module "monitoring" {
   count  = var.aws_site_enabled ? 1 : 0
   source = "../../modules/monitoring"
@@ -49,8 +46,6 @@ module "monitoring" {
   error_rate_5xx_threshold_percent = var.monitoring.error_rate_5xx_threshold_percent
 }
 
-# --- Least-privilege role used by .github/workflows/deploy.yml to publish the site ------------------------------
-# It can ONLY write to this one bucket and invalidate this one distribution.
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
@@ -88,7 +83,6 @@ module "site_deploy_role" {
   inline_policy_json = data.aws_iam_policy_document.site_deploy[0].json
 }
 
-# --- Optional DevOps lab ---------------------------------------------------------------------------------------------
 module "k3s_lab" {
   count  = var.lab.enabled ? 1 : 0
   source = "../../modules/k3s-lab"

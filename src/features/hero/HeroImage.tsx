@@ -4,10 +4,6 @@ import type { HeroImageConfig } from "@/config/hero";
 import { profile } from "@/content/profile";
 import { cn } from "@/utils/cn";
 
-/**
- * The replaceable hero image. Image-agnostic: it only needs a src.
- * Fallback chain: cfg.src → cfg.fallbackSrc → designed CSS plate (never a broken image).
- */
 export function HeroImage({
   cfg,
   isMobile,
@@ -17,9 +13,7 @@ export function HeroImage({
 }: {
   cfg: HeroImageConfig;
   isMobile: boolean;
-  /** Optional motion value controlling the inner image zoom (closer → explored). */
   scale?: MotionValue<number>;
-  /** Optional normalized pointer for the moving specular highlight. */
   light?: { x: MotionValue<number>; y: MotionValue<number> };
   className?: string;
 }) {
@@ -79,7 +73,6 @@ function Specular({ x, y, intensity }: { x: MotionValue<number>; y: MotionValue<
   return <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 mix-blend-overlay" style={{ background: bg }} />;
 }
 
-/** Shown only if every image source fails. Elegant, on-brand, never "broken". */
 export function FallbackPlate() {
   return (
     <div

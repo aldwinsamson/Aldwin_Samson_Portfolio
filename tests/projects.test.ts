@@ -99,7 +99,7 @@ describe("resolveProject / sortProjects", () => {
     expect(p.implementation).toEqual([]);
     expect(p.outcomes).toEqual([]);
     expect(p.featured).toBe(false);
-    expect(p.overview).toBe("s"); // falls back to the summary
+    expect(p.overview).toBe("s"); 
     expect(p.cover).toBeUndefined();
   });
 
@@ -124,7 +124,6 @@ describe("selectRingProjects (homepage wheel)", () => {
   });
 
   it("caps the wheel and lets featured projects win the slots, keeping order", () => {
-    // always build a few more than the cap, so the test keeps working if MAX_RING changes
     const total = MAX_RING + 4;
     const ring = selectRingProjects(make(total, [total - 2, total - 1]), MAX_RING);
     expect(ring).toHaveLength(MAX_RING);

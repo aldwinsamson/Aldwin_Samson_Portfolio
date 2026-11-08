@@ -1,19 +1,5 @@
 import { defineProject } from "./_define";
 
-/**
- * Split out of "This Portfolio" on purpose, so the cloud work gets its own page.
- * Written for the situation "the site is served by Vercel, the AWS setup stays in the repo as a dormant, switchable option".
- *
- * CONFIRM before you publish this wording:
- *  1. Only say the site "moved to Vercel" after the DNS switch is really done (docs/switch-hosting.md, part B).
- *  2. The "one setting points the domain to AWS or Vercel" sentence is true only once you have done one real switch.
- *  3. The cost figures are the runbook's ESTIMATES. Replace them with your real number (AWS Billing > Cost Explorer, last full month).
- *  4. The lab line says the cluster was built; keep "ran" only if Argo CD and Grafana actually came up for you.
- *  After editing this file run `npm run build:knowledge` (the assistant's knowledge file must match; CI checks it).
- *
- * IMAGES (add later): an architecture diagram works best.
- *   cover: { src: "/images/projects/portfolio-aws-infrastructure/cover.webp", alt: "Architecture diagram of the portfolio hosting", kind: "authentic" },
- */
 export default defineProject({
   slug: "portfolio-aws-infrastructure",
   title: "Portfolio Infrastructure on AWS",
@@ -28,6 +14,20 @@ export default defineProject({
   stack: ["AWS", "Terraform", "S3", "CloudFront", "ACM", "Route 53", "CloudWatch", "GitHub Actions", "Checkov", "k3s", "Argo CD", "Prometheus", "Grafana"],
   featured: true,
   order: 9,
+
+  cover: {
+    src: "/images/projects/portfolio-aws-infrastructure/architecture.webp",
+    alt: "Architecture diagram of the portfolio hosting and delivery setup",
+    kind: "authentic",
+  },
+  gallery: [
+    {
+      src: "/images/projects/portfolio-aws-infrastructure/architecture.webp",
+      alt: "Architecture diagram of the portfolio hosting and delivery setup",
+      caption: "Architecture diagram of the portfolio hosting and delivery setup",
+      kind: "authentic",
+    },
+  ],
 
   overview:
     "I treated my own site as a production workload. Everything that ran it is in Terraform, the deploy pipeline had no long-lived AWS keys, and the repo has a runbook for deploys, rollbacks, costs and switching hosts.",

@@ -1,7 +1,5 @@
 name: Terraform
 
-# PR   -> fmt + validate + security scan + plan (posted as a PR comment, read-only AWS role)
-# main -> same checks, then apply AFTER manual approval of the "production" GitHub Environment.
 on:
   pull_request:
     paths:
@@ -98,9 +96,9 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-24.04
-    timeout-minutes: 45   # first apply waits for ACM validation + CloudFront deployment
+    timeout-minutes: 45   
     environment:
-      name: production   # configure "Required reviewers" on this environment in GitHub settings
+      name: production  
     permissions:
       id-token: write
       contents: read

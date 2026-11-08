@@ -1,4 +1,3 @@
-# External uptime probes of the REAL production site, run from the lab by blackbox-exporter.
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:

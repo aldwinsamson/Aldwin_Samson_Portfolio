@@ -3,7 +3,6 @@ import { skillIcons } from "@/components/Icons";
 import { Reveal } from "@/components/ui";
 import { cn } from "@/utils/cn";
 
-/** Skill groups in a hairline grid. `compact` = homepage summary (names only). */
 export function StackGrid({ groups, compact = false }: { groups: SkillGroup[]; compact?: boolean }) {
   return (
     <div className="grid overflow-hidden rounded-2xl border border-line bg-line [gap:1px] sm:rounded-[24px] sm:grid-cols-2 lg:grid-cols-3">

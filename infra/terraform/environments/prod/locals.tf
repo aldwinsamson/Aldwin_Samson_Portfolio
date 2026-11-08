@@ -1,5 +1,4 @@
 locals {
-  # The one object every module receives: names and tags are derived from it, never hard-coded.
   context = {
     project     = var.project
     environment = var.environment

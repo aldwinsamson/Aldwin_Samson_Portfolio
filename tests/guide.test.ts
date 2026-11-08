@@ -20,15 +20,15 @@ describe("text processing", () => {
   });
 });
 
-describe("answers questions about John", () => {
+describe("answers questions about Aldwin", () => {
   const cases: [string, string[]][] = [
-    ["Who is John?", ["Computer Engineering"]],
-    ["What does John do?", ["cloud"]],
+    ["Who is Aldwin?", ["Computer Engineering"]],
+    ["What does Aldwin do?", ["cloud"]],
     ["Tell me about his thesis", ["L.I.G.T.A.S."]],
     ["What is L.I.G.T.A.S.?", ["L.I.G.T.A.S."]],
     ["Where did he intern?", ["Stratpoint", "USHER"]],
     ["internship", ["Stratpoint", "USHER"]],
-    ["What did John do at Stratpoint?", ["Stratpoint", "Terraform"]],
+    ["What did Aldwin do at Stratpoint?", ["Stratpoint", "Terraform"]],
     ["What cloud experience does he have?", ["AWS"]],
     ["What awards has he won?", ["Top 2 Best Thesis"]],
     ["What certifications does he have?", ["Edge Impulse"]],
@@ -41,8 +41,8 @@ describe("answers questions about John", () => {
     ["What embedded skills does he have?", ["ESP32"]],
     ["PCB design", ["KiCAD"]],
     ["Where is he based?", ["Metro Manila"]],
-    ["Can I get his resume?", ["contact John personally"]],
-    ["Why should we hire John?", ["Terraform"]],
+    ["Can I get his resume?", ["contact Aldwin personally"]],
+    ["Why should we hire Aldwin?", ["Terraform"]],
     ["How was this website built?", ["React"]],
     ["Which tools does he use for monitoring?", ["Prometheus"]],
     ["Does he have experience with CI/CD pipelines?", ["GitLab"]],
@@ -63,7 +63,7 @@ describe("yes / no questions are grounded", () => {
     ["Does he know Kubernetes?", "Kubernetes"],
     ["Does he use Python?", "Python"],
     ["Has he worked with MQTT?", "MQTT"],
-    ["Is John open to work?", "Cloud"],
+    ["Is Aldwin open to work?", "Cloud"],
   ] as const) {
     it(`"${q}"`, () => {
       const a = ask(q);
@@ -77,7 +77,7 @@ describe("yes / no questions are grounded", () => {
 describe("explains technologies in plain English, tied to his work", () => {
   it("GitOps", () => {
     const a = ask("What is GitOps?");
-    has(a, "single source of truth", "In John's work");
+    has(a, "single source of truth", "In Aldwin's work");
   });
   it("ArgoCD", () => {
     has(ask("What is ArgoCD?"), "Kubernetes");
@@ -103,7 +103,7 @@ describe("small talk", () => {
 
 describe("follow-ups", () => {
   it("'tell me more' continues the last topic without repeating", () => {
-    const first = ask("What did John do at Stratpoint?");
+    const first = ask("What did Aldwin do at Stratpoint?");
     const second = ask("tell me more", { group: first.group, shown: first.shown });
     expect(second.kind).toBe("answer");
     expect(second.text).toContain("More details");
@@ -114,7 +114,7 @@ describe("follow-ups", () => {
   });
 });
 
-describe("when it cannot answer: contact John personally", () => {
+describe("when it cannot answer: contact Aldwin personally", () => {
   const unanswerable = [
     "What's his favourite pizza topping?",
     "Does he know Rust?",
@@ -129,7 +129,7 @@ describe("when it cannot answer: contact John personally", () => {
     it(`"${q}"`, () => {
       const a = ask(q);
       expect(a.kind, a.text).toBe("fallback");
-      expect(a.text.toLowerCase()).toContain("contact john personally");
+      expect(a.text.toLowerCase()).toContain("contact Aldwin personally");
       expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
       expect(a.links.some((l) => l.to === "/contact")).toBe(true);
     });
@@ -141,7 +141,7 @@ describe("when it cannot answer: contact John personally", () => {
     const mail = ask("Does he know Rust?").links.find((l) => l.to.startsWith("mailto:"))!;
     expect(decodeURIComponent(mail.to)).toContain("Does he know Rust?");
   });
-  for (const q of ["What is his salary expectation?", "What's his phone number?", "How old is John?", "Where does he live exactly, what's his home address?"]) {
+  for (const q of ["What is his salary expectation?", "What's his phone number?", "How old is Aldwin?", "Where does he live exactly, what's his home address?"]) {
     it(`private: "${q}"`, () => {
       const a = ask(q);
       expect(a.kind).toBe("fallback");
@@ -172,19 +172,19 @@ describe("stays in sync with the site's content", () => {
 
 describe("understands Filipino, Tagalog and Taglish", () => {
   const cases: [string, string[]][] = [
-    ["Sino si John?", ["Computer Engineering"]],
-    ["Ano ang ginagawa ni John?", ["cloud"]],
+    ["Sino si Aldwin?", ["Computer Engineering"]],
+    ["Ano ang ginagawa ni Aldwin?", ["cloud"]],
     ["Anong mga proyekto ang ginawa niya?", ["KidVerse", "L.I.G.T.A.S."]],
     ["Saan siya nag-aral?", ["Pamantasan"]],
-    ["Saan nag-intern si John?", ["Stratpoint", "USHER"]],
+    ["Saan nag-intern si Aldwin?", ["Stratpoint", "USHER"]],
     ["Ano ang karanasan niya sa AWS?", ["AWS"]],
-    ["Ano ang GitOps?", ["single source of truth", "Sa trabaho ni John"]],
+    ["Ano ang GitOps?", ["single source of truth", "Sa trabaho ni Aldwin"]],
     ["Ano ang ibig sabihin ng MQTT?", ["publish/subscribe"]],
     ["Anong mga parangal ang napanalunan niya?", ["Top 2 Best Thesis"]],
     ["Anong mga sertipikasyon ang mayroon siya?", ["Edge Impulse"]],
     ["Paano ko siya makokontak?", ["aldwinsamsonn@gmail.com"]],
-    ["Saan nakatira si John?", ["Metro Manila"]],
-    ["Bakit ko dapat i-hire si John?", ["Terraform"]],
+    ["Saan nakatira si Aldwin?", ["Metro Manila"]],
+    ["Bakit ko dapat i-hire si Aldwin?", ["Terraform"]],
     ["Ano ang challenges na hinarap niya sa LIGTAS?", ["challenge"]],
     ["Ikuwento mo ang KidVerse", ["MongoDB"]],
     ["Ano ang tesis niya?", ["L.I.G.T.A.S."]],
@@ -206,7 +206,7 @@ describe("understands Filipino, Tagalog and Taglish", () => {
     ["Gumagamit ba siya ng Docker?", "Docker"],
     ["Alam ba niya ang Kubernetes?", "Kubernetes"],
     ["May experience ba siya sa Python?", "Python"],
-    ["Bukas ba si John sa trabaho?", "Cloud"],
+    ["Bukas ba si Aldwin sa trabaho?", "Cloud"],
     ["Nag-aral ba siya sa PLM?", "Pamantasan"],
   ] as const) {
     it(`yes/no: "${q}" → "Opo!"`, () => {
@@ -233,13 +233,13 @@ describe("understands Filipino, Tagalog and Taglish", () => {
     has(ask("Ano ang pwede kong itanong?"), "Narito ang matutulungan ko");
   });
   it("'dagdag pa' continues the last topic", () => {
-    const first = ask("Ano ang ginawa ni John sa Stratpoint?");
+    const first = ask("Ano ang ginawa ni Aldwin sa Stratpoint?");
     expect(first.kind, first.text).toBe("answer");
     const second = ask("dagdag pa", { group: first.group, shown: first.shown });
     has(second, "Karagdagang detalye");
   });
 
-  describe("tells the visitor to contact John personally (in Filipino)", () => {
+  describe("tells the visitor to contact Aldwin personally (in Filipino)", () => {
     for (const q of [
       "Marunong ba siyang mag-Rust?",
       "Ano ang paborito niyang kulay?",
@@ -251,15 +251,15 @@ describe("understands Filipino, Tagalog and Taglish", () => {
         const a = ask(q);
         expect(a.kind, a.text).toBe("fallback");
         expect(a.lang).toBe("tl");
-        has(a, "makipag-ugnayan kay John");
+        has(a, "makipag-ugnayan kay Aldwin");
         expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
-        expect(a.links[0].label).toBe("I-email si John");
+        expect(a.links[0].label).toBe("I-email si Aldwin");
       });
     }
     it("names the word it could not find", () => {
       has(ask("Marunong ba siyang mag-Rust?"), "Rust", "Hindi ko makita");
     });
-    for (const q of ["Magkano ang sweldo niya?", "Ano ang numero ng telepono niya?", "Ilang taon na siya?", "Saan ang tirahan niya?", "May asawa na ba si John?"]) {
+    for (const q of ["Magkano ang sweldo niya?", "Ano ang numero ng telepono niya?", "Ilang taon na siya?", "Saan ang tirahan niya?", "May asawa na ba si Aldwin?"]) {
       it(`private: "${q}"`, () => {
         const a = ask(q);
         expect(a.kind, a.text).toBe("fallback");
@@ -337,10 +337,10 @@ describe("quoting the word it could not find", () => {
 
 describe("smarter questions: counts, latest, compare, follow-ups", () => {
   it("counts things instead of only listing them", () => {
-    expect(ask("How many projects does he have?").text).toMatch(/John has \d+ published projects?/);
+    expect(ask("How many projects does he have?").text).toMatch(/Aldwin has \d+ published projects?/);
     expect(ask("Ilan ang certifications niya?").text).toMatch(/^May \d+ sertipikasyon/);
-    expect(ask("How many awards has he won?").text).toMatch(/John lists \d+ awards?/);
-    expect(ask("How many internships has he done?").text).toMatch(/John has done 2 internships/);
+    expect(ask("How many awards has he won?").text).toMatch(/Aldwin lists \d+ awards?/);
+    expect(ask("How many internships has he done?").text).toMatch(/Aldwin has done 2 internships/);
   });
   it("answers 'latest' and 'current' questions with the right project or role", () => {
     has(ask("What is his latest project?"), "most recent project", "This Portfolio");
@@ -377,7 +377,7 @@ describe("smarter questions: counts, latest, compare, follow-ups", () => {
       has(ask("what tech did he use?", { group: first.group, shown: first.shown }), "Built with", "MongoDB");
     });
     it("a Filipino follow-up with no topic words continues the topic", () => {
-      const first = ask("Ano ang ginawa ni John sa Stratpoint?");
+      const first = ask("Ano ang ginawa ni Aldwin sa Stratpoint?");
       has(ask("ano pa yung ginawa nya doon?", { group: first.group, shown: first.shown, lang: first.lang }), "Karagdagang detalye");
     });
     it("keeps replying in Filipino for a short follow-up", () => {
@@ -402,7 +402,7 @@ describe("follow-up memory never hijacks a question that names its own subject",
     has(a, "Prometheus");
     expect(a.sources.some((s) => s.startsWith("proj:kidverse"))).toBe(false);
   });
-  it("something that is not on the site is still sent to John", () => {
+  it("something that is not on the site is still sent to Aldwin", () => {
     const a = ask("Did he use Rust?", kid());
     expect(a.kind).toBe("fallback");
     has(a, "Rust");
@@ -427,9 +427,8 @@ describe("more Filipino phrasing", () => {
   });
 });
 
-describe("answers are fully Filipino when the visitor writes Filipino", () => {
-  /** English sentence frames that must NOT appear in a Filipino answer. */
-  const ENGLISH_FRAMES = [/\bRole:/, /\bStatus:/, /\bBuilt with\b/, /What John did:/, /How it works:/, /A challenge:/, /Outcome:/, /It includes\b/, /is part of John's/, /John's (skills|experience|education|projects|certifications)/, /\bAt [A-Z][A-Za-z ]+ \(/, /The problem it solves/, /In his own words/, /He is based in/];
+describe("answers are fully Filipino when the visitor writes Filipino", () => { 
+  const ENGLISH_FRAMES = [/\bRole:/, /\bStatus:/, /\bBuilt with\b/, /What Aldwin did:/, /How it works:/, /A challenge:/, /Outcome:/, /It includes\b/, /is part of Aldwin's/, /Aldwin's (skills|experience|education|projects|certifications)/, /\bAt [A-Z][A-Za-z ]+ \(/, /The problem it solves/, /In his own words/, /He is based in/];
   const noEnglishFrames = (a: GuideAnswer) => {
     for (const re of ENGLISH_FRAMES) expect(a.text, `${re} in: ${a.text.slice(0, 160)}`).not.toMatch(re);
   };
@@ -446,10 +445,10 @@ describe("answers are fully Filipino when the visitor writes Filipino", () => {
     ["Ikuwento mo ang KidVerse", "Tungkulin:", "Katayuan:", "Ginawa gamit ang"],
     ["Ano ang challenges sa LIGTAS?", "Isang challenge:"],
     ["Ano ang karanasan niya sa Stratpoint?", "Sa Stratpoint Technologies", "Nagdisenyo"],
-    ["Ano ang ginagawa ni John?", "nakatuon sa cloud"],
+    ["Ano ang ginagawa ni Aldwin?", "nakatuon sa cloud"],
     ["Ano ang MQTT?", "publish/subscribe", "Isang magaan"],
-    ["Anong mga parangal ang napanalunan niya?", "Ang mga parangal at karangalan ni John"],
-    ["Ano ang Cloud & Architecture skills ni John?", "Kasama rito ang"],
+    ["Anong mga parangal ang napanalunan niya?", "Ang mga parangal at karangalan ni Aldwin"],
+    ["Ano ang Cloud & Architecture skills ni Aldwin?", "Kasama rito ang"],
   ]) {
     it(`"${q}"`, () => {
       const a = ask(q);
@@ -493,7 +492,7 @@ describe("English first: pre-messages are English, replies follow the visitor's 
   });
 });
 
-describe("only complex or unknown questions are sent to John", () => {
+describe("only complex or unknown questions are sent to Aldwin", () => {
   for (const q of [
     "Would he be a good fit for my startup?",
     "Why did he choose Terraform over Pulumi?",
@@ -522,12 +521,12 @@ describe("two questions in one message", () => {
   it("answers both in Filipino", () => {
     const a = ask("Ano ang skills niya? Paano ko siya makokontak?");
     expect(a.lang).toBe("tl");
-    has(a, "Ang mga skills ni John", "aldwinsamsonn@gmail.com");
+    has(a, "Ang mga skills ni Aldwin", "aldwinsamsonn@gmail.com");
   });
-  it("answers what it can and sends John the rest", () => {
+  it("answers what it can and sends Aldwin the rest", () => {
     const a = ask("What are his skills? What is his favorite color?");
     expect(a.kind).toBe("answer");
-    has(a, "skills by area", "contact John");
+    has(a, "skills by area", "contact Aldwin");
     expect(a.links.some((l) => l.to.startsWith("mailto:"))).toBe(true);
   });
   it("'and' inside a single question does not split it", () => {

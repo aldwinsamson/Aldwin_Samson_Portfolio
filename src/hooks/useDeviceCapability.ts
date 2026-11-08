@@ -1,14 +1,6 @@
 import { useMemo } from "react";
 import { useMediaQuery, usePrefersReducedMotion } from "./useMediaQuery";
 
-/**
- * Adaptive quality tiers for the hero.
- *  high     → full WebGL scene, environment reflections, particles, DPR up to 2
- *  medium   → simplified scene, fewer particles, DPR up to 1.5
- *  low      → no WebGL; image parallax only
- *  static   → no WebGL, no continuous motion (reduced motion / no JS features)
- * (The homepage hero now uses its own simple rules — see features/hero/Hero.tsx.)
- */
 export type QualityTier = "high" | "medium" | "low" | "static";
 
 export interface CapabilitySignals {
@@ -23,7 +15,6 @@ export interface CapabilitySignals {
   feature3DEnabled: boolean;
 }
 
-/** Pure decision function — unit tested in tests/quality.test.ts */
 export function decideQualityTier(s: CapabilitySignals): QualityTier {
   if (s.reducedMotion) return "static";
   if (!s.feature3DEnabled || !s.webgl || s.saveData) return "low";

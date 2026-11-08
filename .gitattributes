@@ -3,6 +3,5 @@
 *.tf text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
-# The Lambda zip is hashed by Terraform: identical bytes on Windows and on the GitHub runner, or plans show phantom changes.
 server/** text eol=lf
 *.mjs text eol=lf

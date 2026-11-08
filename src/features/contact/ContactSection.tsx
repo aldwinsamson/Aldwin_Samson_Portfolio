@@ -35,12 +35,10 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
   return (
     <section id="contact" aria-labelledby="contact-title" className="relative py-16 sm:py-24 lg:py-32">
       <Container>
-        {/* Animated gradient border wrapper */}
         <div className="relative overflow-hidden rounded-2xl p-[1px] sm:rounded-[32px]">
           <div className="animated-border absolute inset-0 rounded-2xl opacity-40 sm:rounded-[32px]" aria-hidden="true" />
 
           <div className="relative overflow-hidden rounded-2xl bg-[#0d0d0f] px-5 py-12 text-[#ece7dc] sm:rounded-[32px] sm:px-10 sm:py-16 lg:px-20 lg:py-20">
-            {/* Ambient glow */}
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-60" style={{ background: "radial-gradient(60% 80% at 85% 0%, rgba(214,186,134,0.22), transparent 60%), radial-gradient(40% 60% at 0% 100%, rgba(103,212,230,0.10), transparent 60%)" }} />
             <div aria-hidden="true" className="pointer-events-none absolute inset-4 rounded-xl border border-white/[0.06] sm:inset-6 sm:rounded-[24px]" />
 
@@ -97,7 +95,7 @@ export function ContactSection({ headingLevel = "h2" }: { headingLevel?: "h1" | 
                       </li>
                     ))}
                 </ul>
-                <p className="t-meta mt-4 text-[0.58rem] text-[#9a9487] sm:mt-5 sm:text-[0.66rem]">{profile.location} · Replies usually within a few days</p>
+                <p className="t-meta mt-4 text-[0.58rem] text-[#9a9487] sm:mt-5 sm:text-[0.66rem]">{profile.location}</p>
               </Reveal>
             </div>
           </div>

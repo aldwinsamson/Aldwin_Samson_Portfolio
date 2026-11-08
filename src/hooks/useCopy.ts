@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** Copy text with graceful fallback. `status` drives accessible feedback. */
 export function useCopy(resetMs = 2200) {
   const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
   const timer = useRef<number | undefined>(undefined);

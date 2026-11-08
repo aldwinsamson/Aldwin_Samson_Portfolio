@@ -1,9 +1,5 @@
-# Lean profile for a single 2 GiB k3s node. Prometheus keeps 3 days on a small PVC;
-# everything is reachable only through SSM port-forwards (NodePorts, no inbound rules).
 fullnameOverride: kps
 
-# k3s embeds etcd/scheduler/controller-manager/proxy in one process, so those scrape targets
-# do not exist — disable them to avoid permanent TargetDown noise.
 kubeEtcd: { enabled: false }
 kubeScheduler: { enabled: false }
 kubeControllerManager: { enabled: false }
@@ -35,7 +31,6 @@ prometheus:
     scrapeInterval: 60s
     evaluationInterval: 60s
     walCompression: true
-    # Pick up every ServiceMonitor / PodMonitor / Probe / PrometheusRule in the cluster.
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
@@ -63,7 +58,6 @@ alertmanager:
 
 grafana:
   defaultDashboardsTimezone: Asia/Manila
-  # Admin password is generated on the node at first boot (secret `grafana-admin`, also in SSM Parameter Store).
   admin:
     existingSecret: grafana-admin
     userKey: admin-user
@@ -72,7 +66,7 @@ grafana:
     type: NodePort
     nodePort: 30300
   persistence:
-    enabled: false   # dashboards + data sources are provisioned from Git
+    enabled: false  
   sidecar:
     dashboards:
       enabled: true
@@ -81,14 +75,13 @@ grafana:
     requests: { cpu: 25m, memory: 100Mi }
     limits: { memory: 256Mi }
   additionalDataSources:
-    # Uses the EC2 instance role (read-only CloudWatch) — no access keys stored anywhere.
     - name: CloudWatch
       uid: cloudwatch
       type: cloudwatch
       access: proxy
       jsonData:
         authType: default
-        defaultRegion: us-east-1   # CloudFront metrics are published in us-east-1
+        defaultRegion: us-east-1   
 
 kube-state-metrics:
   resources:

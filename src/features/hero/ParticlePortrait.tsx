@@ -8,9 +8,6 @@ import { sampleParticles, type ParticleMode } from "./particles";
  * The hero portrait, rebuilt out of thousands of light particles.
  *  - assembles from scattered dust on load (staggered per particle)
  *  - gently breathes and is pushed away by the pointer (desktop)
- *  - `disperse` (0→1, driven by scroll) blows the portrait apart again
- *  - dark theme: gold/ivory light on black · light theme: bronze/ink stipple on paper
- * The canvas is always square; the wrapper decides the size.
  */
 
 const VERT = /* glsl */ `
@@ -94,15 +91,12 @@ const SAMPLE_SIZE = 256;
 
 export interface ParticlePortraitProps {
   src: string;
-  /** 0 → 1. Scroll-driven dispersal. */
   disperse: MotionValue<number>;
   count: number;
-  /** Pointer repulsion (fine pointers only). */
   interactive: boolean;
   dprCap?: number;
   className?: string;
   onReady?: () => void;
-  /** Fires once, after the particle intro has fully finished (the photo should fade in now). */
   onAssembled?: () => void;
   onFail?: () => void;
 }
@@ -116,11 +110,9 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
   const apiRef = useRef<Api | null>(null);
   const { theme } = useTheme();
   const modeRef = useRef<ParticleMode>(theme);
-  // Latest callbacks without re-running the (expensive) setup effect.
   const cbRef = useRef({ onReady, onAssembled, onFail });
   cbRef.current = { onReady, onAssembled, onFail };
 
-  // Theme switch → rebuild particle distribution + colours (no teardown).
   useEffect(() => {
     modeRef.current = theme;
     apiRef.current?.setMode(theme);
@@ -143,7 +135,7 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
     let visible = true;
     let loaded = false;
     let prog = 0;
-    let t0 = 0; // wall-clock start of the assembly, so slow devices still finish on schedule
+    let t0 = 0;
     let time = 0;
     let frameCount = 0;
     const coarse = window.matchMedia("(pointer: coarse)").matches;
@@ -153,10 +145,10 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
     let pointerPowTarget = 0;
     let pixels: Uint8ClampedArray | null = null;
     let baseDpr = 1;
-    let quality = 0; // 0 full · 1 lower DPR + 70% particles · 2 40% particles
+    let quality = 0; 
     let slowFrames = 0;
     let skip = false;
-    let hold = 0; // short beat on the finished particle portrait before the photo takes over
+    let hold = 0; 
     let settle = 0;
     let assembledFired = false;
 
@@ -213,20 +205,17 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
     apiRef.current = { setMode: build };
 
     const resize = () => {
-      // Square canvas sized to the wrapper; never collapses to 0 (e.g. while a layout is settling on a phone).
       const w = Math.max(2, Math.min(wrap.clientWidth || 0, wrap.clientHeight || wrap.clientWidth || 0));
       const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       renderer.setPixelRatio(dpr);
       renderer.setSize(w, w, false);
       baseDpr = dpr;
-      // One sample cell is w / SAMPLE_SIZE css px; dots are slightly larger than a cell.
       uniforms.uSize.value = (w / SAMPLE_SIZE) * dpr * 1.3;
     };
     const ro = new ResizeObserver(resize);
     ro.observe(wrap);
     resize();
 
-    // Load + sample the cut-out portrait.
     const img = new Image();
     img.decoding = "async";
     img.onload = () => {
@@ -270,14 +259,12 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
       raf = 0;
       if (disposed || !visible || document.hidden || !loaded) return;
       raf = requestAnimationFrame(frame);
-      // Phones: render every other frame to save battery.
       if (coarse && (frameCount++ & 1) === 1) return;
 
       const rawDt = (now - last) / 1000;
       const dt = Math.min(rawDt, 0.05);
       last = now;
 
-      // Adaptive quality: sustained slow frames step the portrait down instead of dropping the whole page's fps.
       if (rawDt > 0.034 && rawDt < 0.5) slowFrames++;
       else slowFrames = Math.max(0, slowFrames - 1);
       if (slowFrames > 40 && quality < 2) {
@@ -298,7 +285,6 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
       pointerPow += (pointerPowTarget - pointerPow) * Math.min(1, dt * 6);
 
       const dispersed = disperse.get();
-      // Fully dispersed → nothing visible: stop drawing. Settled + idle → 30 fps is plenty for the slow "breathing".
       if (dispersed > 0.995) return;
       const idle = prog >= 1 && pointerPow < 0.02 && dispersed < 0.001;
       if (idle) {
@@ -307,7 +293,7 @@ export function ParticlePortrait({ src, disperse, count, interactive, dprCap = 1
       }
 
       if (prog >= 1) {
-        const slowDt = Math.min(rawDt, 0.25); // wall-clock-ish, so slow devices still hand over on time
+        const slowDt = Math.min(rawDt, 0.25); 
         hold += slowDt;
         if (hold > 0.5) {
           if (!assembledFired) {

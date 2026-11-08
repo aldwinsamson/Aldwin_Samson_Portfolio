@@ -10,22 +10,15 @@ import { linkLabelTl } from "./frames";
 export type { Fact, GuideLink } from "./corpus";
 export type { Lang } from "@/content/knowledge";
 
-/* ========================================================================== */
-/*  Public types                                                              */
-/* ========================================================================== */
+// Public types 
 
 export interface GuideAnswer {
-  /** answer = found in the portfolio · smalltalk = greeting etc. · fallback = could not answer → contact John */
   kind: "answer" | "smalltalk" | "fallback";
   text: string;
   links: GuideLink[];
-  /** Questions the visitor might want to ask next (in the visitor's language). */
   followUps: string[];
-  /** Ids of the facts used (debugging / tests). */
   sources: string[];
-  /** Language the visitor wrote in — the assistant's own sentences use the same one. */
   lang: Lang;
-  /** Topic of the answer — passed back as context so "tell me more" works. */
   group?: string;
   shown?: string[];
 }
@@ -33,22 +26,18 @@ export interface GuideAnswer {
 export interface GuideContext {
   group?: string;
   shown?: string[];
-  /** Language of the previous answer — a short follow-up ("Terraform?") keeps replying in it. */
   lang?: Lang;
 }
 
-/* ========================================================================== */
-/*  Text processing                                                           */
-/* ========================================================================== */
+// Text processing
 
 const STOP = new Set([
   ...(
-    "a an and are as at be been being by can could did do does done for from get got had has have having he her hers him his how i if in into is it its me my of on or our so than that the their them then there these they this those to us was we were what whats when where which who whom whose why will with would you your yours about please kindly really very just also ok okay yes no tell show give explain describe say know knows many much some any anything everything something s t john aldwin samson mr sir maam hey hi hello thanks thank want need let lets use used using usage like mean means hes johns whats more kinda sort guess think thing things stuff etc all hold holds held own owns possess possesses currently now today ever never always still already pls plz simple terms simply plain english words layman briefly brief short quick quickly long duration length period when date dates month months week weeks year years latest recent newest recently ongoing current compare versus vs difference differences differ between else other others another besides face faced facing encounter encountered two three both each highest level greatest biggest proudest"
+    "a an and are as at be been being by can could did do does done for from get got had has have having he her hers him his how i if in into is it its me my of on or our so than that the their them then there these they this those to us was we were what whats when where which who whom whose why will with would you your yours about please kindly really very just also ok okay yes no tell show give explain describe say know knows many much some any anything everything something s t john aldwin samson mr sir maam hey hi hello thanks thank want need let lets use used using usage like mean means hes aldwins whats more kinda sort guess think thing things stuff etc all hold holds held own owns possess possesses currently now today ever never always still already pls plz simple terms simply plain english words layman briefly brief short quick quickly long duration length period when date dates month months week weeks year years latest recent newest recently ongoing current compare versus vs difference differences differ between else other others another besides face faced facing encounter encountered two three both each highest level greatest biggest proudest"
   ).split(/\s+/),
   ...TL_STOPWORDS,
 ]);
 
-/** Lowercase, remove accents, glue dotted acronyms and tech punctuation ("L.I.G.T.A.S." → "ligtas", "C++" → "cpp"). */
 export function normalize(text: string): string {
   return text
     .toLowerCase()
@@ -63,7 +52,6 @@ export function normalize(text: string): string {
     .trim();
 }
 
-/** Light stemmer (consistent on both sides, so exact linguistics don't matter). */
 export function stem(w: string): string {
   if (w.length > 5 && w.endsWith("ies")) return `${w.slice(0, -3)}y`;
   if (w.length > 6 && w.endsWith("ing")) return w.slice(0, -3);
@@ -80,7 +68,6 @@ export function tokenize(text: string, keepStopwords = false): string[] {
     .map(stem);
 }
 
-/** Words that mean (roughly) the same thing — a match on any of them counts. */
 const SYNONYM_GROUPS: string[][] = [
   ["intern", "internship", "ojt", "trainee", "traineeship"],
   ["job", "career", "opportunity", "employment", "vacancy", "hire", "hiring", "hired", "recruit"],
@@ -125,7 +112,6 @@ const SYN = (() => {
   return map;
 })();
 
-/** Optimal-string-alignment distance (Levenshtein + adjacent swaps), bounded. */
 function distance(a: string, b: string, max: number): number {
   if (Math.abs(a.length - b.length) > max) return max + 1;
   const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -140,46 +126,37 @@ function distance(a: string, b: string, max: number): number {
   return d[a.length][b.length];
 }
 
-/* ========================================================================== */
-/*  Conversation rules (English; the Filipino ones live in ./tagalog.ts)      */
-/* ========================================================================== */
-
+// Conversation rules 
 const GREETING = /^\s*(hi|hello|hey|heya|hiya|yo|sup|hola|good\s+(morning|afternoon|evening|day))\b/;
 const THANKS = /\b(thanks|thank you|thankyou|cheers|appreciate it|much appreciated)\b/;
 const BYE = /^\s*(bye|goodbye|see you|see ya|that's all|thats all|that is all|nothing else|i'm done|im done|ok bye|okay bye)\b/;
-const IDENTITY = /\b(who|what) are you\b|\bare you (an? )?(ai|bot|robot|human|real|chatgpt|gpt|person|john)\b|\byour name\b|\bwho am i (talking|speaking|chatting)\b|\bwho made you\b/;
+const IDENTITY = /\b(who|what) are you\b|\bare you (an? )?(ai|bot|robot|human|real|chatgpt|gpt|person|aldwin)\b|\byour name\b|\bwho am i (talking|speaking|chatting)\b|\bwho made you\b/;
 const HELP = /^\s*(help|menu|options)\b|\bwhat can (i|you) (ask|do|answer)\b|\bwhat do you know\b|\bhow (do|can) i use (you|this)\b|\bwhat (topics|questions)\b/;
 const MORE = /^\s*(more|tell me more|go on|continue|and|what else|anything else|more details?|elaborate|expand|next|keep going|more about (that|this|it))\s*[?!.]*\s*$/;
 
-/** Personal / private topics John prefers to discuss directly. */
 const PRIVATE =
   /\b(salary|salaries|compensation|expected pay|pay rate|hourly rate|how much (do|does|would|will|is).*(earn|make|charge|cost|paid|ask)|how much.*\b(rate|fee|pay|salary)\b|how old|\bage\b|birthday|birth ?date|date of birth|birthplace|home address|street address|phone|mobile|cell ?phone|whatsapp|viber|telegram|girlfriend|boyfriend|married|single|relationship status|relationship|religion|religious|politic|politics|parents|siblings|family|nationality|citizenship|visa|passport|health|medical|disabilit|sexuality|salary history|tax|ssn|id number)\b/;
 
-/** Clearly unrelated to John's work. */
 const OFF_TOPIC =
   /\b(weather|joke|poem|song lyrics|lyrics|recipe|capital of|president of|prime minister|bitcoin|crypto|stock price|football|basketball|nba|movie|anime|horoscope|translate|lottery|homework|solve|calculate|write (me )?(a|an|some) (essay|code|script|poem|story|email|letter)|tell me a (joke|story)|what time is it|news)\b/;
 
-/** Work-arrangement questions (remote, relocation, notice period…) — not published on the site, so John answers these himself. */
 const WORK_TERMS =
-  /\b(remote(ly)?|relocat\w*|hybrid|on-?site|full[- ]?time|part[- ]?time|notice period|start date|when can (he|john) start|sponsor\w*|work permit|time ?zone|overtime|willing to|contract(or)?|freelanc\w*)\b/;
+  /\b(remote(ly)?|relocat\w*|hybrid|on-?site|full[- ]?time|part[- ]?time|notice period|start date|when can (he|aldwin) start|sponsor\w*|work permit|time ?zone|overtime|willing to|contract(or)?|freelanc\w*)\b/;
 const WORK_CONTEXT = /\b(work|job|role|hire|hiring|join|start|available|employ\w*|position|opportunit\w*|can he|will he|would he|could he|is he willing)\b/;
 
-/** Open-ended, opinion or hypothetical questions — only John can answer these properly. */
 const COMPLEX =
-  /\b(would|will|could|can) (he|john|you) (be )?(a )?(good |great |right |perfect )?(fit|match)\b|\bdo you think\b|\bin your opinion\b|\bwhat if\b|\bhow would (he|john)\b|\bwhy did (he|john) (choose|pick|decide|leave|quit|use|go)\b|\bwhy does (he|john) (prefer|like|choose|use)\b|\b(weakness(es)?|biggest failure|greatest weakness|shortcomings?)\b|(his|john'?s) (thoughts|opinion|view|take) on\b|\bwould (he|john) (consider|be interested|join|accept|take|work for)\b|\bhow (do|does) (he|john) (feel|think)\b|\bwhat would (he|john)\b|\bcan (he|john) help (me|us|my)\b|\bour (team|company|startup|project)\b/;
+  /\b(would|will|could|can) (he|aldwin|you) (be )?(a )?(good |great |right |perfect )?(fit|match)\b|\bdo you think\b|\bin your opinion\b|\bwhat if\b|\bhow would (he|aldwin)\b|\bwhy did (he|aldwin) (choose|pick|decide|leave|quit|use|go)\b|\bwhy does (he|aldwin) (prefer|like|choose|use)\b|\b(weakness(es)?|biggest failure|greatest weakness|shortcomings?)\b|(his|aldwin'?s) (thoughts|opinion|view|take) on\b|\bwould (he|aldwin) (consider|be interested|join|accept|take|work for)\b|\bhow (do|does) (he|aldwin) (feel|think)\b|\bwhat would (he|aldwin)\b|\bcan (he|aldwin) help (me|us|my)\b|\bour (team|company|startup|project)\b/;
 const TL_COMPLEX =
   /\b(sa palagay mo|sa tingin mo|ano ang palagay|ano sa tingin|paano kung|bakit niya (pinili|iniwan|napili|ginamit)|kaya ba niya|babagay ba siya|bagay ba siya|angkop ba siya|tatanggapin ba niya|interesado ba siya|kahinaan|ano ang opinyon)\b/;
-/** Words that show the message is English even when it is short ("good morning") — so the Filipino-follow-up rule never flips English to Filipino. */
 const ENGLISH_HINT = /\b(hi|hello|hey|thanks|thank|good|morning|afternoon|evening|bye|ok|okay|yes|no|please|what|who|where|when|why|how|tell|show|is|are|does|did|can|the|and|about|more)\b/;
 
 const SHORTCUTS: { test: RegExp; ids: string[] }[] = [
-  { test: /\b(is|are) (he|john|aldwin|you) (available|open|looking|hirable|employed|free|hiring)\b|\bopen to (work|opportunit|roles?|offers?|job)|\bavailable (for|to) (hire|work)\b|\b(can|could) (i|we) hire (him|john)\b|\blooking for (a )?(job|work|role|opportunit)/, ids: ["availability"] },
-  { test: /\bwhy (should|would|do|shall|must) (i|we|you).*(hire|choose|pick|work)|\bwhat makes (him|john|you) (different|special|unique|stand)|\bsell (him|yourself)|\b(his|john'?s|your) strengths?\b|\bwhy hire\b/, ids: ["faq:why-hire"] },
+  { test: /\b(is|are) (he|john|aldwin|you) (available|open|looking|hirable|employed|free|hiring)\b|\bopen to (work|opportunit|roles?|offers?|job)|\bavailable (for|to) (hire|work)\b|\b(can|could) (i|we) hire (him|aldwin)\b|\blooking for (a )?(job|work|role|opportunit)/, ids: ["availability"] },
+  { test: /\bwhy (should|would|do|shall|must) (i|we|you).*(hire|choose|pick|work)|\bwhat makes (him|aldwin|you) (different|special|unique|stand)|\bsell (him|yourself)|\b(his|aldwin'?s|your) strengths?\b|\bwhy hire\b/, ids: ["faq:why-hire"] },
   { test: /\b(cv|resume|curriculum vitae)\b/, ids: ["faq:resume"] },
-  { test: /\bwhere (is|are|does|do) (he|you|john|aldwin) (live|based|from|located)\b|\bwhere('s| is) (he|john|aldwin) (from|based|located)\b|\bwhich (city|country)\b|\bwhere (do|does) (he|john) live\b|\bwhere are you (from|based)\b|\bwhat country\b|\bwhere.*\b(located|based)\b/, ids: ["location"] },
-  { test: /\bwho (is|s|was) (he|john|aldwin|this|samson|john aldwin)\b|\bwho is john\b|\btell me (more )?about (him|john|aldwin|yourself|you)\b|\bintroduce (him|john|yourself)\b|\bdescribe (him|john|yourself)\b|\bwhat (does|do) (he|john|aldwin|you) do\b|\bwhat is (he|john) (about|into)\b|^\s*(about|bio|profile)\s*[?.!]*\s*$/, ids: ["faq:who", "focus-list"] },
+  { test: /\bwhere (is|are|does|do) (he|you|john|aldwin) (live|based|from|located)\b|\bwhere('s| is) (he|john|aldwin) (from|based|located)\b|\bwhich (city|country)\b|\bwhere (do|does) (he|aldwin) live\b|\bwhere are you (from|based)\b|\bwhat country\b|\bwhere.*\b(located|based)\b/, ids: ["location"] },
+  { test: /\bwho (is|s|was) (he|john|aldwin|this|samson|john aldwin)\b|\bwho is aldwin\b|\btell me (more )?about (him|john|aldwin|yourself|you)\b|\bintroduce (him|aldwin|yourself)\b|\bdescribe (him|aldwin|yourself)\b|\bwhat (does|do) (he|john|aldwin|you) do\b|\bwhat is (he|aldwin) (about|into)\b|^\s*(about|bio|profile)\s*[?.!]*\s*$/, ids: ["faq:who", "focus-list"] },
 ];
-/** The same shortcuts for Filipino questions. */
 const TL_SHORTCUTS: { test: RegExp; ids: string[] }[] = [
   { test: TL.availability, ids: ["availability"] },
   { test: TL.whyHire, ids: ["faq:why-hire"] },
@@ -189,7 +166,6 @@ const TL_SHORTCUTS: { test: RegExp; ids: string[] }[] = [
   { test: TL.projectsBuilt, ids: ["projects-list"] },
 ];
 
-/** Judgement questions ("is he good at AWS?") — the assistant can show the facts but not rate his level. */
 const EVALUATIVE = /\b(good|great|excellent|expert|skilled|skillful|proficient|advanced|competent|better|stronger|strongest|weaker|weakest)\b/;
 const EVAL_TOKENS = new Set(["good", "great", "excellent", "expert", "skilled", "skillful", "proficient", "advanced", "competent", "better", "stronger", "strongest", "weaker", "weakest"].map((w) => stem(w)));
 
@@ -197,9 +173,7 @@ const EXPLICIT_DEFINE = /\b(define|definition|meaning|stands? for|explain|eli5|w
 const STARTS_WHAT_IS = /^\s*(what is|what s|whats|what are)\b/;
 const YES_NO = /^\s*(does|do|did|is|are|was|were|has|have|had|can|could|will|would)\b/;
 
-/* ========================================================================== */
-/*  The guide                                                                 */
-/* ========================================================================== */
+//  The guide
 
 interface Doc {
   fact: Fact;
@@ -219,10 +193,8 @@ interface Ranked {
   matched: Set<number>;
 }
 
-/** Topic words that appear everywhere — they matter less when the question also names something specific. */
 const GENERIC = new Set(["experience", "work", "skill", "tool", "technology", "stack", "background", "history", "project"].map((w) => stem(w)));
 
-/** Words that only ask ABOUT the topic being discussed ("what tech did he use?") — they name no subject of their own. */
 const TOPICAL_TOKENS = new Set(["use", "used", "using", "tech", "technology", "technologie", "stack", "tool", "role", "challenge", "outcome", "result", "team", "teammate", "duration", "link", "github", "demo", "repo", "code", "source", "built", "highlight"].map((w) => stem(w)));
 
 const K1 = 1.2;
@@ -231,7 +203,6 @@ const MIN_COVERAGE = 0.5;
 const MIN_SCORE = 1.0;
 
 export function createGuide(corpus: Fact[] = buildCorpus()) {
-  /* ------------------------------ Index ------------------------------ */
   const docs: Doc[] = corpus.map((fact) => {
     const tokens = [
       ...Array(3).fill(tokenize(fact.title)).flat(),
@@ -253,7 +224,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
   const idfMax = Math.log(1 + (N - 1 + 0.5) / 1.5);
   const vocab = [...df.keys()];
   const byId = new Map(corpus.map((f) => [f.id, f]));
-  /** The fact's text in the visitor's language (Filipino wording where it exists, English otherwise). */
   const txt = (f: Fact, lang: Lang) => (lang === "tl" ? f.textTl ?? f.text : f.text);
   const brief = (f: Fact, lang: Lang) => (lang === "tl" ? f.shortTl ?? f.short ?? f.textTl ?? f.text : f.short ?? f.text);
 
@@ -263,7 +233,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return idf(term) * ((f * (K1 + 1)) / (f + K1 * (1 - B + (B * d.len) / avgLen)));
   };
 
-  /** Fixes a typo by finding the nearest known word (only for longer words, same first letter). */
   const correct = (t: string): string | null => {
     const max = t.length >= 9 ? 2 : t.length >= 5 ? 1 : 0;
     if (!max) return null;
@@ -317,7 +286,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
         }
       }
       if (score <= 0) continue;
-      // Exact title match: every word of the fact's title appears in the question.
       const titleTokens = tokenize(d.fact.title);
       if (titleTokens.length && titleTokens.every((t) => groups.some((g) => g.alts.some((a) => a.term === t)))) score *= 1.25;
       score *= (d.fact.boost ?? 1) * (boostFor ? boostFor(d.fact) : 1);
@@ -326,7 +294,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return out.sort((a, b) => b.score - a.score);
   };
 
-  /* ------------------------------ Helpers ------------------------------ */
   const personalLinks = (S: GuideStrings, question?: string): GuideLink[] => {
     const subject = encodeURIComponent(GUIDE.emailSubject);
     const body = question ? encodeURIComponent(S.emailBody(question.slice(0, 300))) : "";
@@ -357,7 +324,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return out;
   };
 
-  /** The words in the visitor's question that appear nowhere on the site, in the visitor's own spelling. */
   const unknownFrom = (raw: string, groups: QueryGroup[]): string[] => {
     const original = raw.match(/[A-Za-z0-9+#.']+/g) ?? [];
     return groups
@@ -379,7 +345,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return out;
   };
 
-  /** Best experience / project evidence mentioning the same terms (used to ground definitions and yes/no answers). */
   const evidence = (groups: QueryGroup[], exclude: Set<string>): Fact | null => {
     const r = rank(groups, (f) => (f.group.startsWith("exp:") || f.group.startsWith("proj:")) && f.kind === "detail" && !exclude.has(f.id));
     return r[0] && r[0].score > 1.5 ? r[0].fact : null;
@@ -429,7 +394,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     };
   };
 
-  /** Writes the answer: the best fact, plus the most relevant supporting points from the same topic. */
   const compose = (ranked: Ranked[], opts: { yes?: boolean; stay?: boolean; groups: QueryGroup[]; ctx: GuideContext; lang: Lang }): GuideAnswer => {
     const S = STRINGS[opts.lang];
     const top = ranked[0];
@@ -456,7 +420,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
         lines.push(`• ${brief(r.fact, opts.lang)}`);
         used.push(r.fact);
       }
-      // Skill facts are thin on their own — back them up with real evidence.
       if (best.group.startsWith("skills:")) {
         const ev = evidence(opts.groups, new Set(used.map((u) => u.id)));
         if (ev) {
@@ -482,7 +445,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
       lines.push(txt(best, opts.lang));
     }
 
-    // A strong answer from a different topic is worth a second paragraph (e.g. a skill AND the project that used it).
     const other = ranked.find((r) => r.fact.group !== best.group && r.score >= 0.85 * top.score && r.fact.kind !== "glossary" && !used.includes(r.fact));
     if (other && !opts.stay && best.kind !== "list" && other.fact.kind !== "list" && lines.length < 4) {
       lines.push(other.fact.kind === "detail" ? txt(other.fact, opts.lang) : txt(other.fact, opts.lang).split("\n")[0]);
@@ -526,8 +488,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     };
   };
 
-  /* --------------------------- Smarter intents --------------------------- */
-  /** "How many projects does he have?" — a real count, plus the list it came from. */
+  // Smarter intents 
   const intentCount = (en: string, lang: Lang): GuideAnswer | null => {
     const m = en.match(/\bhow many\b.*\b(projects?|certifications?|certificates?|trainings?|awards?|honou?rs?|internships?|interns?)\b/);
     if (!m) return null;
@@ -553,7 +514,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     };
   };
 
-  /** Month + year of a period like "Aug 2025 — May 2026" (the END of it); "2026" counts as late 2026; "Present" is the far future. */
   const endStamp = (period: string): number => {
     if (/present|ongoing|current/i.test(period)) return Number.MAX_SAFE_INTEGER;
     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
@@ -564,14 +524,13 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return Number(last[2]) * 12 + (mi >= 0 ? mi : 11);
   };
 
-  /** "What's his latest project?", "What is he working on now?", "Where did he work most recently?" */
   const intentRecent = (en: string, lang: Lang): GuideAnswer | null => {
     const S = STRINGS[lang];
     const ongoing = /\b(current|currently|ongoing|working on|building|developing|now)\b/.test(en);
     const asksProject =
       /\b(latest|newest|most recent|recent|recently|last|current|currently|ongoing|new)\b.*\b(project|built|made|created|developed|app|system)\b/.test(en) ||
       /\b(project|built|made|created)\b.*\b(latest|newest|most recent|recently|currently|ongoing|now)\b/.test(en) ||
-      /\bworking on\b|\bwhat current\b|\b(is|s) (he|john) (building|developing|making)\b/.test(en);
+      /\bworking on\b|\bwhat current\b|\b(is|s) (he|aldwin) (building|developing|making)\b/.test(en);
     if (asksProject) {
       const pool = projects.filter((p) => byId.has(`proj:${p.slug}`));
       const live = ongoing ? pool.filter((p) => p.status === "In progress") : [];
@@ -584,8 +543,8 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     }
     const asksRole =
       /\b(latest|most recent|recent|last|current|currently)\b.*\b(job|work|internship|intern|role|position|company|employer|experience)\b/.test(en) ||
-      /\bwhere (does|did|is) (he|john) (work|worked|working|intern|interned)\b.*\b(now|currently|last|recently)\b/.test(en) ||
-      /\bwhere (is|does) (he|john) (work|working)\b/.test(en);
+      /\bwhere (does|did|is) (he|aldwin) (work|worked|working|intern|interned)\b.*\b(now|currently|last|recently)\b/.test(en) ||
+      /\bwhere (is|does) (he|aldwin) (work|working)\b/.test(en);
     if (asksRole) {
       const job = experience.find((e) => e.type !== "Project");
       const fact = job && byId.get(`exp:${job.id}`);
@@ -597,7 +556,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return null;
   };
 
-  /** "Compare Terraform and CloudFormation" — one best fact per thing being compared. */
   const intentCompare = (en: string, lang: Lang): GuideAnswer | null => {
     if (!/\b(compare|versus|vs|differences?|differ|better than|how (is|are) .* different)\b/.test(en)) return null;
     const groups = groupsFor(tokenize(en)).filter((g) => !g.unknown && !isGeneric(g));
@@ -621,14 +579,13 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     };
   };
 
-  /* ------------------------------ ask() ------------------------------ */
+  // ask()
   function askOne(raw: string, ctx: GuideContext = {}): GuideAnswer {
     const query = raw.trim().slice(0, 300);
     const norm = normalize(query);
     const lang: Lang = detectLang(norm) === "tl" || (ctx.lang === "tl" && norm.split(" ").length <= 3 && !ENGLISH_HINT.test(norm)) ? "tl" : "en";
     const S = STRINGS[lang];
     if (!norm) return smalltalk(lang, S.empty);
-    // Filipino / Taglish is translated into the English words the site is written in; English passes through unchanged.
     const en = toEnglish(norm);
     const is = (re: RegExp) => re.test(norm) || re.test(en);
     const words = norm.split(" ").length;
@@ -646,7 +603,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     // 3. "Tell me more"
     if ((MORE.test(norm) || TL.more.test(norm)) && ctx.group) return more(ctx, lang);
 
-    // 3b. Open-ended / opinion / very long questions go to John
+    // 3b. Open-ended / opinion / very long questions go to aldwin
     if (COMPLEX.test(en) || TL_COMPLEX.test(norm) || words > 45 || (query.match(/\?/g) ?? []).length >= 4) return fallback(query, "complex", lang);
 
     // 4. Direct shortcuts
@@ -658,7 +615,7 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     }
     if (is(WORK_TERMS) && is(WORK_CONTEXT)) return fallback(query, "unknown", lang);
 
-    // 4b. Smarter question types: "how many…", "latest / current…", "compare A and B"
+    // 4b. Smarter question types
     const counted = intentCount(en, lang);
     if (counted) return counted;
     const recent = intentRecent(en, lang);
@@ -676,12 +633,10 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     const moreish = /\b(what else|else|other|another|besides|ano pa|ano pang|may iba pa|iba pa|meron pa|mayroon pa)\b/.test(en) || /\b(ano pa|ano pang|iba pa)\b/.test(norm);
     if (tokens.length === 0 && ctx.group && (anaphoric || moreish)) return more(ctx, lang);
     if (tokens.length === 0) {
-      // Only filler words left ("tell me about him") — the sensible default is the intro.
       if (/\b(john|aldwin|him|his|he|yourself|you|siya|kanya|kaniya)\b/.test(norm)) return fromIds(["faq:who", "focus-list"], lang);
       return fallback(query, "unknown", lang);
     }
     const groups = groupsFor(tokens);
-    // "What is GitOps?" wants a definition; "what's his experience with Kubernetes?" does not.
     const definitional = !groups.some(isGeneric) && (EXPLICIT_DEFINE.test(en) || ((STARTS_WHAT_IS.test(en) || /^\s*ano\b/.test(norm)) && tokens.length <= 3));
     const allowGlossary = (f: Fact) => f.kind !== "glossary" || definitional;
     let ranked = rank(groups, allowGlossary, (f) => (f.kind === "glossary" && definitional ? 1.6 : 1));
@@ -690,7 +645,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
       ranked = rank(groups, () => true);
       usedGlossaryFallback = true;
     }
-    // Follow-ups like "what tech did he use?" or "ano ang challenges doon?" stay inside the topic of the last answer.
     let stay = false; // set when a follow-up is answered from the topic just discussed
     const inProject = Boolean(ctx.group && /^(proj|exp):/.test(ctx.group));
     const topical = inProject && /\b(use|used|using|tech|technologies|stack|tools?|role|challenges?|outcomes?|results?|team|teammates|duration|link|links|github|demo|repo|code|source|built|highlights?)\b/.test(en);
@@ -700,14 +654,12 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
         ranked = [...inCtx, ...ranked.filter((r) => r.fact.group !== ctx.group)];
         stay = true;
       } else if (topical && groups.every((g) => TOPICAL_TOKENS.has(g.orig) || isGeneric(g))) {
-        // "what tech did he use?" / "what was his role?" — the project's own summary line already says it ("Role: …  Built with …").
         const overview = corpus.find((f) => f.group === ctx.group && f.kind === "overview");
         if (overview) return fromIds([overview.id], lang);
       }
     }
     if (!ranked.length) return fallback(query, "unknown", lang, unknownFrom(query, groups));
 
-    // "Where did he study?" matches one school slightly better than the whole education list — prefer the list when it is a near-tie.
     const topicOf = (g: string) => ({ edu: "education", exp: "experience", proj: "projects" } as Record<string, string>)[g.split(":")[0]] ?? g.split(":")[0];
     if (ranked[0].fact.kind === "overview") {
       const topic = topicOf(ranked[0].fact.group);
@@ -716,7 +668,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
       if (entries.length >= 2 && list) ranked = [list, ...ranked.filter((r) => r !== list)];
     }
 
-    // Coverage: how much of the question (weighted by rarity) is explained by the best matches?
     const top = ranked[0];
     const window = ranked.filter((r) => r.fact.group === top.fact.group && r.score >= 0.4 * top.score).slice(0, 5);
     const covered = new Set<number>();
@@ -732,7 +683,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     if (top.score < MIN_SCORE || coverage < MIN_COVERAGE || (isYesNo && coverage < 0.85)) {
       return fallback(query, "unknown", lang, unknownWords, ranked);
     }
-    // A glossary definition only makes sense for a "what is …" question.
     const answer =
       usedGlossaryFallback && top.fact.kind === "glossary" && !definitional
         ? compose(ranked, { stay, groups, ctx, lang })
@@ -740,7 +690,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return evaluative ? { ...answer, text: `${S.evalNote}\n${answer.text}` } : answer;
   }
 
-  /** "What are his skills? How can I contact him?" → two questions. Returns null for an ordinary single question. */
   const splitQuestions = (raw: string): string[] | null => {
     const text = raw.trim().slice(0, 300);
     const byMark = text.split(/\?+/).map((p) => p.trim()).filter((p) => p.split(/\s+/).length >= 2);
@@ -749,7 +698,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return good.length >= 2 && good.length === parts.length && parts.length <= 3 ? parts : null;
   };
 
-  /** Answers one OR several questions, and writes Filipino link labels when the visitor wrote in Filipino. */
   function ask(raw: string, ctx: GuideContext = {}): GuideAnswer {
     const parts = splitQuestions(raw);
     let result: GuideAnswer;
@@ -780,7 +728,6 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
     return result.lang === "tl" ? { ...result, links: result.links.map((l) => ({ ...l, label: linkLabelTl(l.label) })) } : result;
   }
 
-  /** Shows how a question was understood and which facts matched best (for debugging / tuning). */
   function explain(raw: string) {
     const en = toEnglish(normalize(raw));
     const groups = groupsFor(tokenize(en));
@@ -796,5 +743,4 @@ export function createGuide(corpus: Fact[] = buildCorpus()) {
 }
 
 let singleton: ReturnType<typeof createGuide> | null = null;
-/** The shared guide instance (built lazily on first use, so it never slows the page load). */
 export const getGuide = () => (singleton ??= createGuide());

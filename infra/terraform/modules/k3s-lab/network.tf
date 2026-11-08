@@ -2,8 +2,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-# A tiny dedicated VPC: one public subnet, no NAT gateway (a NAT costs ~US$32/month),
-# and a security group with ZERO inbound rules. All admin access goes through SSM.
 resource "aws_vpc" "lab" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
@@ -14,7 +12,6 @@ resource "aws_vpc" "lab" {
   }
 }
 
-# Lock down the VPC's default security group (nothing in, nothing out).
 resource "aws_default_security_group" "lab" {
   vpc_id = aws_vpc.lab.id
 

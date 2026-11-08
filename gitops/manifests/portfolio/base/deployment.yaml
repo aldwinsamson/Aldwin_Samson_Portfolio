@@ -29,7 +29,6 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          # Placeholder tag — the real one is set by the overlay (CI commits the new sha-<commit> tag).
           image: ghcr.io/aldwinsamson/aldwin_samson_portfolio:latest
           ports:
             - name: http

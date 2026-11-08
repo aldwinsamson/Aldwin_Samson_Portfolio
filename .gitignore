@@ -12,7 +12,6 @@ coverage
 *.zip
 .vercel
 
-# --- Terraform ---
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -23,7 +22,6 @@ override.tf
 override.tf.json
 terraform.tfvars
 *.auto.tfvars
-# NOTE: commit .terraform.lock.hcl (provider version pinning) and the non-secret prod.tfvars / bootstrap.tfvars
 .lighthouseci/
 
 infra/terraform/modules/chat-api/.build/

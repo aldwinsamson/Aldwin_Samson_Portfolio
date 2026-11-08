@@ -24,33 +24,22 @@ import { cn } from "@/utils/cn";
 import { ProjectCover } from "./ProjectCover";
 import { angleForIndex, frontIndex, normalizeAngle, ringGeometryCount, ringRadius, ringStep, snapAngle } from "./ringMath";
 
-/** Card + camera sizes. Phones use a "coverflow" view: the ring is larger than the screen and only the front peeks in. */
 const SIZES = {
   desktop: { w: 220, h: 276, gap: 20, perspective: 2200 },
   mobile: { w: 180, h: 228, gap: 14, perspective: 1800 },
 };
 const TILT_DEG = -12;
-const AUTO_DEG_PER_MS = 0.004; // ≈ 4° per second — set to 0 to switch the idle drift off
+const AUTO_DEG_PER_MS = 0.004;
 const DRAG_DEG_PER_PX = 0.32;
-/** Mouse-wheel feel: one card step per this many pixels of scroll (a typical wheel notch is ~100px → ¼ of a card). */
 const WHEEL_PX_PER_STEP = 450;
-/** Extra width (px) around the wheel in which the scroll wheel turns it. */
 const WHEEL_ZONE_PAD = 40;
 const SPRING = { type: "spring", stiffness: 90, damping: 20, mass: 0.9 } as const;
 
-/**
- * Homepage project showcase: a tilted 3D wheel with ONE card per project.
- *
- * It is an ordinary block in the page (nothing is pinned). The mouse wheel is only captured while the
- * pointer is ON the wheel: scrolling there turns the wheel. Anywhere else on the page, scrolling moves
- * the page as usual. You can also drag / swipe it, press the arrows, click a dot or click a side card.
- */
 export function ProjectRing() {
   const reduced = usePrefersReducedMotion();
   const desktopSize = useMediaQuery("(min-width: 1024px)");
   const size = desktopSize ? SIZES.desktop : SIZES.mobile;
 
-  // One card per project (capped at MAX_RING; featured projects win the slots if there are more).
   const ring = useMemo(() => selectRingProjects(allProjects, MAX_RING), []);
   const count = ring.length;
   const interactive = count > 1;
@@ -61,7 +50,6 @@ export function ProjectRing() {
   const stageRef = useRef<HTMLDivElement>(null);
   const inView = useInView(sectionRef, { margin: "10% 0px 10% 0px" });
 
-  // Desktop: scale the whole wheel so it always fits the stage, however many projects there are.
   const [fit, setFit] = useState(1);
   useEffect(() => {
     const el = stageRef.current;
@@ -89,7 +77,6 @@ export function ProjectRing() {
     setActive((prev) => (prev === i ? prev : i));
   });
 
-  // Idle drift — paused while hovered / dragging / off-screen / reduced motion.
   const hovering = useRef(false);
   const dragging = useRef(false);
   useAnimationFrame((_, delta) => {
@@ -97,7 +84,6 @@ export function ProjectRing() {
     auto.set(auto.get() - delta * AUTO_DEG_PER_MS);
   });
 
-  /** Moves the `drag` offset to `next` (springy), cancelling any spring that is still running. */
   const anim = useRef<ReturnType<typeof animate> | null>(null);
   const turnTo = useCallback(
     (next: number) => {
@@ -108,14 +94,12 @@ export function ProjectRing() {
     [drag, reduced],
   );
 
-  /** Eases the wheel so a card sits squarely at the front. */
   const settle = useCallback(() => {
     if (!interactive) return;
     const total = angle.get();
     turnTo(drag.get() + (snapAngle(total, count) - total));
   }, [angle, count, drag, interactive, turnTo]);
 
-  /** Turns the wheel to bring card `index` to the front (shortest way round). */
   const rotateTo = useCallback(
     (index: number) => {
       if (!interactive) return;
@@ -131,7 +115,6 @@ export function ProjectRing() {
     turnTo(drag.get() + (snapAngle(total, count) - total) - dir * step);
   };
 
-  // Drag / swipe to spin (mouse, pen, touch). `touch-action: pan-y` keeps vertical page scroll working on phones.
   const gesture = useRef({ x: 0, start: 0, moved: false, id: -1 });
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (!interactive || (e.pointerType === "mouse" && e.button !== 0)) return;
@@ -154,11 +137,8 @@ export function ProjectRing() {
     if (gesture.current.moved) settle();
   };
 
-  // Scroll wheel / trackpad: while the pointer is ON the wheel, scrolling turns the wheel (and the page stays put).
-  // Anywhere else — including the empty sides of the stage — the page scrolls normally.
   const zoneWidth = useRef(0);
   zoneWidth.current = (2 * radius + size.w) * fit + WHEEL_ZONE_PAD;
-  /** Is the mouse over the wheel itself (the centred area where the cards are)? Only then does the idle spin pause. */
   const updateHover = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== "mouse") return;
     const box = e.currentTarget.getBoundingClientRect();
@@ -171,17 +151,17 @@ export function ProjectRing() {
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey) return; // pinch-zoom / ctrl+wheel
       const box = el.getBoundingClientRect();
-      if (Math.abs(e.clientX - (box.left + box.width / 2)) > zoneWidth.current / 2) return; // outside the wheel → page scrolls
-      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1; // lines / pages → pixels
+      if (Math.abs(e.clientX - (box.left + box.width / 2)) > zoneWidth.current / 2) return; 
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1; 
       const raw = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
       const delta = Math.max(-240, Math.min(240, raw * unit));
       if (!delta) return;
-      e.preventDefault(); // don't scroll the page…
-      e.stopPropagation(); // …and keep the smooth-scroll library from doing it either
+      e.preventDefault(); 
+      e.stopPropagation();
       anim.current?.stop();
       drag.set(drag.get() - delta * (step / WHEEL_PX_PER_STEP));
       clearTimeout(timer);
-      timer = setTimeout(settle, 140); // when the wheel stops, ease to the nearest card
+      timer = setTimeout(settle, 140);
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => {
@@ -198,7 +178,6 @@ export function ProjectRing() {
   return (
     <section ref={sectionRef} aria-labelledby="work-title" className="relative py-12 sm:py-20">
       <Container className="w-full">
-        {/* Same header row as the other sections: index · label · rule · link */}
         <div className="flex items-center gap-3 text-muted sm:gap-4">
           <span className="t-meta text-accent">02</span>
           <span className="t-eyebrow text-[0.6rem] sm:text-[0.7rem]">Projects</span>
@@ -220,7 +199,6 @@ export function ProjectRing() {
         </h2>
       </Container>
 
-      {/* The wheel — a fixed-height stage. Only THIS area reacts to dragging; the page scrolls normally around it. */}
       <div
         ref={stageRef}
         onPointerDown={onPointerDown}
@@ -235,7 +213,6 @@ export function ProjectRing() {
           hovering.current = false;
         }}
         onClickCapture={(e) => {
-          // A drag must never count as a click on a card.
           if (gesture.current.moved) {
             e.preventDefault();
             e.stopPropagation();
@@ -249,7 +226,6 @@ export function ProjectRing() {
           interactive && "cursor-grab active:cursor-grabbing",
         )}
       >
-        {/* Soft stage glow */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-[8%] inset-y-[12%]"
@@ -284,7 +260,6 @@ export function ProjectRing() {
                   h={size.h}
                   angle={angle}
                   onSideClick={(e) => {
-                    // Clicking a card that isn't at the front brings it to the front instead of opening it.
                     if (i !== activeRef.current) {
                       e.preventDefault();
                       rotateTo(i);
@@ -295,12 +270,10 @@ export function ProjectRing() {
             </motion.div>
           </div>
         </motion.div>
-        {/* Edge fade so the wheel melts into the page */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-[10%] bg-gradient-to-r from-bg to-transparent" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-bg to-transparent" />
       </div>
 
-      {/* Info + controls */}
       <Container className="relative z-10 mt-2 w-full">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div aria-live="polite" className="min-h-[9.5rem] max-w-xl lg:min-h-[11rem]">
@@ -387,7 +360,6 @@ export function ProjectRing() {
         </div>
       </Container>
 
-      {/* Screen-reader / no-pointer route to every project (the wheel itself is decorative). */}
       <ul className="sr-only">
         {allProjects.map((p) => (
           <li key={p.slug}>
@@ -401,9 +373,6 @@ export function ProjectRing() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  One card of the wheel = one project                                */
-/* ------------------------------------------------------------------ */
 function RingCard({
   project,
   index,
@@ -423,7 +392,6 @@ function RingCard({
   angle: MotionValue<number>;
   onSideClick: (e: ReactMouseEvent) => void;
 }) {
-  // 0 = facing the viewer. Depth cues are applied to the faces (not the card) so preserve-3d stays intact.
   const rel = useTransform(angle, (v) => normalizeAngle(index * step + v));
   const opacity = useTransform(rel, (v) => 0.3 + 0.7 * Math.max(0, 1 - Math.abs(v) / 150));
   const shade = useTransform(rel, (v) => 0.5 * Math.min(1, Math.abs(v) / 120));
@@ -445,7 +413,6 @@ function RingCard({
         transform: `rotateY(${index * step}deg) translateZ(${radius}px)`,
       }}
     >
-      {/* Front face — the project card */}
       <motion.div style={{ opacity, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }} className={faceClass}>
         <Link to={`/projects/${project.slug}`} tabIndex={-1} draggable={false} onClick={onSideClick} className="relative block size-full">
           <div className="relative size-full">
@@ -464,7 +431,6 @@ function RingCard({
           <motion.span aria-hidden="true" style={{ opacity: shade }} className="pointer-events-none absolute inset-0 bg-black" />
         </Link>
       </motion.div>
-      {/* Back face — your logo, seen on the far side of the wheel */}
       <div
         style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
         className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[1.4rem] border border-line bg-sunken/90"

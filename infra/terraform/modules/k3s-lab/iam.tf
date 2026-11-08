@@ -22,14 +22,12 @@ resource "aws_iam_role" "lab" {
   assume_role_policy = data.aws_iam_policy_document.ec2_assume.json
 }
 
-# Session Manager — replaces SSH entirely (no key pair, no port 22).
 resource "aws_iam_role_policy_attachment" "ssm_core" {
   role       = aws_iam_role.lab.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 data "aws_iam_policy_document" "lab" {
-  # Read-only CloudWatch access for Grafana's CloudWatch data source (instance-profile credentials).
   statement {
     sid = "GrafanaCloudWatchRead"
     actions = [
@@ -47,7 +45,6 @@ data "aws_iam_policy_document" "lab" {
     resources = ["*"]
   }
 
-  # The node generates its own admin passwords at first boot and stores them here.
   statement {
     sid       = "WriteBootstrapSecrets"
     actions   = ["ssm:PutParameter"]

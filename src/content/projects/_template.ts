@@ -37,7 +37,7 @@ export default defineProject({
   outcomes: ["What was delivered — keep it factual, no invented numbers."],
   awards: [],
   links: {
-    // repository: { label: "GitHub", href: "https://github.com/aldwinsamson/my-project" }, // https only, public only
+    // repository: { label: "GitHub", href: "https://github.com/your-name/my-project" }, // https only, public only
     // demo: { label: "Live demo", href: "https://example.com" },
   },
   // linkNote: "Source code is private.",

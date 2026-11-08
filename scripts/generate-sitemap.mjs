@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-/**
- * Regenerates public/sitemap.xml and public/robots.txt from the REAL project files and the
- * site URL in src/config/site.ts — so adding a project (or changing the domain) never needs a
- * manual sitemap edit. Runs automatically before `npm run build` (see "prebuild" in package.json).
- * Draft projects (draft: true) are left out, exactly like they are hidden on the live site.
- */
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

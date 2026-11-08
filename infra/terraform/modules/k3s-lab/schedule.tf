@@ -1,4 +1,3 @@
-# Stop the node overnight and start it in the morning (generic, reusable module).
 module "schedule" {
   count  = var.schedule.enabled ? 1 : 0
   source = "../instance-scheduler"

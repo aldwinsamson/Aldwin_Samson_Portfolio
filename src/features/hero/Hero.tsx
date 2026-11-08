@@ -28,7 +28,6 @@ const fade = (delay: number) => ({
   transition: { duration: 1, ease: ease.lux, delay },
 });
 
-/** Slowly rotating role badge with the monogram in the middle. Transform-only animation → free. */
 function RoleBadge({ className }: { className?: string }) {
   return (
     <div aria-hidden="true" className={cn("relative select-none", className)}>
@@ -47,14 +46,6 @@ function RoleBadge({ className }: { className?: string }) {
   );
 }
 
-/**
- * Cinematic hero.
- *  Desktop  → tall section with a pinned stage: scrolling scrubs the scene (the portrait disperses into
- *             particles, the lettering rises, the side copy slides away).
- *  Phones / tablets / reduced motion → a fixed "poster": the portrait, outline name and chrome name are
- *             placed inside one aspect-locked frame so their positions can never shift or collapse.
- *             The particle portrait, chrome lettering and scroll-dispersal are all still there.
- */
 export function Hero() {
   const cinematic = useCinematic();
   const reduced = usePrefersReducedMotion();
@@ -63,14 +54,11 @@ export function Hero() {
   const { theme } = useTheme();
   const light = theme === "light";
   const [particlesFailed, setParticlesFailed] = useState(false);
-  // The real photo only appears once the particle intro has finished.
   const [photoReady, setPhotoReady] = useState(false);
-  // Desktop: the description (headline + lead) is hidden until the visitor opens it with the toggle.
   const [descOpen, setDescOpen] = useState(false);
   const useParticles = siteConfig.features.hero3D && !reduced && !particlesFailed && detectWebGL();
 
   const sectionRef = useRef<HTMLElement>(null);
-  // Desktop: pinned stage, progress across the whole tall section. Phones: progress while the poster scrolls away.
   const desk = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const mob = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const still = useMotionValue(0);
@@ -88,12 +76,10 @@ export function Hero() {
   const sideOpacity = useTransform(p, [0, 0.34], [1, 0]);
   const stageOpacity = useTransform(p, [0.62, 0.9], [1, 0]);
   const hintOpacity = useTransform(p, [0, 0.08], [1, 0]);
-  // Phones: the poster eases out as it scrolls away (no pinning, no hijacking).
   const posterOpacity = useTransform(mob.scrollYProgress, [0.25, 0.5], [1, 0.0]);
 
   const social = socials.filter((s) => s.id !== "email");
 
-  /** The still portrait: the base layer (shown after the particle intro) and the fallback when WebGL / motion is unavailable. */
   const still_ = (
     <img
       src={PORTRAIT_FULL}
@@ -108,8 +94,6 @@ export function Hero() {
 
   const portrait = (
     <>
-      {/* Both themes: the real photo is the base layer. It stays hidden until the particle intro has
-          finished, then fades in while the particles melt away (and fades out again as you scroll). */}
       {useParticles && (
         <motion.div style={{ opacity: photoFade }} className="absolute inset-0">
           <motion.div
@@ -148,7 +132,7 @@ export function Hero() {
     </span>
   );
 
-  /* ------------------------------ PHONES / TABLETS ------------------------------ */
+  // PHONES / TABLETS 
   if (!cinematic) {
     return (
       <section ref={sectionRef} aria-labelledby="hero-title" className="relative isolate overflow-hidden pb-4 pt-[4.75rem]">
@@ -232,7 +216,7 @@ export function Hero() {
     );
   }
 
-  /* ------------------------------ DESKTOP (cinematic) ------------------------------ */
+  // DESKTOP 
   return (
     <>
       <section ref={sectionRef} aria-labelledby="hero-title" className="relative -mb-[45svh] h-[190svh]">
@@ -240,15 +224,12 @@ export function Hero() {
           <div aria-hidden="true" className="hero-glow pointer-events-none absolute inset-0 -z-20" />
           <div aria-hidden="true" className="blueprint pointer-events-none absolute inset-0 -z-20 opacity-60" />
 
-          {/* Role badge with the monogram — top-right corner, the same place as on phones.
-              It fades out together with the side copy as you start to scroll. */}
           <motion.div aria-hidden="true" style={{ opacity: sideOpacity }} className="pointer-events-none absolute inset-x-0 top-0 z-20">
             <Container className="flex justify-end pt-5 xl:pt-6">
               <RoleBadge className="size-[clamp(84px,7.4vw,124px)]" />
             </Container>
           </motion.div>
 
-          {/* Outline given names — depth layer behind the portrait */}
           <motion.div
             aria-hidden="true"
             style={{ y: outlineY, x: outlineX }}
@@ -277,8 +258,6 @@ export function Hero() {
               <HeroWord text={profile.lastName} reduced={reduced} startDelay={0.15} />
             </motion.h1>
 
-            {/* Description — same spots as the deployed site: headline left, lead right.
-                Hidden by default (clean hero). The "Intro" button next to the contact bar opens / closes it. */}
             <motion.div style={{ opacity: sideOpacity }} className="pointer-events-none absolute inset-x-0 top-[max(30svh,11rem)] z-20">
               <AnimatePresence>
                 {descOpen && (
@@ -320,9 +299,6 @@ export function Hero() {
               </AnimatePresence>
             </motion.div>
 
-            {/* Bottom row.
-                ≥1320px : status (left) · contact bar + Intro button (centre) · scroll hint (right)
-                <1320px : status centred just above the contact bar, so nothing can collide on smaller laptops. */}
             <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 px-[clamp(1.5rem,3.4vw,4rem)]">
               <div className="flex flex-col items-center gap-3 min-[1320px]:grid min-[1320px]:grid-cols-[1fr_auto_1fr] min-[1320px]:gap-6">
                 <motion.div {...fade(1.1)} className="pointer-events-auto min-[1320px]:justify-self-start">

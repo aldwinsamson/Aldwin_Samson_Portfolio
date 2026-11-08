@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { mulberry32, sampleParticles } from "@/features/hero/particles";
 import { angleForIndex, frontIndex, normalizeAngle, ringGeometryCount, ringRadius, ringStep, snapAngle } from "@/features/projects/ringMath";
 
-/** Builds an RGBA buffer: left half opaque white, right half transparent. */
 function halfImage(size: number) {
   const buf = new Uint8ClampedArray(size * size * 4);
   for (let y = 0; y < size; y++) {
@@ -23,7 +22,7 @@ describe("sampleParticles", () => {
     for (let i = 0; i < d.count; i++) {
       const x = d.target[i * 2];
       const y = d.target[i * 2 + 1];
-      expect(x).toBeLessThanOrEqual(0); // left half only
+      expect(x).toBeLessThanOrEqual(0); 
       expect(x).toBeGreaterThanOrEqual(-1);
       expect(Math.abs(y)).toBeLessThanOrEqual(1);
     }
@@ -45,7 +44,7 @@ describe("sampleParticles", () => {
     for (let y = 0; y < size; y++)
       for (let x = 0; x < size; x++) {
         const o = (y * size + x) * 4;
-        const v = x < size / 2 ? 255 : 0; // left bright, right dark
+        const v = x < size / 2 ? 255 : 0; 
         buf[o] = buf[o + 1] = buf[o + 2] = v;
         buf[o + 3] = 255;
       }
@@ -74,7 +73,6 @@ describe("mulberry32", () => {
 describe("ring math", () => {
   it("computes the polygon apothem so neighbouring flat cards meet edge to edge", () => {
     const r = ringRadius(240, 12);
-    // A regular N-gon with apothem r has side length 2·r·tan(π/N) — that side is the card width.
     expect(2 * r * Math.tan(Math.PI / 12)).toBeCloseTo(240, 5);
     expect(ringRadius(240, 12, 20)).toBeCloseTo(r + 20, 5);
   });
@@ -91,7 +89,7 @@ describe("ring math", () => {
     expect(frontIndex(-30, 12)).toBe(1);
     expect(frontIndex(-360, 12)).toBe(0);
     expect(frontIndex(30, 12)).toBe(11);
-    expect(frontIndex(-14, 12)).toBe(0); // rounds to nearest card
+    expect(frontIndex(-14, 12)).toBe(0); 
   });
 
   it("snaps to a card boundary", () => {
@@ -112,11 +110,8 @@ describe("ring math", () => {
   });
 
   it("finds the shortest rotation that brings a card to the front", () => {
-    // 5 cards (72° apart). From rest, card 1 needs -72°.
     expect(angleForIndex(1, 0, 5)).toBeCloseTo(-72);
-    // Already turned to card 4 (-288°): going to card 0 is a short +72° hop forward, not a long way back.
     expect(angleForIndex(0, -288, 5)).toBeCloseTo(-360);
-    // The result always faces the requested card.
     for (let i = 0; i < 5; i++) expect(frontIndex(angleForIndex(i, 123.4, 5), 5)).toBe(i);
   });
 });

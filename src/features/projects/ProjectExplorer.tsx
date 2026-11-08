@@ -6,7 +6,6 @@ import { ProjectCard } from "./ProjectCard";
 
 type Filter = ProjectCategory | "All";
 
-/** search box + category chips + card grid for the /projects page. all the filtering lives in projectLogic.ts. */
 export function ProjectExplorer() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Filter>("All");

@@ -1,4 +1,3 @@
-# ---- shared identity (values come from ../../environment.tfvars) -----------------------------------------
 variable "project" {
   type = string
 
@@ -44,7 +43,6 @@ variable "extra_tags" {
   default = {}
 }
 
-# ---- environment settings (prod.tfvars) — grouped objects with safe defaults ----------------------------------
 variable "site" {
   description = "Public website (S3 + CloudFront)."
   type = object({
@@ -79,7 +77,7 @@ variable "lab" {
     root_volume_gb = optional(number, 30)
     k3s_version    = optional(string, "v1.36.5+k3s1")
     argocd_version = optional(string, "v3.5.5")
-    gitops_repo    = optional(string) # defaults to https://github.com/<github_repository>.git
+    gitops_repo    = optional(string) 
     gitops_branch  = optional(string, "main")
     schedule = optional(object({
       enabled    = optional(bool, true)

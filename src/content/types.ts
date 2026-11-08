@@ -1,5 +1,3 @@
-/** Typed content models. Add fields here first, then use them in components. */
-
 export type ProjectCategory = "Software" | "Embedded Systems" | "Hardware" | "AI" | "Web Development" | "Cloud & DevOps";
 
 export type ProjectStatus = "Completed" | "In progress" | "Concept";

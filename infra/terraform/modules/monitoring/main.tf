@@ -1,8 +1,3 @@
-# Everything here is in us-east-1 because that is where CloudFront and Route 53
-# publish their CloudWatch metrics.
-
-# Not KMS-encrypted on purpose: CloudWatch alarms cannot publish to a topic that uses
-# the AWS-managed SNS key, and these messages contain no sensitive data.
 resource "aws_sns_topic" "alerts" {
   provider = aws.use1
   name     = "${var.context.prefix}-alerts"
@@ -15,7 +10,6 @@ resource "aws_sns_topic_subscription" "email" {
   endpoint  = var.alert_email
 }
 
-# --- Uptime: probes https://<domain>/ from 6 AWS regions around the world ---------------
 resource "aws_route53_health_check" "site" {
   count = var.health_check.enabled ? 1 : 0
 
@@ -52,7 +46,6 @@ resource "aws_cloudwatch_metric_alarm" "site_down" {
   ok_actions          = [aws_sns_topic.alerts.arn]
 }
 
-# --- Errors served to visitors ------------------------------------------------------------
 resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
   provider = aws.use1
 
@@ -72,7 +65,6 @@ resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
   ok_actions          = [aws_sns_topic.alerts.arn]
 }
 
-# --- Dashboard ------------------------------------------------------------------------------
 resource "aws_cloudwatch_dashboard" "site" {
   provider = aws.use1
 

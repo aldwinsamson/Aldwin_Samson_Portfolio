@@ -1,9 +1,3 @@
-// CloudFront Function (cloudfront-js-2.0) — runs at the edge on every viewer request.
-//  1. www.<domain>  ->  301 to the apex (one canonical URL for SEO).
-//  2. SPA fallback: extension-less paths (/projects, /projects/ligtas, ...) are served
-//     from /index.html so React Router can take over. Paths WITH an extension
-//     (/assets/x.js, /images/a.webp) are left alone, so a missing asset is a real 404
-//     instead of an HTML page pretending to be JavaScript.
 function handler(event) {
   var request = event.request;
   var host = request.headers.host ? request.headers.host.value : '';

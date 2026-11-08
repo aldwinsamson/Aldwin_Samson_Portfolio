@@ -1,4 +1,4 @@
-# ACM certificate for CloudFront (must be us-east-1), validated through DNS.
+
 resource "aws_acm_certificate" "site" {
   provider = aws.use1
 
@@ -28,7 +28,6 @@ resource "aws_route53_record" "cert_validation" {
   allow_overwrite = true
 }
 
-# Blocks until the registrar's name servers point at the Route 53 zone.
 resource "aws_acm_certificate_validation" "site" {
   provider = aws.use1
 
@@ -37,8 +36,6 @@ resource "aws_acm_certificate_validation" "site" {
 }
 
 locals {
-  # "aws": A + AAAA aliases to CloudFront. "external": only A records (the external host serves IPv4 on the apex),
-  # so the AAAA records simply disappear instead of sending IPv6 visitors to a site that no longer answers.
   alias_records = {
     for pair in setproduct(local.aliases, ["A", "AAAA"]) : "${pair[0]}-${pair[1]}" => {
       name = pair[0]

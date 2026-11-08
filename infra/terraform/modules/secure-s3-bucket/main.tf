@@ -1,5 +1,3 @@
-# A private, encrypted, versioned bucket with secure defaults. Callers attach their own bucket policy
-# (use `tls_only_policy_json` as a base with `source_policy_documents`).
 resource "aws_s3_bucket" "this" {
   bucket        = var.bucket_name
   force_destroy = var.force_destroy

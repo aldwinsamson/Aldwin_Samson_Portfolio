@@ -24,11 +24,6 @@ import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { ease } from "@/styles/motion";
 import { GitHubIcon, LinkedInIcon } from "./Icons";
 
-/**
- * ⌘K Command Palette — premium quick navigation.
- * Keyboard-driven: ⌘K (Mac) / Ctrl+K (Windows) to open.
- * Fuzzy searches pages, projects, actions and external links.
- */
 
 interface CommandItem {
   id: string;

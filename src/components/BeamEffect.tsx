@@ -1,9 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
 
-/**
- * BeamEffect — animated beams of light radiating from a point.
- * Used as a decorative flourish behind important headings.
- */
 export function BeamEffect({ className }: { className?: string }) {
   const reduce = useReducedMotion();
   if (reduce) return null;

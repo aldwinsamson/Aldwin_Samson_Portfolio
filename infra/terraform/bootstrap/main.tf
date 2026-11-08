@@ -1,9 +1,3 @@
-# =============================================================================
-# Account-level foundation. Applied once, locally, by an admin. Everything else is applied by CI.
-#   1. remote state bucket   2. DNS zone   3. GitHub OIDC provider + CI roles   4. budget alerts
-# =============================================================================
-
-# ---- 1. Remote state (used by environments/*) ---------------------------------------------------------
 module "state_bucket" {
   source = "../modules/secure-s3-bucket"
 
@@ -14,7 +8,6 @@ module "state_bucket" {
 data "aws_iam_policy_document" "state_bucket" {
   source_policy_documents = [module.state_bucket.tls_only_policy_json]
 
-  # A state bucket must never be deleted by accident (not even by an admin running terraform destroy).
   statement {
     sid       = "DenyBucketDeletion"
     effect    = "Deny"
@@ -35,9 +28,6 @@ resource "aws_s3_bucket_policy" "state" {
   depends_on = [module.state_bucket]
 }
 
-# ---- 2. DNS: the hosted zone lives here so its name servers never change when an environment is rebuilt ----
-# Remove it on purpose with dns_zone_enabled = false (docs/zero-cost-aws.md). Terraform refuses to delete a zone that still
-# holds records it does not manage (MX, TXT, ...): copy those to your new DNS host first.
 resource "aws_route53_zone" "primary" {
   count = var.dns_zone_enabled ? 1 : 0
 
@@ -50,13 +40,11 @@ moved {
   to   = aws_route53_zone.primary[0]
 }
 
-# ---- 3. GitHub Actions -> AWS with OIDC (no long-lived access keys anywhere) --------------------------------
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
 }
 
-# Plan role: pull requests only, read-only.
 data "aws_iam_policy_document" "plan_state_access" {
   statement {
     sid       = "ListStateBucket"
@@ -70,7 +58,6 @@ data "aws_iam_policy_document" "plan_state_access" {
     resources = [for e in local.state_prefixes : "${module.state_bucket.arn}/${e}/*"]
   }
 
-  # Native S3 locking writes/deletes a .tflock object next to the state file.
   statement {
     sid       = "LockState"
     actions   = ["s3:PutObject", "s3:DeleteObject"]
@@ -89,9 +76,6 @@ module "plan_role" {
   inline_policy_json  = data.aws_iam_policy_document.plan_state_access.json
 }
 
-# Apply role: ONLY from the protected GitHub Environment (required reviewer = you).
-# PowerUser + IAM limited to this project's name prefix. Anything that can create IAM roles is effectively
-# admin; the real guard is the Environment approval + the OIDC `sub` pinned to it.
 data "aws_iam_policy_document" "apply_extra" {
   statement {
     sid = "ManageProjectIam"
@@ -149,7 +133,6 @@ module "apply_role" {
   inline_policy_json  = data.aws_iam_policy_document.apply_extra.json
 }
 
-# ---- 4. Cost guard-rails -----------------------------------------------------------------------------------------
 module "budget" {
   source = "../modules/budget-alerts"
 

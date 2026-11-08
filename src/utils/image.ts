@@ -1,11 +1,3 @@
-/**
- * Responsive images for remote stock photos.
- *
- * Pexels can resize on request (`?w=…&h=…`). Project covers are written once at 1400×900, but a card
- * on the homepage wheel is only ~220px wide — downloading 1400px for it wastes bandwidth and slows
- * decoding. `responsiveSrcSet` builds a srcset so the browser picks the smallest sufficient file.
- * Local images (anything not on images.pexels.com) are returned unchanged (undefined = no srcset).
- */
 const PEXELS = /^https:\/\/images\.pexels\.com\/photos\/\d+\//;
 const WIDTHS = [320, 480, 720, 1000];
 

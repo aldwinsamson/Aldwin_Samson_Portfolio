@@ -18,7 +18,6 @@ import { experience } from "@/content/experience";
 import { skillGroups } from "@/content/skills";
 import { projects } from "@/content/projects";
 
-/** The four cards under the introduction: only the most important experience and achievements. */
 const highlights = [
   {
     kind: "Experience",
@@ -59,8 +58,7 @@ export default function HomePage() {
       <Seo />
       <Hero />
 
-      {/* 01 — Introduction. On desktop the hero section ends 45svh early (-mb in Hero.tsx); this wrapper sits on top
-          of it, with a soft fade, so the page rises while the hero fades — no empty screen between them. */}
+      {/* 01 — Introduction.*/}
       <div className="relative z-20 bg-bg">
       <div aria-hidden="true" className="pointer-events-none -mt-[10svh] hidden h-[10svh] bg-gradient-to-b from-transparent to-bg lg:block" />
       <SectionTransition>

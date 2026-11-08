@@ -1,12 +1,9 @@
-#!/usr/bin/env bash
-# Post-deploy smoke test. Usage: scripts/smoke-test.sh https://aldwinsamson.com
 set -euo pipefail
 BASE="${1:?usage: smoke-test.sh <https://site-url>}"
 BASE="${BASE%/}"
 HOST="${BASE#https://}"
 fail=0
 
-# check "description" <command...>  -> runs the command; success = ok
 check() {
   local desc="$1"; shift
   if "$@"; then echo "  ok    $desc"; else echo "  FAIL  $desc"; fail=1; fi
@@ -32,7 +29,6 @@ check "HSTS header present" has_header "$BASE/" 'strict-transport-security:'
 check "X-Content-Type-Options present" has_header "$BASE/" 'x-content-type-options:'
 check "CSP header present (enforce or report-only)" has_header "$BASE/" 'content-security-policy(-report-only)?:'
 
-# Hashed bundle must be served immutable; index.html must be revalidated.
 asset="$(curl -s --max-time 20 "$BASE/" | grep -oE '/assets/[^"]+\.js' | head -1 || true)"
 if [ -n "$asset" ]; then
   check "bundle $asset is immutable" has_header "$BASE$asset" 'cache-control: .*immutable'

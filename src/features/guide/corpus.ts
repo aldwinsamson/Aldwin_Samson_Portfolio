@@ -9,7 +9,6 @@ import { FRAMES, type Frames } from "./frames";
 import { TL_TEXT } from "@/content/tagalogContent";
 import type { Lang } from "@/content/knowledge";
 
-/** The assistant only knows PUBLISHED projects — drafts (`draft: true`) stay private, in dev and on the live site. */
 const projects = allProjects.filter((p) => !p.draft);
 
 /**
@@ -21,44 +20,32 @@ const projects = allProjects.filter((p) => !p.draft);
 export interface GuideLink {
   label: string;
   to: string;
-  /** Opens outside the app (https://… or mailto:). */
   external?: boolean;
 }
 
 export interface Fact {
   id: string;
-  /** overview = headline of a topic · detail = one specific point · list = roll-up · curated = hand-written · glossary = definition */
   kind: "overview" | "detail" | "list" | "curated" | "glossary";
-  /** Facts of the same topic share a group (used for "tell me more"). */
   group: string;
   title: string;
-  /** Standalone answer text. May contain "\n• " bullet lines. */
   text: string;
-  /** Short version without context, used when this fact is shown as a bullet. */
   short?: string;
-  /** The same fact written in Filipino / Taglish (shown when the visitor writes in Tagalog). */
   textTl?: string;
   shortTl?: string;
   keywords?: string[];
   links?: GuideLink[];
-  /** Search weight (1 = normal). */
   boost?: number;
-  /** A question that leads here — offered as a follow-up chip. */
   ask?: string;
-  /** The same question in Filipino (used when the visitor writes in Tagalog). */
   askTl?: string;
-  /** (glossary) words used to find how John actually used the technology. */
   evidence?: string[];
 }
 
 const link = (label: string, to: string): GuideLink => ({ label, to });
 
-/** Strings that had no Filipino version while the Filipino facts were built (used by the test that reports them). */
 const untranslated = new Set<string>();
 interface Ctx {
   lang: Lang;
   F: Frames;
-  /** Translates one piece of site content (English passes through unchanged). */
   t: (s: string) => string;
 }
 const makeCtx = (lang: Lang): Ctx => ({
@@ -71,7 +58,6 @@ const makeCtx = (lang: Lang): Ctx => ({
   },
 });
 
-/** A project's `linkNote` is often a note to the site owner ("add a link under links: …") — never show those to visitors. */
 const isDevNote = (note: string) => /src\/|`|\bREVIEW\b|TODO/.test(note);
 const bullets = (items: string[]) => items.map((i) => `• ${i}`).join("\n");
 const sentence = (s: string) => (/[.!?]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
@@ -108,7 +94,7 @@ function projectFacts(p: Project, c: Ctx): Fact[] {
   });
   if (p.objective) base.push(detail("objective", "goal", `${F.goal}${sentence(t(p.objective))}`, undefined, ["objective", "goal", "purpose", "aim"]));
   if (p.problem) base.push(detail("problem", "problem it solves", `${F.problem}${sentence(t(p.problem))}`, undefined, ["problem", "why", "solve"]));
-  p.contributions.forEach((x, i) => base.push(detail(`c${i}`, "his contribution", `${F.didJohn}${sentence(t(x))}`, sentence(t(x)), ["contribution", "role", "did", "responsibility", "responsibilities"])));
+  p.contributions.forEach((x, i) => base.push(detail(`c${i}`, "his contribution", `${F.didAldwin}${sentence(t(x))}`, sentence(t(x)), ["contribution", "role", "did", "responsibility", "responsibilities"])));
   (p.architecture ?? []).forEach((a, i) => base.push(detail(`a${i}`, a.label, `${t(a.label)}: ${sentence(t(a.detail))}`, `${t(a.label)}: ${sentence(t(a.detail))}`, ["architecture", "design", "system", "components"])));
   p.implementation.forEach((x, i) => base.push(detail(`i${i}`, "implementation", `${F.howItWorks}${sentence(t(x))}`, sentence(t(x)), ["implementation", "how", "works", "technical"])));
   (p.challenges ?? []).forEach((x, i) => base.push(detail(`ch${i}`, "challenges", `${F.challenge}${sentence(t(x))}`, sentence(t(x)), ["challenge", "difficult", "hard", "difficulty", "obstacle"])));
@@ -126,7 +112,6 @@ function projectFacts(p: Project, c: Ctx): Fact[] {
       links: [open, ...ext],
     });
   } else if (p.linkNote) {
-    // Developer notes ("add a link under links: …") become a plain visitor-facing sentence.
     const visitorNote = isDevNote(p.linkNote) ? (p.linkNote.split(";")[0] !== p.linkNote && !isDevNote(p.linkNote.split(";")[0]) ? p.linkNote.split(";")[0] : null) : p.linkNote;
     base.push(detail("links", "source code", visitorNote ? sentence(t(visitorNote)) : F.noPublicLink, undefined, linkWords));
   }
@@ -140,7 +125,7 @@ function buildFacts(lang: Lang): Fact[] {
   const github = socials.find((s) => s.id === "github");
   const linkedin = socials.find((s) => s.id === "linkedin");
 
-  /* ------------------------------ About ------------------------------ */
+  // About
   profile.about.paragraphs.forEach((p, i) =>
     facts.push({
       id: `about:p${i}`,
@@ -189,7 +174,7 @@ function buildFacts(lang: Lang): Fact[] {
     }),
   );
 
-  /* ---------------------- Availability · location · contact ---------------------- */
+  // Availability · location · contact
   facts.push({
     id: "availability",
     kind: "overview",
@@ -249,7 +234,7 @@ function buildFacts(lang: Lang): Fact[] {
     });
   }
 
-  /* ----------------------------- Experience ----------------------------- */
+  // Experience
   for (const e of experience) {
     const group = `exp:${e.id}`;
     const to = link("See the experience timeline", "/experience");
@@ -291,7 +276,7 @@ function buildFacts(lang: Lang): Fact[] {
     askTl: "Ano ang work experience ni John?",
   });
 
-  /* ----------------------------- Education ----------------------------- */
+  // Education
   for (const e of education) {
     const group = `edu:${e.id}`;
     facts.push({
@@ -318,7 +303,7 @@ function buildFacts(lang: Lang): Fact[] {
     askTl: "Saan nag-aral si John?",
   });
 
-  /* --------------------- Certifications · honors --------------------- */
+  // Certifications · honors 
   certifications.forEach((x, i) =>
     facts.push({
       id: `cert:${i}`,
@@ -369,7 +354,7 @@ function buildFacts(lang: Lang): Fact[] {
     askTl: "Anong mga parangal ang napanalunan niya?",
   });
 
-  /* ------------------------------ Skills ------------------------------ */
+  //  Skills 
   for (const g of skillGroups) {
     const group = `skills:${g.id}`;
     const stackLink = link("View the full tech stack", "/stack");
@@ -412,7 +397,7 @@ function buildFacts(lang: Lang): Fact[] {
     askTl: "Ano ang mga skills ni John?",
   });
 
-  /* ------------------------------ Projects ------------------------------ */
+  // Projects 
   for (const p of projects) facts.push(...projectFacts(p, c));
   facts.push({
     id: "projects-list",
@@ -427,7 +412,7 @@ function buildFacts(lang: Lang): Fact[] {
     askTl: "Anu-ano ang mga proyekto ni John?",
   });
 
-  /* ------------------------- Hand-written Q&A ------------------------- */
+  // Hand-written Q&A
   for (const k of knowledgeBase) {
     facts.push({
       id: `faq:${k.id}`,
@@ -437,14 +422,13 @@ function buildFacts(lang: Lang): Fact[] {
       text: lang === "tl" ? (k.answerTl ?? k.answer) : k.answer,
       keywords: k.keywords,
       links: k.link ? [link(k.link.label, k.link.to)] : undefined,
-      // curated answers are reached by the shortcuts below / their own keywords; a low weight stops the bio from leading unrelated answers
       boost: 0.8,
       ask: k.question,
       askTl: k.questionTl,
     });
   }
 
-  /* ------------------------------ Glossary ------------------------------ */
+  // Glossary
   for (const g of glossary) {
     facts.push({
       id: `term:${g.term}`,
@@ -463,7 +447,6 @@ function buildFacts(lang: Lang): Fact[] {
   return facts;
 }
 
-/** Builds every fact in English, with the Filipino wording attached (`textTl` / `shortTl`) so the assistant can answer in either. */
 export function buildCorpus(): Fact[] {
   const tl = new Map(buildFacts("tl").map((f) => [f.id, f]));
   return buildFacts("en").map((f) => {
@@ -472,7 +455,6 @@ export function buildCorpus(): Fact[] {
   });
 }
 
-/** English sentences from the site's content that have no Filipino version yet (they are shown in English until you add one). */
 export function findUntranslated(): string[] {
   untranslated.clear();
   buildFacts("tl");

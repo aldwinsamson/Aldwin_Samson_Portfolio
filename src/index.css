@@ -1,13 +1,7 @@
 @import "tailwindcss";
 
-/* Class-based dark mode (html.dark) — see src/hooks/useTheme.ts */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ------------------------------------------------------------------ */
-/*  Design tokens                                                      */
-/*  Light = warm ivory/porcelain · Dark = obsidian/charcoal            */
-/*  Primary accent = champagne · Technical accent = cool cyan          */
-/* ------------------------------------------------------------------ */
 :root {
   --bg: #f3efe6;
   --bg-elev: #faf8f3;
@@ -67,9 +61,7 @@
   --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Base                                                               */
-/* ------------------------------------------------------------------ */
+/* Base */
 html {
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: 6rem;
@@ -219,7 +211,7 @@ img {
   scrollbar-width: none;
 }
 
-/* Reveal elements remain visible if JS fails (html.no-js) */
+/* Reveal elements remain visible if JS fails */
 .no-js [data-reveal] {
   opacity: 1 !important;
   transform: none !important;
@@ -237,9 +229,7 @@ img {
   }
 }
 
-/* ------------------------------------------------------------------ */
 /*  Custom cursor — hide native on fine pointers when feature is on   */
-/* ------------------------------------------------------------------ */
 @media (hover: hover) and (pointer: fine) {
   .custom-cursor-active,
   .custom-cursor-active * {
@@ -292,9 +282,7 @@ html.lenis, html.lenis body {
   animation: marquee 48s linear infinite;
 }
 
-/* ------------------------------------------------------------------ */
-/* Animated gradient border — used on premium card highlights          */
-/* ------------------------------------------------------------------ */
+/* Animated gradient border */
 @keyframes gradient-rotate {
   0% { --gradient-angle: 0deg; }
   100% { --gradient-angle: 360deg; }
@@ -385,9 +373,7 @@ html.lenis, html.lenis body {
   animation: neon-pulse 3s ease-in-out infinite;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Cinematic hero — gold "chrome" lettering                           */
-/* ------------------------------------------------------------------ */
+/*  Cinematic hero — gold "chrome" lettering */
 :root {
   --chrome: linear-gradient(180deg, #4a3715 0%, #8a6a32 34%, #3a2b10 50%, #7d6030 54%, #b99556 78%, #d9bd84 100%);
   --chrome-shadow: 0 22px 34px rgba(60, 44, 18, 0.28);
@@ -420,19 +406,16 @@ html.lenis, html.lenis body {
 .dark .brand-light { display: none; }
 .dark .brand-dark { display: block; }
 
-/* ------------------------------------------------------------------ */
-/*  Hero poster (phones & tablets): everything is sized from the poster */
-/*  itself, so positions can never drift or collapse.                   */
-/* ------------------------------------------------------------------ */
+/*  Hero poster (phones & tablets): everything is sized from the poster itself, so positions can never drift or collapse. */
 .poster {
   container-type: inline-size;
 }
 .poster-name {
-  font-size: 18vw; /* fallback */
+  font-size: 18vw; 
   font-size: 20cqw;
 }
 .poster-outline {
-  font-size: 17vw; /* fallback */
+  font-size: 17vw; 
   font-size: 19.5cqw;
 }
 .poster-badge {

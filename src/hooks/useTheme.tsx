@@ -13,7 +13,6 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readInitial(): Theme {
   if (typeof document === "undefined") return "light";
-  // index.html already applied the class before paint — mirror it to avoid a mismatch.
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
@@ -28,19 +27,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEY, t);
       } catch {
-        /* storage may be unavailable (private mode) — theme still works for the session */
       }
     }
     setThemeState(t);
   }, []);
 
-  // Enable cross-fade transitions only after first paint, so initial load never animates.
   useEffect(() => {
     const id = requestAnimationFrame(() => document.documentElement.classList.add("theme-ready"));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Follow OS changes until the visitor makes an explicit choice.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => {

@@ -58,7 +58,6 @@ function AnimatedRoutes() {
         id="main"
         key={location.pathname}
         tabIndex={-1}
-        // Opacity + a small lift only: filters on the whole page forced a full-page repaint every frame.
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0, transition: { duration: 0.55, ease: ease.lux } }}
         exit={{ opacity: 0, transition: { duration: 0.25, ease: ease.inOut } }}

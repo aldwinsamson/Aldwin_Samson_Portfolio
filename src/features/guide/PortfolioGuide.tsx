@@ -23,18 +23,8 @@ import { cn } from "@/utils/cn";
 import { AiError, aiConfigured, askAi, type AiTurn } from "./aiClient";
 import { getGuide, type GuideAnswer, type GuideContext, type GuideLink } from "./engine";
 
-/**
- * Portfolio assistant.
- *
- * Two layers answer the visitor's question:
- *   1. An AI model (see server/chat) that only knows what is published on this site. Used when VITE_CHAT_API_URL is set.
- *   2. The built-in search (./engine.ts) that runs in the browser. It supplies the "Open the case study" links,
- *      and it answers on its own when the AI service is missing, slow, rate limited or down.
- * Disable the whole assistant with siteConfig.features.portfolioGuide = false.
- */
 
 const MAX_CHARS = 300;
-/** Space kept free above the panel so it can never cover the navigation bar (nav is about 76px tall). */
 const TOP_CLEARANCE = "5.75rem";
 
 interface Message {
@@ -104,7 +94,6 @@ function Inline({ text }: { text: string }) {
   );
 }
 
-/** Renders answer text: "• ", "- " and "* " lines become a list, "Yes!" is emphasised. */
 function RichText({ text }: { text: string }) {
   const blocks: ReactNode[] = [];
   let list: string[] = [];
@@ -139,7 +128,6 @@ function RichText({ text }: { text: string }) {
   return <>{blocks}</>;
 }
 
-/** Reveals the text a few characters at a time, like a streaming reply. */
 function Typed({ text, instant, skip, onTick, onDone }: { text: string; instant: boolean; skip: boolean; onTick: () => void; onDone: () => void }) {
   const [n, setN] = useState(instant ? text.length : 0);
   const done = useRef(false);
@@ -226,7 +214,6 @@ function CopyButton({ text }: { text: string }) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* clipboard blocked: nothing to do */
     }
   };
   return (
@@ -251,8 +238,8 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
 
   const welcome = useMemo<Message>(() => ({ id: 0, from: "guide", text: GUIDE.welcome }), []);
   const [messages, setMessages] = useState<Message[]>([welcome]);
-  const [waiting, setWaiting] = useState(false); // waiting for the answer (shows the typing dots)
-  const [streamingId, setStreamingId] = useState<number | null>(null); // message currently typing itself out
+  const [waiting, setWaiting] = useState(false);
+  const [streamingId, setStreamingId] = useState<number | null>(null); 
   const [skipTyping, setSkipTyping] = useState(false);
   const [busy, setBusy] = useState(false);
   const [aiUp, setAiUp] = useState(aiConfigured);
@@ -268,7 +255,6 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
   const history = useRef<AiTurn[]>([]);
   const titleId = useId();
 
-  // The panel sits above the navigation bar's space and, on mid-size screens, above the floating dock.
   const bottom = isLg && !isWide ? "7rem" : isSm ? "1.5rem" : "0.75rem";
 
   const release = useCallback(() => {
@@ -292,7 +278,6 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
       setWaiting(true);
       setMessages((m) => [...m, { id: counter.current++, from: "user", text }]);
 
-      // The local search always runs: it is instant and gives us the case-study links and the fallback answer.
       const local = guide.ask(text, ctx.current);
       ctx.current = { group: local.group ?? ctx.current.group, shown: local.shown ?? ctx.current.shown, lang: local.lang };
       history.current = [...history.current, { role: "user" as const, content: text }].slice(-12);
@@ -331,7 +316,7 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
         .catch((err: unknown) => {
           const kind = err instanceof AiError ? err.kind : "network";
           if (kind === "aborted") {
-            history.current = history.current.slice(0, -1); // forget the question that was cancelled
+            history.current = history.current.slice(0, -1);
             release();
             return;
           }
@@ -378,15 +363,12 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
       clearTimeout(timer.current);
       abortRef.current?.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep the newest message in view.
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: reduced ? "auto" : "smooth" });
   }, [messages, waiting, reduced]);
 
-  // Grow the text box with its content, up to about four lines.
   useLayoutEffect(() => {
     const el = inputRef.current;
     if (!el) return;
@@ -423,7 +405,6 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 24, scale: 0.98 }}
       transition={{ duration: 0.35, ease: ease.lux }}
-      // Height stops below the navigation bar, and the bottom edge clears the dock, however long the chat gets.
       style={{ bottom, maxHeight: `min(680px, calc(100dvh - ${TOP_CLEARANCE} - ${bottom}))` }}
       className="surface fixed inset-x-3 z-[80] flex flex-col overflow-hidden rounded-[24px] sm:inset-x-auto sm:right-5 sm:w-[420px]"
     >

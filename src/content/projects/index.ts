@@ -3,9 +3,8 @@ import { findCopiedText, isVisible, resolveProject, sortProjects, usedCategories
 
 /**
  * PROJECT REGISTRY — you never edit this file.
- * Every `*.ts` file in this folder (except ones starting with "_" and this index) is a project.
- * Add a file → it automatically appears on the homepage wheel, the Projects page, its own
- * /projects/<slug> page, prev/next links and the ⌘K search. See README.md in this folder.
+ * Every `*.ts` file in this folder is a project.
+ * Add a file → it automatically appears on the homepage wheel, the Projects page, its own.
  */
 const modules = import.meta.glob<{ default: ProjectInput }>(["./*.ts", "!./index.ts", "!./_*.ts"], { eager: true });
 

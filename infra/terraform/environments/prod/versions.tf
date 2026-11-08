@@ -8,9 +8,6 @@ terraform {
     }
   }
 
-  # Partial configuration: the bucket name comes from `-backend-config="bucket=..."` (see infra/README.md).
-  # Backend blocks cannot use variables, so `key` and `region` are literals: keep `key = "<environment>/terraform.tfstate"`
-  # and keep `region` equal to the state bucket's region (the `region` value in ../../environment.tfvars).
   backend "s3" {
     key          = "prod/terraform.tfstate"
     region       = "ap-southeast-1"

@@ -1,10 +1,3 @@
-#!/usr/bin/env node
-/**
- * Creates a new project file from the template with a VALID slug — the usual mistake (typing the
- * display name, e.g. "SumoBot", as the slug) can't happen.
- *
- *   npm run new:project -- my-project "My Project"
- */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

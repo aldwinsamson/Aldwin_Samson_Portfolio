@@ -1,5 +1,3 @@
-# Where aldwinsamson.com is served from: AWS (this stack) or Vercel. See docs/switch-hosting.md.
-
 variable "aws_site_enabled" {
   description = <<-EOT
     Master switch for the AWS copy of the website: S3 bucket, CloudFront, ACM certificate, the DNS records for them,
@@ -36,7 +34,6 @@ output "hosting_target" {
   value       = var.hosting.target
 }
 
-# Existing state keeps working: these modules used to be single instances, now they are count = 0 or 1.
 moved {
   from = module.static_site
   to   = module.static_site[0]

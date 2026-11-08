@@ -7,10 +7,6 @@ import { defineConfig, type Plugin } from "vite";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Production builds drop the CONTENT of draft projects (`draft: true`), so unfinished text never ships
- * inside the JavaScript bundle. In `npm run dev` and in tests they are untouched.
- */
 function dropDraftProjects(): Plugin {
   return {
     name: "drop-draft-projects",
@@ -25,7 +21,6 @@ function dropDraftProjects(): Plugin {
   };
 }
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), dropDraftProjects()],
   resolve: {
@@ -38,7 +33,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
-        // Stable vendor chunks cache well on S3/CloudFront. three.js is split automatically (lazy hero WebGL).
         manualChunks: {
           react: ["react", "react-dom", "react-router-dom"],
           motion: ["motion"],

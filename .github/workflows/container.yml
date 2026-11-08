@@ -1,9 +1,5 @@
 name: Container image (staging via GitOps)
 
-# Builds a multi-arch image, pushes it to GHCR and commits the new tag into
-# gitops/manifests/portfolio/overlays/staging. Argo CD (on the lab cluster) detects the
-# commit and rolls it out — CI never talks to the cluster.
-# DORMANT (the lab is off). Run it by hand when the lab is back: Actions -> this workflow -> Run workflow.
 on:
   workflow_dispatch:
 

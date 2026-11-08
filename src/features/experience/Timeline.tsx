@@ -4,7 +4,6 @@ import { Reveal, Tag } from "@/components/ui";
 
 const iconFor = (t: ExperienceEntry["type"]) => (t === "Education" ? GraduationCap : t === "Project" ? FlaskConical : Briefcase);
 
-/** Full vertical timeline — extends automatically as entries are added. */
 export function Timeline({ entries }: { entries: ExperienceEntry[] }) {
   return (
     <ol className="relative">
@@ -56,7 +55,6 @@ export function Timeline({ entries }: { entries: ExperienceEntry[] }) {
   );
 }
 
-/** Compact rows for the homepage (wireframe: Year | Title | Description). */
 export function ExperienceRows({ entries }: { entries: ExperienceEntry[] }) {
   return (
     <ul className="border-t border-line">

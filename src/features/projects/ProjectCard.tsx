@@ -7,7 +7,6 @@ import { StatusDot, Tag } from "@/components/ui";
 import { ProjectCover } from "./ProjectCover";
 import { useCanHover } from "@/hooks/useMediaQuery";
 
-/** Project card — 3D tilt + cinematic image scale on hover. */
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const canHover = useCanHover();
@@ -40,7 +39,6 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         data-cursor-text="View"
         className="group relative surface flex h-full flex-col overflow-hidden rounded-[22px] transition-[border-color,box-shadow] duration-500 hover:border-accent/40 hover:shadow-[0_0_40px_-12px_var(--accent)]"
       >
-        {/* Moving glow on hover */}
         {tilt && (
           <motion.div
             aria-hidden="true"
@@ -62,7 +60,6 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             imgClassName="transition-transform duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.06]"
             label={project.cover?.kind === "representative" ? "Representative image" : undefined}
           />
-          {/* Cinematic gradient over image */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           <span className="t-meta absolute left-4 top-4 rounded-full bg-black/55 px-2.5 py-1 text-[0.62rem] text-white/90 backdrop-blur-sm">
             {String(index + 1).padStart(2, "0")}

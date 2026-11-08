@@ -3,10 +3,6 @@ import { SmartImage } from "@/components/ui";
 import { BrandMark } from "@/components/BrandMark";
 import { cn } from "@/utils/cn";
 
-/**
- * A project's cover image — or, if the project has none yet, a tasteful placeholder,
- * so a new project never shows a broken image.
- */
 export function ProjectCover({
   project,
   ratio,
@@ -22,7 +18,6 @@ export function ProjectCover({
   imgClassName?: string;
   eager?: boolean;
   label?: string;
-  /** Displayed width hint for responsive loading, e.g. "220px" or "(min-width: 1024px) 33vw, 100vw". */
   sizes?: string;
 }) {
   if (project.cover) {

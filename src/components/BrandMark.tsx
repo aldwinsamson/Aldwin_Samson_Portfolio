@@ -1,9 +1,5 @@
 import { cn } from "@/utils/cn";
 
-/**
- * The personal gold monogram, in two tonal versions so it always has contrast:
- * bright gold on the dark theme, deep bronze on the light theme.
- */
 export function BrandMark({
   className,
   eager = false,

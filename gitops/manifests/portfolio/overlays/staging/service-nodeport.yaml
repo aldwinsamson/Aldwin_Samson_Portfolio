@@ -1,4 +1,3 @@
-# Reachable only through the SSM port-forward (the node's security group has no inbound rules).
 apiVersion: v1
 kind: Service
 metadata:

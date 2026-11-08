@@ -1,25 +1,14 @@
-/**
- * Particle sampling for the hero portrait.
- * Pure functions (no DOM / WebGL) so they can be unit-tested in Node.
- *
- * The portrait is turned into a "stipple": particles are placed on opaque pixels, weighted by tone.
- *  - dark theme  → brighter areas get more particles (light on black)
- *  - light theme → darker areas get more particles (ink on paper)
- */
+//  Particle sampling for the hero portrait.
 
 export type ParticleMode = "dark" | "light";
 
 export interface ParticleData {
   count: number;
-  /** x,y pairs in the range [-1, 1] (y up). */
   target: Float32Array;
-  /** Tone 0..1 per particle (1 = bright). */
   lum: Float32Array;
-  /** Three random numbers per particle, used for stagger / scatter in the shader. */
   seed: Float32Array;
 }
 
-/** Small deterministic PRNG so the portrait looks identical on every load. */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -65,7 +54,6 @@ export function sampleParticles(
 
   for (let n = 0; n < count; n++) {
     const r = rnd() * total;
-    // Binary search for the first cell whose cumulative weight exceeds r.
     let lo = 0;
     let hi = cells - 1;
     while (lo < hi) {

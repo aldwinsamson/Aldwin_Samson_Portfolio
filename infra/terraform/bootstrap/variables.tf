@@ -1,4 +1,3 @@
-# ---- shared identity (values come from ../environment.tfvars) ------------------------------
 variable "project" {
   description = "Short prefix used in resource names (lowercase letters, digits, hyphens)."
   type        = string
@@ -42,7 +41,6 @@ variable "owner" {
   default = "unknown"
 }
 
-# ---- bootstrap-specific (bootstrap.tfvars) -------------------------------------------------------
 variable "github_environments" {
   description = "GitHub Environments (with required reviewers) that are allowed to run terraform apply, e.g. [\"production\"]."
   type        = list(string)

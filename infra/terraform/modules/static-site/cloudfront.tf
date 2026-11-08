@@ -1,6 +1,4 @@
 locals {
-  # Built from the environment's csp object. The module only ever trusts 'self' by itself;
-  # every extra origin comes from variables. style-src needs 'unsafe-inline' for inline style attributes.
   csp = join("; ", [
     "default-src 'self'",
     "script-src 'self'",
@@ -123,7 +121,6 @@ resource "aws_cloudfront_distribution" "site" {
     }
   }
 
-  # A private bucket answers 403 for a missing key. Show the app's own 404 page.
   custom_error_response {
     error_code            = 403
     response_code         = 404

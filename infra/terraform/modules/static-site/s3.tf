@@ -5,14 +5,12 @@ locals {
   aliases     = var.include_www ? [var.domain_name, "www.${var.domain_name}"] : [var.domain_name]
 }
 
-# Private bucket: the ONLY reader is CloudFront (via OAC). No S3 website endpoint.
 module "bucket" {
   source = "../secure-s3-bucket"
 
   bucket_name                        = local.bucket_name
   noncurrent_version_expiration_days = 30
 
-  # Only a rebuildable copy of dist/: lets aws_site_enabled = false delete the bucket even though it still holds files.
   force_destroy = true
 }
 

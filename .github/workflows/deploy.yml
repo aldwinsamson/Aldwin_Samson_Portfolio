@@ -1,10 +1,5 @@
 name: Deploy to AWS (manual)
 
-# DORMANT PATH. The live site is served by Vercel, which deploys itself on every push to main.
-# This workflow publishes the same build to the private S3 bucket + CloudFront ONLY when you run it by hand:
-#   Actions -> "Deploy to AWS (manual)" -> Run workflow.
-# Use it to keep the dormant AWS copy current, or as the deploy step when switching back (docs/switch-hosting.md).
-# Roll back: pass an older commit SHA in "ref".
 on:
   workflow_dispatch:
     inputs:
@@ -16,7 +11,6 @@ on:
 permissions:
   contents: read
 
-# Never run two deployments at once, never cancel one half-way.
 concurrency:
   group: deploy-site
   cancel-in-progress: false
@@ -41,8 +35,6 @@ jobs:
       - run: npm run check:knowledge
       - run: npm run build
         env:
-          # Only needed when the AWS chat API is enabled (Terraform: chat.enabled). Empty = the assistant uses its offline search.
-          # A value set here beats .env.production (Vite gives real environment variables the highest priority).
           VITE_CHAT_API_URL: ${{ vars.CHAT_API_URL }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -57,7 +49,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
-      id-token: write   # OIDC -> AWS (no stored access keys)
+      id-token: write   
       contents: read
     env:
       BUCKET: ${{ vars.SITE_BUCKET }}

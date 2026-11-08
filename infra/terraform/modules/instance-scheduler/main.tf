@@ -1,4 +1,3 @@
-# Native EventBridge Scheduler -> EC2 API calls. No Lambda; well inside the free invocation allowance.
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
