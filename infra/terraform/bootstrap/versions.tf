@@ -8,7 +8,7 @@ terraform {
       version = "~> 6.0"
     }
   }
-    backend "s3" {
+  backend "s3" {
     key          = "bootstrap/terraform.tfstate"
     region       = "ap-southeast-1"
     encrypt      = true

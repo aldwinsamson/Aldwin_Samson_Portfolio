@@ -3,8 +3,10 @@ import { GoogleGenAI } from "@google/genai";
 import { KNOWLEDGE } from "./knowledge.generated.mjs";
 
 const cfg = () => ({
-  model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-  maxTokens: Number(process.env.MAX_OUTPUT_TOKENS) || 450,
+  model: (process.env.GEMINI_MODEL || "").trim(),
+  // Newer Gemini models spend part of this budget on internal "thinking", so keep it generous.
+  // The prompt itself keeps answers short (under ~120 words).
+  maxTokens: Number(process.env.MAX_OUTPUT_TOKENS) || 1024,
   allowedOrigins: (process.env.ALLOWED_ORIGINS || "https://aldwinsamson.com,https://www.aldwinsamson.com")
     .split(",")
     .map((s) => s.trim())
@@ -16,6 +18,22 @@ const cfg = () => ({
   contactEmail: process.env.CONTACT_EMAIL || "aldwinsamsonn@gmail.com",
   debug: process.env.CHAT_DEBUG === "true",
 });
+
+// Tried in order. GEMINI_MODEL (if set) goes first. We only move to the next model when Google says the model
+// does not exist / is not offered to this key (404, "no longer available", "not supported", ...), never on
+// auth, quota or network errors. "gemini-flash-latest" is Google's own alias for the current Flash model.
+const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"];
+
+export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
+
+export function shouldTryNextModel(err) {
+  const status = Number(err?.status ?? err?.code);
+  if ([401, 403, 429].includes(status) || status >= 500) return false;
+  if (status === 404) return true;
+  return /not found|no longer available|not available|not supported|unsupported|deprecated|new users|has been shut down/i.test(
+    String(err?.message || ""),
+  );
+}
 
 const MAX_USER_CHARS = 300;
 const MAX_ASSISTANT_CHARS = 1500;
@@ -152,26 +170,38 @@ export async function handleChat(req, clientImpl = null) {
   const limited = rateLimited(req.ip || "unknown", c);
   if (limited) return json(429, { error: "rate limited", scope: limited }, { ...cors, "retry-after": "60" });
 
+  const ai = clientImpl || new GoogleGenAI({ apiKey });
+  const contents = norm.turns.map((t) => ({
+    role: t.role === "assistant" ? "model" : "user",
+    parts: [{ text: t.content }],
+  }));
+
+  const tried = [];
+  let response = null;
+  let lastErr = null;
   try {
-    const ai = clientImpl || new GoogleGenAI({ apiKey });
-
-    const contents = norm.turns.map((t) => ({
-      role: t.role === "assistant" ? "model" : "user",
-      parts: [{ text: t.content }],
-    }));
-
-    const response = await ai.models.generateContent({
-      model: c.model,
-      contents,
-      config: {
-        systemInstruction: buildSystemPrompt(c.contactEmail),
-        temperature: 0.3,
-        maxOutputTokens: c.maxTokens,
-        // Gemini 2.5 "thinking" tokens count against maxOutputTokens and can
-        // leave an empty reply. Short Q&A doesn't need thinking.
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    });
+    for (const model of modelChain(c)) {
+      tried.push(model);
+      try {
+        response = await ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            systemInstruction: buildSystemPrompt(c.contactEmail),
+            temperature: 0.3,
+            maxOutputTokens: c.maxTokens,
+            // Only Gemini 2.5 accepts thinkingBudget; newer models use a different setting, so we leave it out there.
+            ...(model.includes("2.5") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+          },
+        });
+        break;
+      } catch (err) {
+        lastErr = err;
+        console.error("chat_model_failed", { model, status: err?.status, message: err?.message });
+        if (!shouldTryNextModel(err)) throw err;
+      }
+    }
+    if (!response) throw lastErr || new Error("no model available");
 
     const raw = response.text || "";
     const reply = parseReply(raw);
@@ -192,7 +222,7 @@ export async function handleChat(req, clientImpl = null) {
       details: err?.details,
       cause: err?.cause?.message ?? err?.cause,
       stack: err?.stack,
-      model: c.model,
+      tried,
       hasKey: Boolean(apiKey),
       keyLength: apiKey.length,
     });
@@ -200,9 +230,16 @@ export async function handleChat(req, clientImpl = null) {
     return json(
       502,
       c.debug
-        ? { error: "upstream", name: err?.name, message: err?.message, status: err?.status, code: err?.code }
+        ? { error: "upstream", name: err?.name, message: err?.message, status: err?.status, code: err?.code, tried }
         : { error: "upstream" },
       cors
     );
   }
 }
+// Test helper (used by selftest.mjs): clears the in-memory rate-limit state.
+export const _test = {
+  reset() {
+    hits.clear();
+    day = { key: "", count: 0 };
+  },
+};

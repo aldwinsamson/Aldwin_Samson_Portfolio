@@ -11,6 +11,9 @@ module "bucket" {
 
   bucket_name                        = local.bucket_name
   noncurrent_version_expiration_days = 30
+
+  # Only a rebuildable copy of dist/: lets aws_site_enabled = false delete the bucket even though it still holds files.
+  force_destroy = true
 }
 
 data "aws_iam_policy_document" "bucket" {

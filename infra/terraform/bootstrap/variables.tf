@@ -61,6 +61,16 @@ variable "monthly_budget_usd" {
   default     = 30
 }
 
+variable "dns_zone_enabled" {
+  description = <<-EOT
+    Keep the Route 53 hosted zone (about $0.50/month). Set false ONLY after the domain's name servers point at Vercel (or
+    another DNS host) and after environments/prod has run with aws_site_enabled = false. Setting it back to true creates a
+    NEW zone with NEW name servers: copy them to your registrar (docs/zero-cost-aws.md).
+  EOT
+  type        = bool
+  default     = true
+}
+
 variable "extra_tags" {
   type    = map(string)
   default = {}

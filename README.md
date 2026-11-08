@@ -4,8 +4,8 @@ A content-driven, accessible engineering portfolio with an adaptive 3D hero.
 Luxury-editorial design (Instrument Serif · Manrope · JetBrains Mono), obsidian/ivory themes, a champagne primary
 accent and a restrained cyan technical accent.
 
-> **Not deployed.** This project has intentionally **not** been deployed or published anywhere.
-> Deployed to AWS from Terraform + GitHub Actions (see [AWS deployment & DevOps pipeline](#aws-deployment--devops-pipeline)).
+> **Live on Vercel.** The site is built from this repository on every push to `main`. The AWS setup (Terraform + GitHub Actions) is kept as an optional,
+> switchable alternative: see [docs/switch-hosting.md](docs/switch-hosting.md) and [docs/zero-cost-aws.md](docs/zero-cost-aws.md).
 
 ---
 
@@ -23,7 +23,7 @@ accent and a restrained cyan technical accent.
 | Tests | Vitest (pure logic tests in `tests/`) |
 | Smooth Scroll | Lenis (buttery-smooth scroll, agency-grade feel) |
 
-No backend, database, paid API, analytics or external AI service is used.
+No database or analytics. The only server code is `api/chat.mjs`, the Vercel function behind the chat (Google Gemini, free tier).
 
 ## Premium Features (Wow-Factor)
 
@@ -231,7 +231,15 @@ anywhere, stores nothing, and says so when it has no answer.
 
 ## Environment variables
 
-None. The project has no secrets.
+Set in Vercel (Project > Settings > Environment Variables), never in the repository:
+
+| Name | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | for the chat | Google AI Studio key. Mark it Sensitive. Never prefix it with `VITE_`. |
+| `GEMINI_MODEL` | no | Force one model. Leave unset to use the built-in fallback list. |
+| `CHAT_DEBUG` | no | `true` returns the real error in the chat response while debugging. Turn it off afterwards. |
+
+Without the key the site still works with its offline search.
 
 ## AWS deployment & DevOps pipeline
 

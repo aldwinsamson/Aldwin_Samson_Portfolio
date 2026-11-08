@@ -1,10 +1,10 @@
 output "name_servers" {
-  description = "Set these 4 name servers at your domain registrar (custom DNS / nameservers)."
-  value       = aws_route53_zone.primary.name_servers
+  description = "Set these 4 name servers at your domain registrar (null while dns_zone_enabled = false)."
+  value       = one(aws_route53_zone.primary[*].name_servers)
 }
 
 output "hosted_zone_id" {
-  value = aws_route53_zone.primary.zone_id
+  value = one(aws_route53_zone.primary[*].zone_id)
 }
 
 output "state_bucket" {

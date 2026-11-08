@@ -1,10 +1,13 @@
 data "aws_route53_zone" "primary" {
+  count = var.aws_site_enabled ? 1 : 0
+
   name         = var.domain_name
   private_zone = false
 }
 
 # --- Public website: private S3 + CloudFront + ACM + Route 53 ---------------------------------------------------
 module "static_site" {
+  count  = var.aws_site_enabled ? 1 : 0
   source = "../../modules/static-site"
 
   providers = {
@@ -14,7 +17,7 @@ module "static_site" {
 
   context     = local.context
   domain_name = var.domain_name
-  zone_id     = data.aws_route53_zone.primary.zone_id
+  zone_id     = data.aws_route53_zone.primary[0].zone_id
   include_www = var.site.include_www
   price_class = var.site.price_class
   csp         = var.site.csp
@@ -30,6 +33,7 @@ module "static_site" {
 
 # --- Monitoring & alerting -----------------------------------------------------------------------------------------
 module "monitoring" {
+  count  = var.aws_site_enabled ? 1 : 0
   source = "../../modules/monitoring"
 
   providers = {
@@ -39,7 +43,7 @@ module "monitoring" {
 
   context                          = local.context
   domain_name                      = var.domain_name
-  distribution_id                  = module.static_site.distribution_id
+  distribution_id                  = module.static_site[0].distribution_id
   alert_email                      = var.alert_email
   health_check                     = { enabled = var.monitoring.health_check_enabled }
   error_rate_5xx_threshold_percent = var.monitoring.error_rate_5xx_threshold_percent
@@ -52,33 +56,36 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 data "aws_iam_policy_document" "site_deploy" {
+  count = var.aws_site_enabled ? 1 : 0
+
   statement {
     sid       = "ListBucket"
     actions   = ["s3:ListBucket", "s3:GetBucketLocation"]
-    resources = [module.static_site.bucket_arn]
+    resources = [module.static_site[0].bucket_arn]
   }
 
   statement {
     sid       = "WriteObjects"
     actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
-    resources = ["${module.static_site.bucket_arn}/*"]
+    resources = ["${module.static_site[0].bucket_arn}/*"]
   }
 
   statement {
     sid       = "InvalidateCache"
     actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation", "cloudfront:ListInvalidations", "cloudfront:GetDistribution"]
-    resources = [module.static_site.distribution_arn]
+    resources = [module.static_site[0].distribution_arn]
   }
 }
 
 module "site_deploy_role" {
+  count  = var.aws_site_enabled ? 1 : 0
   source = "../../modules/github-oidc-role"
 
   name               = "${local.context.prefix}-gha-site-deploy"
   description        = "GitHub Actions (main branch): publish the built site to S3 and invalidate CloudFront"
   oidc_provider_arn  = data.aws_iam_openid_connect_provider.github.arn
   subjects           = ["${local.oidc_sub_prefix}:ref:refs/heads/main"]
-  inline_policy_json = data.aws_iam_policy_document.site_deploy.json
+  inline_policy_json = data.aws_iam_policy_document.site_deploy[0].json
 }
 
 # --- Optional DevOps lab ---------------------------------------------------------------------------------------------

@@ -77,7 +77,7 @@ Framework preset *Vite* (the repo's `vercel.json` sets build command `npm run bu
 
 | Name | Value | Notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | your key | mark **Sensitive**; never name it `VITE_...` (that would publish it) |
+| `GEMINI_API_KEY` | your key | mark **Sensitive**; never name it `VITE_...` (that would publish it) |
 
 `VITE_CHAT_API_URL=/api/chat` is already set by `vercel.json` (`build.env`). Do **not** rely on `.env.production`: it is git-ignored, so Vercel and
 GitHub never see it.
@@ -248,7 +248,7 @@ Refresh the AWS copy **first**, flip DNS **last**.
 |---|---|
 | Plan wants to *replace* an `A` record | Stop. Send the plan; do not apply |
 | Vercel says *Invalid Configuration* for `www` | Keep `www` as a redirect in Vercel and check that the `www` A record has the same IP as the apex |
-| Chat says it is offline on Vercel | `ANTHROPIC_API_KEY` missing for that environment, or the key's spend limit is reached; the site falls back to its offline search |
+| Chat says it is offline on Vercel | `GEMINI_API_KEY` missing for that environment, or the key's free quota is used up; the site falls back to its offline search |
 | Chat is blocked on a preview | It should work: same-origin requests are allowed. Check the function log in Vercel |
 | Manual AWS deploy: `AccessDenied` on `GetDistribution` | Apply the prod stack once (it adds `cloudfront:GetDistribution` to the deploy role) |
 | `terraform init` asks for a bucket | `terraform init "-backend-config=bucket=<state bucket>"` |

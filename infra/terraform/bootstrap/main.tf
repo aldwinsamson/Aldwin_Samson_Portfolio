@@ -36,13 +36,18 @@ resource "aws_s3_bucket_policy" "state" {
 }
 
 # ---- 2. DNS: the hosted zone lives here so its name servers never change when an environment is rebuilt ----
+# Remove it on purpose with dns_zone_enabled = false (docs/zero-cost-aws.md). Terraform refuses to delete a zone that still
+# holds records it does not manage (MX, TXT, ...): copy those to your new DNS host first.
 resource "aws_route53_zone" "primary" {
+  count = var.dns_zone_enabled ? 1 : 0
+
   name    = var.domain_name
   comment = "Public zone for ${var.domain_name} (managed by the bootstrap stack)"
+}
 
-  lifecycle {
-    prevent_destroy = true
-  }
+moved {
+  from = aws_route53_zone.primary
+  to   = aws_route53_zone.primary[0]
 }
 
 # ---- 3. GitHub Actions -> AWS with OIDC (no long-lived access keys anywhere) --------------------------------

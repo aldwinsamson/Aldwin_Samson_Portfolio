@@ -25,9 +25,10 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("text has no FOLLOWUPS line", !b.text.includes("FOLLOWUPS") && b.text.startsWith("John built"));
   ok("3 follow-ups parsed", b.followUps.length === 3 && b.followUps[0] === "What is his capstone?", JSON.stringify(b.followUps));
   ok("CORS header for allowed origin", r.headers["access-control-allow-origin"] === "https://aldwinsamson.com");
-  ok("model defaults to gemini-2.5-flash", spy.params.model === "gemini-2.5-flash");
+  ok("model defaults to the gemini-flash-latest alias", spy.params.model === "gemini-flash-latest", spy.params.model);
   ok("system instruction includes knowledge + rules", spy.params.config.systemInstruction.includes("=== PROJECTS (") && spy.params.config.systemInstruction.includes("RULES"));
-  ok("maxOutputTokens capped", spy.params.config.maxOutputTokens === 450);
+  ok("maxOutputTokens capped", spy.params.config.maxOutputTokens === 1024);
+  ok("no thinkingConfig for non-2.5 models", !("thinkingConfig" in spy.params.config));
 }
 // 2. origin / method / config / size / json
 { _test.reset();
@@ -86,6 +87,26 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   ok("502 on network/upstream error", (await handleChat(post([{role:"user",content:"hi"}]), failingClient)).status === 502);
   const emptyClient = mkMockClient("   ");
   ok("502 on empty model reply", (await handleChat(post([{role:"user",content:"hi"}]), emptyClient)).status === 502);
+}
+// 6b. model fallback
+{ _test.reset();
+  const seen = [];
+  const gone = { models: { generateContent: async (p) => { seen.push(p.model); if (seen.length < 3) { const e = new Error("model not found"); e.status = 404; throw e; } return { text: "ok\nFOLLOWUPS: a | b" }; } } };
+  const r = await handleChat(post([{role:"user",content:"hi"}]), gone);
+  ok("falls back to the next model on 404", r.status === 200 && seen.length === 3 && new Set(seen).size === 3, JSON.stringify(seen));
+  const seen2 = [];
+  const badKey = { models: { generateContent: async (p) => { seen2.push(p.model); const e = new Error("API key not valid"); e.status = 400; throw e; } } };
+  await handleChat(post([{role:"user",content:"hi"}], { ip: "3.3.3.3" }), badKey);
+  ok("does not retry other models on a bad key", seen2.length === 1, JSON.stringify(seen2));
+  const seen3 = [];
+  const denied = { models: { generateContent: async (p) => { seen3.push(p.model); const e = new Error("forbidden"); e.status = 403; throw e; } } };
+  await handleChat(post([{role:"user",content:"hi"}], { ip: "4.4.4.4" }), denied);
+  ok("does not retry other models on 403", seen3.length === 1);
+  const seen4 = [];
+  const twoFive = { models: { generateContent: async (p) => { seen4.push(p); const e = new Error("x"); e.status = 404; throw e; } } };
+  await handleChat(post([{role:"user",content:"hi"}], { ip: "5.5.5.5" }), twoFive);
+  const p25 = seen4.find((p) => p.model.includes("2.5"));
+  ok("thinkingBudget 0 only on the 2.5 model", p25 && p25.config.thinkingConfig.thinkingBudget === 0 && seen4.filter((p) => "thinkingConfig" in p.config).length === 1);
 }
 // 7. lambda adapter (payload v2) with env key
 { _test.reset(); process.env.GEMINI_API_KEY = "sk-lambda";
