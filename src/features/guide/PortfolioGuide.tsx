@@ -69,7 +69,7 @@ function GuideLauncher({ onOpen, hidden }: { onOpen: () => void; hidden: boolean
           exit={{ opacity: 0, scale: 0.8 }}
           whileTap={{ scale: 0.92 }}
           transition={spring.ui}
-          aria-label="Open the assistant — ask anything about John"
+          aria-label="Open the assistant — ask anything about Aldwin"
           data-cursor="magnetic"
           className="fixed bottom-5 right-4 z-[70] inline-flex size-12 items-center justify-center rounded-full bg-ink text-bg shadow-[var(--shadow-sm)] transition-colors hover:bg-accent hover:text-accent-ink sm:bottom-6 sm:right-5 sm:size-14"
         >
@@ -526,7 +526,7 @@ function GuidePanel({ onClose, initialQuery }: { onClose: () => void; initialQue
       <form onSubmit={submit} className="shrink-0 border-t border-line p-3">
         <div className="flex items-end gap-2">
           <label htmlFor="guide-input" className="sr-only">
-            Ask a question about John
+            Ask a question about Aldwin
           </label>
           <textarea
             id="guide-input"

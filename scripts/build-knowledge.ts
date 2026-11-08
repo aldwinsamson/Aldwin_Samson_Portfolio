@@ -17,9 +17,9 @@ function build(): string {
 
   parts.push(
     section(
-      "ABOUT JOHN",
+      "ABOUT ALDWIN",
       [
-        `Full name: ${profile.name}. On this site he is called John; close friends call him ${profile.shortName}.`,
+        `Full name: ${profile.name}. On this site he is called ${profile.shortName}; always refer to him as ${profile.shortName}.`,
         `Based in: ${profile.location}.`,
         `Email: ${profile.email}.`,
         `Availability: ${profile.availability}.`,
@@ -81,7 +81,7 @@ function build(): string {
             `PROJECT: ${p.title}${p.fullTitle && p.fullTitle !== p.title ? ` (${p.fullTitle})` : ""}`,
             `Page: /projects/${p.slug}`,
             `Tagline: ${p.tagline}`,
-            `Status: ${p.status}. Period: ${p.period}. John's role: ${p.role}.`,
+            `Status: ${p.status}. Period: ${p.period}. Aldwin's role: ${p.role}.`,
             `Categories: ${p.categories.join(", ")}.`,
             `Stack: ${p.stack.join(", ")}.`,
             `Summary: ${p.summary}`,
@@ -91,7 +91,7 @@ function build(): string {
           add("Objective", p.objective);
           add("Problem", p.problem);
           const block = (label: string, items?: readonly string[]) => items?.length && lines.push(`${label}:\n${list(items)}`);
-          block("What John did", p.contributions);
+          block("What Aldwin did", p.contributions);
           if (p.architecture?.length) lines.push(`How it is built:\n${list(p.architecture.map((a) => `${a.label}: ${a.detail}`))}`);
           block("Implementation notes", p.implementation);
           block("Challenges and limits", p.challenges);
@@ -108,10 +108,10 @@ function build(): string {
 
   parts.push(
     section(
-      "NOT ON THE SITE (say it is not listed, and suggest emailing John)",
+      "NOT ON THE SITE (say it is not listed, and suggest emailing Aldwin)",
       [
         "- Phone number, home address, salary expectations and rates.",
-        "- A downloadable CV: John sends the latest version by email on request.",
+        "- A downloadable CV: Aldwin sends the latest version by email on request.",
         "- Professional certifications. The only certificate is the AWS Fundamentals course certificate; the other certificate entries are courses and seminars.",
         "- Production experience beyond what the experience and project sections state.",
       ].join("\n"),

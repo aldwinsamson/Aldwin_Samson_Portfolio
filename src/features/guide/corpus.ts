@@ -131,7 +131,7 @@ function buildFacts(lang: Lang): Fact[] {
       id: `about:p${i}`,
       kind: "detail",
       group: "about",
-      title: "About John — in his own words",
+      title: "About Aldwin — in his own words",
       text: F.inHisWords(t(p)),
       short: t(p),
       keywords: ["about", "background", "story", "journey", "bio"],
@@ -154,13 +154,13 @@ function buildFacts(lang: Lang): Fact[] {
     id: "focus-list",
     kind: "list",
     group: "focus",
-    title: "What John specializes in",
+    title: "What Aldwin specializes in",
     text: `${F.focusList}${bullets(profile.disciplines.map((d) => `${d.title} — ${t(d.detail)}`))}`,
     keywords: ["focus", "specialize", "specialise", "specialization", "discipline", "expertise", "areas", "strengths", "does", "speciality", "field", "domain"],
     links: [link("Read the about page", "/about")],
     boost: 1.2,
-    ask: "What does John specialize in?",
-    askTl: "Ano ang specialty ni John?",
+    ask: "What does Aldwin specialize in?",
+    askTl: "Ano ang specialty ni Aldwin?",
   });
   profile.about.values.forEach((v, i) =>
     facts.push({
@@ -184,8 +184,8 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["available", "availability", "open", "hire", "hiring", "looking", "role", "roles", "job", "position", "opportunity", "opportunities", "employment", "work", "vacancy", "recruit", "recruiter", "employed", "seeking", "career"],
     links: [link("Get in touch", "/contact")],
     boost: 1.3,
-    ask: "Is John open to work?",
-    askTl: "Bukas ba si John sa trabaho?",
+    ask: "Is Aldwin open to work?",
+    askTl: "Bukas ba si Aldwin sa trabaho?",
   });
   facts.push({
     id: "location",
@@ -200,15 +200,15 @@ function buildFacts(lang: Lang): Fact[] {
     id: "contact",
     kind: "overview",
     group: "contact",
-    title: "How to contact John",
+    title: "How to contact Aldwin",
     text: F.contact({ email: profile.email, linkedin: linkedin?.handle ?? "John Aldwin Samson", github: github?.handle ?? "@aldwinsamson" }),
     keywords: ["contact", "email", "mail", "reach", "message", "touch", "connect", "talk", "linkedin", "github", "social", "socials", "write", "inquiry", "enquiry"],
     links: [
       link("Go to the contact page", "/contact"),
-      { label: "Email John", to: `mailto:${profile.email}`, external: true },
+      { label: "Email Aldwin", to: `mailto:${profile.email}`, external: true },
     ],
     boost: 1.3,
-    ask: "How can I contact John?",
+    ask: "How can I contact Aldwin?",
     askTl: "Paano ko siya makokontak?",
   });
   if (github) {
@@ -247,8 +247,8 @@ function buildFacts(lang: Lang): Fact[] {
       keywords: [e.organization, e.role, e.type, e.start, e.end, ...e.skills, "experience", "work", "role", "position", "title", e.type === "Internship" ? "internship intern" : ""],
       links: [to],
       boost: 1.15,
-      ask: e.type === "Project" ? `Tell me about ${e.organization.replace(/ — Thesis$/, "")}` : `What did John do at ${e.organization}?`,
-      askTl: e.type === "Project" ? `Ikuwento mo ang ${e.organization.replace(/ — Thesis$/, "")}` : `Ano ang ginawa ni John sa ${e.organization}?`,
+      ask: e.type === "Project" ? `Tell me about ${e.organization.replace(/ — Thesis$/, "")}` : `What did Aldwin do at ${e.organization}?`,
+      askTl: e.type === "Project" ? `Ikuwento mo ang ${e.organization.replace(/ — Thesis$/, "")}` : `Ano ang ginawa ni Aldwin sa ${e.organization}?`,
     });
     e.highlights.forEach((h, i) =>
       facts.push({
@@ -272,8 +272,8 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["experience", "work", "history", "career", "internships", "intern", "jobs", "timeline", "employment", "worked", "companies", "company", "background", "resume"],
     links: [link("See the experience timeline", "/experience")],
     boost: 1.25,
-    ask: "What is John's work experience?",
-    askTl: "Ano ang work experience ni John?",
+    ask: "What is Aldwin's work experience?",
+    askTl: "Ano ang work experience ni Aldwin?",
   });
 
   // Education
@@ -299,8 +299,8 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["education", "school", "university", "college", "degree", "study", "studied", "graduate", "graduated", "academic", "alma", "mater", "diploma", "bachelor"],
     links: [link("See education and honors", "/experience")],
     boost: 1.25,
-    ask: "Where did John study?",
-    askTl: "Saan nag-aral si John?",
+    ask: "Where did Aldwin study?",
+    askTl: "Saan nag-aral si Aldwin?",
   });
 
   // Certifications · honors 
@@ -326,7 +326,7 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["certification", "certifications", "certificate", "certificates", "training", "course", "courses", "seminar", "credential", "credentials", "licenses", "learned", "masterclass"],
     links: [link("See certifications", "/experience")],
     boost: 1.25,
-    ask: "What certifications does John have?",
+    ask: "What certifications does Aldwin have?",
     askTl: "Anong mga sertipikasyon ang mayroon siya?",
   });
   honors.forEach((h, i) =>
@@ -350,7 +350,7 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["award", "awards", "honor", "honors", "recognition", "recognitions", "achievement", "achievements", "won", "win", "prize", "accomplishments", "dean", "deans", "lister", "list", "best", "recognized"],
     links: [link("See honors", "/experience")],
     boost: 1.3,
-    ask: "What awards has John won?",
+    ask: "What awards has Aldwin won?",
     askTl: "Anong mga parangal ang napanalunan niya?",
   });
 
@@ -367,8 +367,8 @@ function buildFacts(lang: Lang): Fact[] {
       keywords: [g.title, ...g.items.map((i) => i.name), "skill", "skills", "technology", "technologies", "stack", "tools", "know", "proficient", "experience"],
       links: [stackLink],
       boost: 1.1,
-      ask: `What are John's ${g.title} skills?`,
-      askTl: `Ano ang ${g.title} skills ni John?`,
+      ask: `What are Aldwin's ${g.title} skills?`,
+      askTl: `Ano ang ${g.title} skills ni Aldwin?`,
     });
     for (const it of g.items) {
       const label = `${it.name}${it.note ? ` (${it.note})` : ""}`;
@@ -393,8 +393,8 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["skill", "skills", "technology", "technologies", "tech", "stack", "tools", "languages", "programming", "proficient", "expertise", "competencies", "capabilities", "know", "good", "software", "frameworks"],
     links: [link("View the full tech stack", "/stack")],
     boost: 1.3,
-    ask: "What are John's main skills?",
-    askTl: "Ano ang mga skills ni John?",
+    ask: "What are Aldwin's main skills?",
+    askTl: "Ano ang mga skills ni Aldwin?",
   });
 
   // Projects 
@@ -408,8 +408,8 @@ function buildFacts(lang: Lang): Fact[] {
     keywords: ["project", "projects", "built", "build", "made", "portfolio", "work", "samples", "case", "studies", "developed", "created", "apps", "applications", "show", "showcase", "list"],
     links: [link("See all projects", "/projects")],
     boost: 1.3,
-    ask: "What projects has John built?",
-    askTl: "Anu-ano ang mga proyekto ni John?",
+    ask: "What projects has Aldwin built?",
+    askTl: "Anu-ano ang mga proyekto ni Aldwin?",
   });
 
   // Hand-written Q&A
