@@ -89,6 +89,12 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   const emptyClient = mkMockClient("   ");
   ok("502 on empty model reply", (await handleChat(post([{role:"user",content:"hi"}]), emptyClient)).status === 502);
 }
+// 6a. name rules
+{ const sp = buildSystemPrompt("a@b.c");
+  ok("prompt gives the exact full name and forbids shortening it", sp.includes('"John Aldwin R. Samson"') && sp.includes('Never shorten the full name to "Aldwin R. Samson"'));
+  ok("prompt says to use the nickname normally", sp.includes('In normal answers say just "Aldwin"'));
+  ok("prompt explains who John is", sp.includes("who is John"));
+}
 // 6b. model fallback
 { _test.reset();
   const seen = [];

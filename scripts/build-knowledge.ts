@@ -19,7 +19,7 @@ function build(): string {
     section(
       "ABOUT ALDWIN",
       [
-        `Full name: ${profile.name}. On this site he is called ${profile.shortName}; always refer to him as ${profile.shortName}.`,
+        `Full name: ${profile.name}. Nickname used on this site and by everyone: ${profile.shortName}. Use the nickname in answers; give the full name only when someone asks for it.`,
         `Based in: ${profile.location}.`,
         `Email: ${profile.email}.`,
         `Availability: ${profile.availability}.`,
