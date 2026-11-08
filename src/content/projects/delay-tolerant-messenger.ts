@@ -15,19 +15,19 @@ export default defineProject({
   order: 10,
 
   cover: {
-    src: "/public/images/projects/delay-tolerant-messenger/prototype.webp",
+    src: "/images/projects/delay-tolerant-messenger/prototype.webp",
     alt: "The DTRM unit in its clear case with a 433 MHz antenna",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/delay-tolerant-messenger/prototype.webp",
+      src: "/images/projects/delay-tolerant-messenger/prototype.webp",
       alt: "The DTRM unit in its clear case with a 433 MHz antenna",
       caption: "The DTRM unit in its clear case with a 433 MHz antenna",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/delay-tolerant-messenger/team.webp",
+      src: "/images/projects/delay-tolerant-messenger/team.webp",
       alt: "The DTRM team of eight, with our prototype",
       caption: "The DTRM team of eight, with our prototype",
       kind: "authentic",

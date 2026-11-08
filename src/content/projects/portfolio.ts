@@ -15,19 +15,19 @@ export default defineProject({
   order: 4,
   
   cover: {
-    src: "/public/images/projects/portfolio/cover.webp",
+    src: "/images/projects/portfolio/cover.webp",
     alt: "The portfolio cover screen with a 3D hero and a search bar",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/portfolio/cover.webp",
+      src: "/images/projects/portfolio/cover.webp",
       alt: "The portfolio cover screen with a 3D hero and a search bar",
       caption: "The portfolio cover screen with a 3D hero and a search bar",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/portfolio/homepage.webp",
+      src: "/images/projects/portfolio/homepage.webp",
       alt: "The portfolio homepage with a list of projects",
       caption: "The portfolio homepage with a list of projects",
       kind: "authentic",

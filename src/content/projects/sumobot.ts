@@ -15,13 +15,13 @@ export default defineProject({
   order: 11,
 
   cover: {
-    src: "/public/images/projects/sumobot/prototype.webp",
+    src: "/images/projects/sumobot/prototype.webp",
     alt: "The SumoBot robot",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/sumobot/prototype.webp",
+      src: "/images/projects/sumobot/prototype.webp",
       alt: "The SumoBot robot",
       caption: "The SumoBot robot",
       kind: "authentic",

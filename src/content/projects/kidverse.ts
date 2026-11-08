@@ -15,25 +15,25 @@ export default defineProject({
   order: 2,
 
   cover: {
-    src: "/public/images/projects/kidverse/cover.webp",
+    src: "/images/projects/kidverse/cover.webp",
     alt: "The KidVerse student login page",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/kidverse/cover.webp",
+      src: "/images/projects/kidverse/cover.webp",
       alt: "The KidVerse student login page",
       caption: "The KidVerse student login page",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/kidverse/homepage.webp",
+      src: "/images/projects/kidverse/homepage.webp",
       alt: "The KidVerse student homepage",
       caption: "The KidVerse student homepage",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/kidverse/team.webp",
+      src: "/images/projects/kidverse/team.webp",
       alt: "The KidVerse team of five",
       caption: "The KidVerse team of five",
       kind: "authentic",

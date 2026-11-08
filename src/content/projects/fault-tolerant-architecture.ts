@@ -16,13 +16,13 @@ export default defineProject({
   order: 7,
 
   cover: {
-    src: "/public/images/projects/fault-tolerant-architecture/architecture.webp",
+    src: "/images/projects/fault-tolerant-architecture/architecture.webp",
     alt: "Multi-AZ three-tier architecture diagram",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/fault-tolerant-architecture/architecture.webp",
+      src: "/images/projects/fault-tolerant-architecture/architecture.webp",
       alt: "Multi-AZ three-tier architecture diagram",
       caption: "Multi-AZ three-tier architecture diagram",
       kind: "authentic",

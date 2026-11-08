@@ -16,19 +16,19 @@ export default defineProject({
   order: 8,
 
   cover: {
-    src: "/public/images/projects/3-tier-app/architecture.webp",
+    src: "/images/projects/3-tier-app/architecture.webp",
     alt: "The 3-tier app running in a Kubernetes cluster, with the GitLab CI pipeline and Argo CD dashboard in the background",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/3-tier-app/architecture.webp",
+      src: "/images/projects/3-tier-app/architecture.webp",
       alt: "Architecture diagram of the 3-tier app and its GitOps delivery",
       caption: "The 3-tier app and its GitOps delivery.",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/3-tier-app/website.webp",
+      src: "/images/projects/3-tier-app/website.webp",
       alt: "The 3-tier app running in a Kubernetes cluster.",
       caption: "The 3-tier app running in a Kubernetes cluster.",
       kind: "authentic",

@@ -15,19 +15,19 @@ export default defineProject({
   order: 5,
 
   cover: {
-    src: "/public/images/projects/fluentpro/homepage.webp",
+    src: "/images/projects/fluentpro/homepage.webp",
     alt: "The FluentPro homepage",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/fluentpro/homepage.webp",
+      src: "/images/projects/fluentpro/homepage.webp",
       alt: "The FluentPro homepage with the 365-day plan and streaks",
       caption: "The FluentPro homepage with the 365-day plan and streaks",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/fluentpro/task.webp",
+      src: "/images/projects/fluentpro/task.webp",
       alt: "The FluentPro task view",
       caption: "The FluentPro task view",
       kind: "authentic",

@@ -16,31 +16,31 @@ export default defineProject({
   order: 1,
 
   cover: {
-    src: "/public/images/projects/ligtas/cover.webp",
+    src: "/images/projects/ligtas/cover.webp",
     alt: "The L.I.G.T.A.S. prototype vehicle",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/ligtas/cover.webp",
+      src: "/images/projects/ligtas/cover.webp",
       alt: "The L.I.G.T.A.S. prototype and controller",
       caption: "The L.I.G.T.A.S. prototype and controller",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/ligtas/prototype.webp",
+      src: "/images/projects/ligtas/prototype.webp",
       alt: "The L.I.G.T.A.S. prototype vehicle",
       caption: "The L.I.G.T.A.S. prototype vehicle",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/ligtas/controller.webp",
+      src: "/images/projects/ligtas/controller.webp",
       alt: "The L.I.G.T.A.S. handheld controller",
       caption: "The L.I.G.T.A.S. handheld controller",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/ligtas/team.webp",
+      src: "/images/projects/ligtas/team.webp",
       alt: "The L.I.G.T.A.S. team",
       caption: "The L.I.G.T.A.S. team",
       kind: "authentic",

@@ -15,19 +15,19 @@ export default defineProject({
   order: 6,
 
   cover: {
-    src: "/public/images/projects/uw-management-system/cover.webp",
+    src: "/images/projects/uw-management-system/cover.webp",
     alt: "The UW Management System interface",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/uw-management-system/cover.webp",
+      src: "/images/projects/uw-management-system/cover.webp",
       alt: "The UW Management System interface",
       caption: "The UW Management System interface",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/uw-management-system/homepage.webp",
+      src: "/images/projects/uw-management-system/homepage.webp",
       alt: "The UW Management System inventory screen",
       caption: "The UW Management System inventory screen",
       kind: "authentic",

@@ -15,19 +15,19 @@ export default defineProject({
   order: 3,
 
   cover: {
-    src: "/public/images/projects/wedding-invitation/cover.webp",
+    src: "/images/projects/wedding-invitation/cover.webp",
     alt: "The wedding invitation landing screen",
     kind: "authentic",
   },
   gallery: [
     {
-      src: "/public/images/projects/wedding-invitation/cover.webp",
+      src: "/images/projects/wedding-invitation/cover.webp",
       alt: "The wedding invitation landing screen",
       caption: "The wedding invitation landing screen",
       kind: "authentic",
     },
     {
-      src: "/public/images/projects/wedding-invitation/prenup-page.webp",
+      src: "/images/projects/wedding-invitation/prenup-page.webp",
       alt: "The prenup photo slideshow",
       caption: "The prenup photo slideshow",
       kind: "authentic",
