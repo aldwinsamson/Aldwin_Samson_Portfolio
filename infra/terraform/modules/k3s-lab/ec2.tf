@@ -31,8 +31,8 @@ resource "aws_instance" "lab" {
   user_data_replace_on_change = true
 
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required" # IMDSv2 only
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # IMDSv2 only
     http_put_response_hop_limit = 2
   }
 

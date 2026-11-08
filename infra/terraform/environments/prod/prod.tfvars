@@ -1,6 +1,6 @@
 site = {
   include_www  = true
-  price_class  = "PriceClass_All" # every edge location, incl. Manila
+  price_class  = "PriceClass_All" 
   hsts_preload = false
 
   csp = {

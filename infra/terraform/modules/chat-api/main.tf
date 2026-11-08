@@ -7,9 +7,9 @@ locals {
 }
 
 data "archive_file" "chat" {
-  type        = "zip"
-  source_dir  = var.source_dir
-  output_path = "${path.module}/.build/${local.name}.zip"
+  type             = "zip"
+  source_dir       = var.source_dir
+  output_path      = "${path.module}/.build/${local.name}.zip"
   output_file_mode = "0666"
   excludes         = ["adapters", "selftest.mjs", "core.test.mjs"]
 }

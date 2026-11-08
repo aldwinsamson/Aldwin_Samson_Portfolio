@@ -17,6 +17,6 @@ locals {
     }, var.extra_tags)
   }
 
-  state_bucket = "${var.project}-tfstate-${local.account_id}"
+  state_bucket   = "${var.project}-tfstate-${local.account_id}"
   state_prefixes = distinct(concat([var.environment], var.additional_environments))
 }
