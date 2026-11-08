@@ -16,7 +16,7 @@ const cfg = () => ({
   perHour: Number(process.env.RATE_PER_HOUR) || 40,
   perDayGlobal: Number(process.env.DAILY_LIMIT) || 400,
   contactEmail: process.env.CONTACT_EMAIL || "aldwinsamsonn@gmail.com",
-  debug: process.env.CHAT_DEBUG === "true",
+  debug: /^(true|1|yes|on)$/i.test((process.env.CHAT_DEBUG || "").trim().replace(/^["']|["']$/g, "")),
   // The website gives up after 22 s, so the server answers (or fails) well before that.
   modelTimeoutMs: Number(process.env.MODEL_TIMEOUT_MS) || 7000,
   totalBudgetMs: Number(process.env.TOTAL_BUDGET_MS) || 17000,
@@ -28,6 +28,19 @@ const cfg = () => ({
 const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-flash-latest", "gemini-2.5-flash"];
 
 export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
+
+// Safe, secret-free label for what went wrong, returned to the browser so a failure can be diagnosed without logs.
+export function failureReason(err) {
+  if (isTimeout(err)) return "timeout";
+  const status = Number(err?.status ?? err?.code);
+  const msg = String(err?.message || "");
+  if (status === 429 || /quota|rate.?limit|resource.?exhausted/i.test(msg)) return "quota";
+  if (status === 401 || status === 403 || /api key|permission|unauthenticated|PERMISSION_DENIED/i.test(msg)) return "key_rejected";
+  if (status === 404 || /not found|no longer available|new users/i.test(msg)) return "model_unavailable";
+  if (/fetch failed|ENOTFOUND|ECONN|ETIMEDOUT|network/i.test(msg)) return "network";
+  if (status === 400) return "bad_request";
+  return "other";
+}
 
 const isTimeout = (err) => err?.name === "TimeoutError" || err?.name === "AbortError" || Number(err?.status) === 504;
 
@@ -266,7 +279,7 @@ export async function handleChat(req, clientImpl = null) {
       isTimeout(err) ? 504 : 502,
       c.debug
         ? { error: "upstream", name: err?.name, message: err?.message, status: err?.status, code: err?.code, tried }
-        : { error: isTimeout(err) ? "timeout" : "upstream" },
+        : { error: isTimeout(err) ? "timeout" : "upstream", reason: failureReason(err), status: Number(err?.status) || undefined, tried },
       cors
     );
   }

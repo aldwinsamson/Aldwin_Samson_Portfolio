@@ -1,6 +1,6 @@
 // Run with: npm run test:chat   (= node server/chat/selftest.mjs; needs Node 20+; calls no real API, client is mocked)
 // Named selftest.mjs on purpose: a *.test.mjs name would be picked up by vitest (`npm test`) and fail the suite.
-import { handleChat, normaliseTurns, parseReply, buildSystemPrompt, _test } from "./core.mjs";
+import { handleChat, normaliseTurns, parseReply, buildSystemPrompt, failureReason, _test } from "./core.mjs";
 import { handler } from "./lambda.mjs";
 let pass = 0, fail = 0;
 const ok = (name, cond, extra = "") => { cond ? pass++ : fail++; console.log(`${cond ? "PASS" : "FAIL"}  ${name}${cond ? "" : "  " + extra}`); };
@@ -124,6 +124,14 @@ const post = (messages, extra = {}) => ({ method: "POST", origin: "https://aldwi
   const r3 = await handleChat(post([{role:"user",content:"hi"}], { ip: "7.7.7.9" }), rejectsThinking);
   ok("retries the same model without thinking config", r3.status === 200 && thinkRej.join() === "true,false", thinkRej.join());
   delete process.env.MODEL_TIMEOUT_MS; delete process.env.TOTAL_BUDGET_MS;
+}
+// 6d. failures say why (no secrets) even without CHAT_DEBUG
+{ _test.reset();
+  const e429 = Object.assign(new Error("Resource has been exhausted (quota)"), { status: 429 });
+  const r = await handleChat(post([{role:"user",content:"hi"}], { ip: "8.1.1.1" }), { models: { generateContent: async () => { throw e429; } } });
+  const b = JSON.parse(r.body);
+  ok("502 body carries a safe reason", r.status === 502 && b.reason === "quota" && b.status === 429 && !("message" in b), r.body);
+  ok("reason labels", failureReason(Object.assign(new Error("API key not valid"), { status: 400 })) === "key_rejected" && failureReason(Object.assign(new Error("x"), { status: 404 })) === "model_unavailable");
 }
 // 7. lambda adapter (payload v2) with env key
 { _test.reset(); process.env.GEMINI_API_KEY = "sk-lambda";
