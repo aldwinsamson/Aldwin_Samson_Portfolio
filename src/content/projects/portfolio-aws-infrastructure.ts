@@ -10,7 +10,7 @@ export default defineProject({
   categories: ["Cloud & DevOps"],
   status: "Completed",
   period: "Oct 2026 – Nov 2026",
-  role: "Solo: design, Terraform, pipeline and runbook",
+  role: "Cloud & DevOps Engineer (solo)",
   stack: ["AWS", "Terraform", "S3", "CloudFront", "ACM", "Route 53", "CloudWatch", "GitHub Actions", "Checkov", "k3s", "Argo CD", "Prometheus", "Grafana"],
   featured: true,
   order: 9,

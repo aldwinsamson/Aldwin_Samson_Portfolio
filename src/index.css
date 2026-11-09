@@ -11,10 +11,10 @@
   --muted: #6a665c;
   --line: rgba(21, 20, 15, 0.12);
   --line-strong: rgba(21, 20, 15, 0.24);
-  --accent: #8a6a32;          /* champagne, darkened for AA contrast on ivory */
+  --accent: #8a6a32;          
   --accent-soft: #c9ae7c;
   --accent-ink: #faf8f3;
-  --tech: #0b7285;            /* restrained cyan for technical details */
+  --tech: #0b7285;            
   --shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 30px 60px -30px rgba(40, 32, 18, 0.28);
   --shadow-sm: 0 12px 30px -18px rgba(40, 32, 18, 0.35);
   --grain-opacity: 0.05;

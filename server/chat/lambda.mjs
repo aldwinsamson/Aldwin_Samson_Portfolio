@@ -1,4 +1,3 @@
-// server/chat/lambda.mjs
 import { handleChat } from "./core.mjs";
 
 export async function handler(event, clientImpl = null) {

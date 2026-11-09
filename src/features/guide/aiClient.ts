@@ -1,9 +1,3 @@
-/**
- * Browser client for the AI layer of the assistant.
- * The API address comes from VITE_CHAT_API_URL. When it is empty the assistant
- * runs in offline mode and only uses the built-in search, so the site never breaks without a backend.
- */
-
 export interface AiTurn {
   role: "user" | "assistant";
   content: string;

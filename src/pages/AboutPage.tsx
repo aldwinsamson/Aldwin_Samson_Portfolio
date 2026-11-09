@@ -13,7 +13,7 @@ export default function AboutPage() {
       <Seo title="About" description={profile.about.short} />
       <section className="pt-24 sm:pt-36 lg:pt-44">
         <Container>
-          <SectionHeader as="h1" label="About" title={<>Cloud, hardware, <em className="text-metal"><TextScramble text="and the space between." /></em></>} />
+          <SectionHeader as="h1" label="About" title={<>Cloud, software, hardware <em className="text-metal"><TextScramble text="and the space between." /></em></>} />
           <div className="grid gap-10 sm:gap-14 lg:grid-cols-[1fr_1.35fr] lg:gap-20">
             <Reveal className="lg:sticky lg:top-28 lg:self-start">
               <figure>

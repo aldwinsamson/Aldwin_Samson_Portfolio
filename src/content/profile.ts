@@ -17,7 +17,7 @@ export const profile = {
     headline: ["Infrastructure that", "ships, scales", "and stays up."],
     accentLine: 1,
     lead:
-      "Computer engineer specializing in AWS infrastructure as code, GitOps delivery and observability — with a hardware and firmware background that lets me reason about reliability from the device to the dashboard.",
+      "Computer engineer specializing in AWS infrastructure as code, GitOps delivery and observability with a hardware and firmware background that lets me reason about reliability from the device to the dashboard.",
     primaryCta: { label: "Explore Projects", to: "/projects" },
     secondaryCta: { label: "Contact Me", to: "/contact" },
     tertiaryLink: { label: "View experience & capabilities", to: "/experience" },
@@ -33,9 +33,9 @@ export const profile = {
 
   about: {
     short:
-      "A cloud and DevOps engineer with a hardware foundation — I build infrastructure that is automated, observable and reliable, from the device to the cloud.",
+      "A cloud, DevOps and software engineer with a hardware foundation, I build infrastructure that is automated, observable and reliable, from the device to the cloud.",
     paragraphs: [
-      "I'm a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps and site reliability, with a strong foundation in embedded systems and hardware design.",
+      "I'm a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps, site reliability and software, with a strong foundation in embedded systems and hardware design.",
       "At Stratpoint Technologies I built a three-tier AWS environment across availability zones with Terraform and CloudFormation, set up GitLab CI/CD and Argo CD for delivery, and ran Prometheus, Grafana, Loki and Tempo for monitoring and tracing. My capstone there was a task manager app that deploys to Kubernetes through Argo CD.",
       "Before that, at USHER Technologies, I designed circuit boards in KiCAD and wrote ESP32 firmware that sends sensor data to the cloud over MQTT and REST.",
       "For my thesis, L.I.G.T.A.S., I led a team of five and built the hardware for a vehicle that tests floodwater for electrical leakage. It won Top 2 Best Thesis, Best Thesis Paper, Best Booth and Best Poster.",
@@ -51,7 +51,7 @@ export const profile = {
   contact: {
     heading: "Let's build systems that hold up in the real world.",
     body:
-      "I'm open to Cloud, DevOps, SRE and embedded engineering roles, hybrid or onsite in Metro Manila or remote. If you're hiring, or want to talk infrastructure, firmware or a project, send me an email.",
+      "I'm open to Cloud, DevOps, SRE, Software and Embedded engineering roles, hybrid or onsite in Metro Manila or remote. If you're hiring, or want to talk infrastructure, firmware or a project, send me an email.",
   },
 } as const;
 

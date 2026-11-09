@@ -1,11 +1,8 @@
-// server/chat/core.mjs
 import { GoogleGenAI } from "@google/genai";
 import { KNOWLEDGE } from "./knowledge.generated.mjs";
 
 const cfg = () => ({
   model: (process.env.GEMINI_MODEL || "").trim(),
-  // Newer Gemini models spend part of this budget on internal "thinking", so keep it generous.
-  // The prompt itself keeps answers short (under ~120 words).
   maxTokens: Number(process.env.MAX_OUTPUT_TOKENS) || 1024,
   allowedOrigins: (process.env.ALLOWED_ORIGINS || "https://aldwinsamson.com,https://www.aldwinsamson.com")
     .split(",")
@@ -22,15 +19,10 @@ const cfg = () => ({
   totalBudgetMs: Number(process.env.TOTAL_BUDGET_MS) || 19000,
 });
 
-// Tried in order. GEMINI_MODEL (if set) goes first. We move to the next model when Google says the model does not exist / is not offered to this
-// 3.1 Flash-Lite is the fastest and the least busy; 3.8 Flash is the model Google's own error message names as the
-// replacement for the retired 2.5 models. Each model has its own free-tier quota and its own load, so any failure of one
-// model (missing, overloaded, slow, out of quota) just moves on to the next. Only a rejected key (401/403) stops everything.
 const FALLBACK_MODELS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash"];
 
 export const modelChain = (c = cfg()) => [...new Set([c.model, ...FALLBACK_MODELS].filter(Boolean))];
 
-// Safe, secret-free label for what went wrong, returned to the browser so a failure can be diagnosed without logs.
 export function failureReason(err) {
   if (isTimeout(err)) return "timeout";
   const status = Number(err?.status ?? err?.code);
@@ -55,11 +47,10 @@ export function shouldTryNextModel(err) {
   );
 }
 
-// Keep the model's internal "thinking" minimal: it is the main reason answers get slow.
 const thinkingFor = (model) => (model.includes("2.5") ? { thinkingBudget: 0 } : { thinkingLevel: "LOW" });
 
 function withTimeout(promise, ms) {
-  promise.catch(() => {}); // the losing side of the race must never become an unhandled rejection
+  promise.catch(() => {}); 
   let timer;
   const limit = new Promise((_, reject) => {
     timer = setTimeout(() => reject(Object.assign(new Error(`model timed out after ${ms} ms`), { name: "TimeoutError", status: 504 })), ms);
@@ -246,7 +237,6 @@ export async function handleChat(req, clientImpl = null) {
         } catch (err) {
           lastErr = err;
           console.error("chat_model_failed", { model, status: err?.status, name: err?.name, message: err?.message });
-          // A model that rejects the thinking setting gets one more try without it.
           if (withThinking && /thinking/i.test(String(err?.message || ""))) {
             withThinking = false;
             continue;
@@ -292,7 +282,6 @@ export async function handleChat(req, clientImpl = null) {
     );
   }
 }
-// Test helper (used by selftest.mjs): clears the in-memory rate-limit state.
 export const _test = {
   reset() {
     hits.clear();

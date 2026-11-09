@@ -70,7 +70,7 @@ export default function HomePage() {
               id="intro-title"
               title={
                 <>
-                  Cloud, hardware,{" "}
+                  Cloud, software, hardware{" "}
                   <em className="text-metal">
                     <TextScramble text="and the space between." className="inline" />
                   </em>
@@ -184,7 +184,7 @@ export default function HomePage() {
                         <TextScramble text="Four awards for one thesis." />
                       </h2>
                       <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:mt-4">
-                        L.I.G.T.A.S. was recognized at the PLM thesis exhibition — led by John as group leader
+                        L.I.G.T.A.S. was recognized at the PLM thesis exhibition, led by Aldwin as group leader
                         and lead hardware developer.
                       </p>
                     </div>

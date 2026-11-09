@@ -11,7 +11,7 @@ export default defineProject({
   status: "Completed",
   period: "Oct 2026 – Nov 2026",
   role: "Designer & Developer (solo)",
-  stack: ["React", "TypeScript", "Vite", "Tailwind CSS", "Three.js", "Motion", "Claude API"],
+  stack: ["React", "TypeScript", "Vite", "Tailwind CSS", "Three.js", "Motion", "Gemini API"],
   order: 4,
   
   cover: {
@@ -39,7 +39,7 @@ export default defineProject({
   objective:
     "Show my work as case studies instead of a list of links, and let the site itself show how I build and run software.",
   problem:
-    "Template portfolios look alike and say little about how software and hardware work fit together. I also wanted one place that stays accurate when my CV changes.",
+    "Template portfolios look alike and say little about how software and hardware work fit together. I also wanted one place that stays accurate when my resume or CV changes.",
 
   contributions: [
     "Designed the visual system, the motion rules and the responsive layouts.",

@@ -29,8 +29,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npm run check:knowledge   # the assistant's knowledge file must match src/content
-      - run: npm run test:chat         # chat backend self-test (the Anthropic API is mocked)
+      - run: npm run check:knowledge   
+      - run: npm run test:chat         
       - run: npm run build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

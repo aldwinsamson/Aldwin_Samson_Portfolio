@@ -14,8 +14,6 @@ import { CommandPaletteProvider } from "@/components/CommandPalette";
 import { GuideProvider } from "@/features/guide/PortfolioGuide";
 import { ease } from "@/styles/motion";
 import HomePage from "@/pages/HomePage";
-
-// Vercel Telemetry Components
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 

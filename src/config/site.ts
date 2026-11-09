@@ -17,7 +17,6 @@ export const siteConfig = {
     preloader: true,
     smoothScroll: true,
     commandPalette: true,
-    horizontalGallery: true,
   },
 
   nav: [

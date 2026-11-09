@@ -30,7 +30,6 @@ export interface Frames {
   skillDetail: (name: string, group: string) => string;
   skillsList: string;
   projectsList: (n: number) => string;
-  /** Joins two things: "A and B". */
   and: string;
 }
 

@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Award, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Award, Lock, Maximize2 } from "lucide-react";
 import { getProject, projects } from "@/content/projects";
 import { Container, ExternalLink, Reveal, Seo, SmartImage, StatusDot, Tag } from "@/components/ui";
 import { ImageReveal } from "@/components/ImageReveal";
+import { Lightbox } from "@/components/Lightbox";
 import { BeamEffect } from "@/components/BeamEffect";
 import { TextScramble } from "@/components/TextScramble";
 import { WordReveal } from "@/components/WordReveal";
@@ -42,6 +44,7 @@ export default function ProjectDetailPage() {
   const reduce = useReducedMotion();
   const { scrollY } = useScroll();
   const coverY = useTransform(scrollY, [0, 800], reduce ? [0, 0] : [0, 90]);
+  const [viewer, setViewer] = useState<number | null>(null);
 
   if (!project) return <NotFoundPage message="That project doesn't exist (or has moved)." />;
 
@@ -175,14 +178,37 @@ export default function ProjectDetailPage() {
 
             {project.gallery.length > 0 && (
               <Block label="Media">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {project.gallery.map((m) => (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {project.gallery.map((m, i) => (
                     <figure key={m.src}>
-                      <SmartImage src={m.src} alt={m.alt} ratio="4 / 3" className="rounded-2xl" />
-                      {m.caption && <figcaption className="t-meta mt-2.5 text-[0.66rem] text-muted">{m.caption}{m.credit && ` · ${m.credit}`}</figcaption>}
+                      <button
+                        type="button"
+                        onClick={() => setViewer(i)}
+                        aria-haspopup="dialog"
+                        aria-label={`View larger: ${m.alt}`}
+                        data-cursor="text"
+                        data-cursor-text="View"
+                        className="group relative block w-full cursor-zoom-in overflow-hidden rounded-xl sm:rounded-2xl"
+                      >
+                        <SmartImage
+                          src={m.src}
+                          alt={m.alt}
+                          ratio="4 / 3"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 45vw, 480px"
+                          imgClassName="group-hover:scale-[1.03]"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-black/55 text-white/90 backdrop-blur-sm transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100"
+                        >
+                          <Maximize2 className="size-3.5" />
+                        </span>
+                      </button>
+                      {m.caption && <figcaption className="t-meta mt-2 text-[0.62rem] leading-snug text-muted sm:mt-2.5 sm:text-[0.66rem]">{m.caption}{m.credit && ` · ${m.credit}`}</figcaption>}
                     </figure>
                   ))}
                 </div>
+                <Lightbox items={project.gallery} index={viewer} onClose={() => setViewer(null)} onNavigate={setViewer} />
               </Block>
             )}
 
@@ -214,14 +240,14 @@ export default function ProjectDetailPage() {
 
         {projects.length > 1 && (
         <Container className="mt-12 sm:mt-20">
-          <nav aria-label="More projects" className="grid gap-4 border-t border-line pt-8 sm:grid-cols-2 sm:pt-10">
-            <Link to={`/projects/${prev.slug}`} className="group rounded-xl p-2 sm:rounded-2xl" data-cursor="text" data-cursor-text="Prev">
+          <nav aria-label="More projects" className="grid grid-cols-2 gap-3 border-t border-line pt-8 sm:gap-4 sm:pt-10">
+            <Link to={`/projects/${prev.slug}`} className="group min-w-0 rounded-xl p-2 sm:rounded-2xl" data-cursor="text" data-cursor-text="Prev">
               <span className="t-meta inline-flex items-center gap-2 text-muted"><ArrowLeft className="size-3.5" aria-hidden="true" /> Previous</span>
-              <span className="mt-1.5 block font-display text-2xl transition-colors group-hover:text-accent sm:mt-2 sm:text-3xl">{prev.title}</span>
+              <span className="mt-1.5 block break-words font-display text-xl leading-tight transition-colors group-hover:text-accent sm:mt-2 sm:text-3xl">{prev.title}</span>
             </Link>
-            <Link to={`/projects/${next.slug}`} className="group rounded-xl p-2 sm:rounded-2xl sm:text-right" data-cursor="text" data-cursor-text="Next">
-              <span className="t-meta inline-flex items-center gap-2 text-muted sm:flex-row-reverse">Next <ArrowRight className="size-3.5" aria-hidden="true" /></span>
-              <span className="mt-1.5 block font-display text-2xl transition-colors group-hover:text-accent sm:mt-2 sm:text-3xl">{next.title}</span>
+            <Link to={`/projects/${next.slug}`} className="group min-w-0 rounded-xl p-2 text-right sm:rounded-2xl" data-cursor="text" data-cursor-text="Next">
+              <span className="t-meta inline-flex flex-row-reverse items-center gap-2 text-muted">Next <ArrowRight className="size-3.5" aria-hidden="true" /></span>
+              <span className="mt-1.5 block break-words font-display text-xl leading-tight transition-colors group-hover:text-accent sm:mt-2 sm:text-3xl">{next.title}</span>
             </Link>
           </nav>
         </Container>

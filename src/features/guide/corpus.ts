@@ -11,12 +11,6 @@ import type { Lang } from "@/content/knowledge";
 
 const projects = allProjects.filter((p) => !p.draft);
 
-/**
- * Everything the assistant can talk about, as small self-contained "facts".
- * They are generated from the site's own content files, so the assistant is always in sync:
- * edit your CV data or add a project file and the assistant knows about it.
- */
-
 export interface GuideLink {
   label: string;
   to: string;

@@ -41,7 +41,7 @@ export default defineProject({
   ],
 
   overview:
-    "KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals for lessons, quizzes, grades and communication. It was built as a team project for CPE Elective 1 at PLM, with Wesleyan College of Manila as the partner school.",
+    "KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals for lessons, quizzes, grades and communication. It was built as a team project for CPE Elective at PLM, with Wesleyan College of Manila as the partner school.",
   objective:
     "Put lessons, quizzes and games on one platform that children can use, that teachers can manage without a developer, and that follows learning standards.",
   problem:

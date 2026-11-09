@@ -1,37 +1,39 @@
 # Projects
 
-One file = one project. No database, no registry to edit.
+Each project is one TypeScript file in this folder. Files are discovered automatically; there is no registry to update.
 
-## Add a project (30 seconds)
+## Add a project
+
 ```bash
-npm run new:project -- aws-three-tier "AWS Three-Tier App"
+npm run new:project -- <slug> "<Title>"
 ```
-This creates `src/content/projects/aws-three-tier.ts` from the template with a **valid slug**
-(lowercase-with-dashes — the file name and the `slug` must be the same; the pretty name goes in `title`).
 
-1. Open the new file and fill it in. Only the **REQUIRED** block is mandatory.
-2. Run `npm run dev` — the project appears on the homepage wheel, `/projects`, its own `/projects/<slug>` page,
-   prev/next links and the ⌘K search. New projects start as a **draft** (a "Draft · dev only" badge).
-3. When it is ready, **delete the `draft: true` line**. Now it is on the live site, in the sitemap and in the assistant.
+This creates `src/content/projects/<slug>.ts` from `_template.ts`. The file name and the `slug` field must match and use lowercase letters, digits and hyphens.
 
-## Draft = safe to work on
-`draft: true` projects are visible **only** in `npm run dev`. They are removed from the production build
-(not just hidden), left out of `sitemap.xml` and ignored by the portfolio assistant — so half-written text can never go live.
+1. Fill in the file. Only the `REQUIRED` block is mandatory.
+2. Run `npm run dev`. The project appears on the homepage ring, `/projects` and `/projects/<slug>`, and in the command palette. New projects start with `draft: true`.
+3. Remove `draft: true` to publish. The project is then included in the production build, `sitemap.xml` and the assistant's knowledge.
+4. Run `npm run build:knowledge` and commit the regenerated file.
+
+## Drafts
+
+Projects with `draft: true` are visible only in the development server. They are excluded from the production build and the sitemap, and are ignored by the assistant.
 
 ## Images
-Put them in `public/images/projects/<slug>/` and reference `"/images/projects/<slug>/cover.webp"`.
-No image yet? Omit `cover` and a placeholder is shown.
+
+Place images in `public/images/projects/<slug>/` and reference them as `/images/projects/<slug>/cover.webp`. If `cover` is omitted, a placeholder is shown. Mark stock or concept images with `kind: "representative"` so they are labelled as such.
+
+Images listed in `gallery` appear in the project's Media section in a two-column grid. Selecting one opens it full size in a viewer with keyboard (arrow keys, Esc) and swipe navigation, so supply the largest sensible version of each image.
 
 ## Ordering
-`order: 1` shows first, `order: 2` next… Projects without `order` go after the numbered ones (A→Z by slug).
-The homepage wheel shows up to 10 projects (featured ones first); everything is always on `/projects`.
 
-## Remove / hide a project
-Delete the file, or rename it to start with `_` (e.g. `_old-idea.ts`) to ignore it completely.
+Projects are sorted by `order` (ascending). Projects without `order` follow, sorted by slug. The homepage ring shows up to 10 projects, featured ones first; `/projects` lists all of them.
 
-## Catching mistakes
-* `npm run dev` — the browser console warns about a bad slug, a wrong file name, or two projects with the
-  same text (the "I copied a file and forgot to edit it" mistake).
-* `npm run check` — typecheck + all tests (also run automatically on every push by GitHub Actions).
-* Do NOT keep an old `src/content/projects.ts` next to this folder: it would shadow `projects/index.ts`
-  and your new projects would silently not appear.
+## Hiding a project
+
+Delete the file, or prefix its name with `_` (for example `_old-idea.ts`) to exclude it entirely.
+
+## Validation
+
+- `npm run dev` logs warnings for an invalid slug, a file name that does not match its slug, and duplicated text between projects.
+- `npm run check` runs the typecheck and the full test suite. CI runs it on every push.

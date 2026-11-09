@@ -314,7 +314,6 @@ export function ProjectRing() {
             <div className="flex flex-row-reverse items-center justify-between gap-6 lg:flex-row lg:justify-end">
               <p className="t-meta text-muted" aria-hidden="true">
                 <span className="text-ink">{String(active + 1).padStart(2, "0")}</span> / {String(count).padStart(2, "0")}
-                <span className="ml-4 hidden xl:inline">Scroll, drag or swipe the wheel to rotate</span>
               </p>
               <div className="flex items-center gap-4">
                 <div className="flex items-center" role="group" aria-label="Choose a project">

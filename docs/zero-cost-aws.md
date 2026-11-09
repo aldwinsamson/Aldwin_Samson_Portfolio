@@ -11,7 +11,7 @@ Two switches control everything:
 | `dns_zone_enabled` | `infra/terraform/bootstrap/bootstrap.tfvars` | Route 53 hosted zone exists (about $0.50/month) | zone deleted (DNS lives at Vercel) |
 
 What stays after both are `false` and costs nothing: the Terraform state bucket (a few KB), the GitHub login provider and roles, and the budget alert.
-Not covered: if you **registered the domain through AWS Route 53**, the yearly renewal is a separate charge (check AWS Console > Route 53 > Registered domains).
+Not covered: if the domain was **registered through AWS Route 53**, the yearly renewal is a separate charge (check AWS Console > Route 53 > Registered domains).
 Domain registration at another registrar is not an AWS cost.
 
 All commands are PowerShell. Terraform commands start with:
@@ -36,7 +36,7 @@ and always quote the var files.
    ```
 2. In Vercel: **Settings > Domains > aldwinsamson.com > Edit** (or Team **Domains**) and choose **Use Vercel DNS / Nameservers**. Vercel shows two name servers
    (normally `ns1.vercel-dns.com` and `ns2.vercel-dns.com`). In Vercel's DNS records page, re-create any `MX`/`TXT` records from step 1 that are not for the website.
-3. At your registrar (Namecheap): **Domain List > Manage** next to aldwinsamson.com > **Nameservers** dropdown > **Custom DNS** > enter `ns1.vercel-dns.com` and `ns2.vercel-dns.com` > click the green check. Do not touch anything else. If you use Namecheap email forwarding or Private Email, add those `MX`/`TXT` records in Vercel DNS first.
+3. At the registrar, switch the domain to custom nameservers and enter `ns1.vercel-dns.com` and `ns2.vercel-dns.com`. Change nothing else. If the registrar provides email hosting or forwarding, create its `MX` and `TXT` records in Vercel DNS first.
 4. Wait until the world sees it (usually under an hour, up to 48 h):
    ```powershell
    nslookup -type=NS aldwinsamson.com 8.8.8.8
@@ -55,7 +55,7 @@ terraform plan "-var-file=../../environment.tfvars" "-var-file=prod.tfvars"
 ```
 
 **Expect:** `Plan: 0 to add, 0 to change, N to destroy` and every resource starts with `module.static_site[0]`, `module.monitoring[0]` or `module.site_deploy_role[0]`,
-plus lines saying a module "has moved". Nothing from `k3s_lab`. If anything else is listed, stop and send me the plan.
+plus lines saying a module "has moved". Nothing from `k3s_lab`. If anything else is listed, stop and review the plan before applying.
 
 ```powershell
 terraform apply "-var-file=../../environment.tfvars" "-var-file=prod.tfvars"
@@ -120,7 +120,7 @@ After a full billing cycle, Cost Explorer should show about $0.00 per day.
    The certificate is checked through DNS, so this apply waits until the name servers from step 2 are live.
 4. **Check the AWS copy** directly: `curl.exe -sI "https://$(terraform output -raw cloudfront_domain)/"`.
 5. **Flip DNS:** set `hosting = { target = "aws" }`, plan (**expect** `2 to change, 2 to add`), apply. Verify `Via: ... CloudFront` on https://aldwinsamson.com.
-6. Last, remove the domain from the Vercel project so a leftover project never serves your name.
+6. Last, remove the domain from the Vercel project so a leftover project can never serve the domain.
 
 The AI assistant on AWS (`chat = { enabled = true }`) is **not** compatible with the Gemini setup: that Lambda module still expects an Anthropic key.
 After a return to AWS the site works with its built-in offline search until that module is updated.

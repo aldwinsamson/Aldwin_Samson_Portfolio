@@ -5,7 +5,7 @@ Full name: John Aldwin R. Samson. Nickname used on this site and by everyone: Al
 Based in: Metro Manila, Philippines.
 Email: aldwinsamsonn@gmail.com.
 Availability: Open to Cloud, DevOps, SRE & Embedded roles · Hybrid or onsite in Metro Manila · Remote where eligible.
-Headline: Computer engineer specializing in AWS infrastructure as code, GitOps delivery and observability — with a hardware and firmware background that lets me reason about reliability from the device to the dashboard.
+Headline: Computer engineer specializing in AWS infrastructure as code, GitOps delivery and observability with a hardware and firmware background that lets me reason about reliability from the device to the dashboard.
 
 I'm a Computer Engineering graduate of Pamantasan ng Lungsod ng Maynila (PLM) specializing in cloud infrastructure, DevOps and site reliability, with a strong foundation in embedded systems and hardware design.
 At Stratpoint Technologies I built a three-tier AWS environment across availability zones with Terraform and CloudFormation, set up GitLab CI/CD and Argo CD for delivery, and ran Prometheus, Grafana, Loki and Tempo for monitoring and tracing. My capstone there was a task manager app that deploys to Kubernetes through Argo CD.
@@ -183,7 +183,7 @@ Status: Completed. Period: August 2023 – May 2024. Aldwin's role: Full-Stack D
 Categories: Web Development, Software.
 Stack: Node.js, MongoDB, REST API, JavaScript, HTML/CSS.
 Summary: KidVerse is a web platform where children aged 5 to 7 take lessons and quizzes, teachers manage classes and grades, and parents help with enrollment. A five-person team built it for CPE Elective 1 at PLM, with Wesleyan College of Manila as the partner school.
-Overview: KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals for lessons, quizzes, grades and communication. It was built as a team project for CPE Elective 1 at PLM, with Wesleyan College of Manila as the partner school.
+Overview: KidVerse is an educational platform for children that blends learning with play, giving students and faculty dedicated portals for lessons, quizzes, grades and communication. It was built as a team project for CPE Elective at PLM, with Wesleyan College of Manila as the partner school.
 Objective: Put lessons, quizzes and games on one platform that children can use, that teachers can manage without a developer, and that follows learning standards.
 Problem: Young learners lose focus quickly and most online platforms are not designed for their age. Teachers have limited training with digital tools, and parents struggle to guide online classes while working. Many platforms also favor entertainment over actual learning content.
 What Aldwin did:
@@ -237,11 +237,11 @@ Page: /projects/portfolio
 Tagline: My portfolio site: typed content, a 3D hero, and an AI assistant that answers questions about my work.
 Status: Completed. Period: Oct 2026 – Nov 2026. Aldwin's role: Designer & Developer (solo).
 Categories: Software, Web Development.
-Stack: React, TypeScript, Vite, Tailwind CSS, Three.js, Motion, Claude API.
+Stack: React, TypeScript, Vite, Tailwind CSS, Three.js, Motion, Gemini API.
 Summary: A solo-built React, TypeScript and Vite app where every page is generated from typed content files. It has an adaptive Three.js hero, light and dark themes, reduced-motion support, and an assistant that answers questions in English or Filipino.
 Overview: A personal portfolio engineered as a small product: content-driven, accessible and built to grow.
 Objective: Show my work as case studies instead of a list of links, and let the site itself show how I build and run software.
-Problem: Template portfolios look alike and say little about how software and hardware work fit together. I also wanted one place that stays accurate when my CV changes.
+Problem: Template portfolios look alike and say little about how software and hardware work fit together. I also wanted one place that stays accurate when my resume or CV changes.
 What Aldwin did:
 - Designed the visual system, the motion rules and the responsive layouts.
 - Built an adaptive Three.js hero that picks a quality level from device signals, lowers it if the frame rate drops, and falls back to a still image.
@@ -365,7 +365,7 @@ Note: This is an internal company tool, so there is no public link or code.
 PROJECT: Portfolio Infrastructure on AWS (Terraform-built hosting and delivery for aldwinsamson.com)
 Page: /projects/portfolio-aws-infrastructure
 Tagline: Terraform-built S3 and CloudFront hosting with keyless deploys and monitoring. It ran this site and now stays in the repo as a switchable option.
-Status: Completed. Period: Oct 2026 – Nov 2026. Aldwin's role: Solo: design, Terraform, pipeline and runbook.
+Status: Completed. Period: Oct 2026 – Nov 2026. Aldwin's role: Cloud & DevOps Engineer (solo).
 Categories: Cloud & DevOps.
 Stack: AWS, Terraform, S3, CloudFront, ACM, Route 53, CloudWatch, GitHub Actions, Checkov, k3s, Argo CD, Prometheus, Grafana.
 Summary: The hosting and delivery setup this portfolio ran on first, written as code. Terraform created a private S3 bucket served through CloudFront over HTTPS, GitHub Actions deployed it without stored AWS keys, security checks ran on every change, and a small k3s cluster ran Argo CD, Prometheus and Grafana as a monitoring lab. The site now runs on Vercel's free plan, and the AWS setup stays in the repository so the domain can be pointed back at it.

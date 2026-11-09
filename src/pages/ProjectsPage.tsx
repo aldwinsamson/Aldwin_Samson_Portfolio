@@ -14,7 +14,6 @@ export default function ProjectsPage() {
           />
           <p className="t-lead -mt-2 mb-8 max-w-2xl text-ink-soft sm:-mt-4 sm:mb-14">
             Each project is presented as a case study: the problem, my role, the system and what was actually delivered.
-            Stock imagery is labelled as representative until project photos are added.
           </p>
           <ProjectExplorer />
         </Container>
