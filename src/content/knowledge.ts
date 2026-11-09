@@ -146,6 +146,7 @@ export const GUIDE = {
   title: "Ask about Aldwin",
   subtitle: "AI assistant · answers from this portfolio",
   subtitleOffline: "From this portfolio · offline search",
+  privacyNote: "",
   welcome: STRINGS.en.greeting,
   placeholder: "Ask anything about Aldwin…",
   emailSubject: "A question from your portfolio",
