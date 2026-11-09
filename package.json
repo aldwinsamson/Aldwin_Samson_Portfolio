@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "new:project": "node scripts/new-project.mjs",
-    "check": "npm run typecheck && npm test",
+    "check": "npm run typecheck && npm test && npm run check:knowledge",
     "test:chat": "node server/chat/selftest.mjs",
     "build:knowledge": "vite-node scripts/build-knowledge.ts",
     "check:knowledge": "vite-node scripts/build-knowledge.ts --check"
