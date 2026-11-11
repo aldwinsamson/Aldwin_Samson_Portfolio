@@ -3,10 +3,10 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
-      # Vite, its plugins and Tailwind declare peer ranges on each other (e.g. plugin-react 6 needs
-      # vite 8, @tailwindcss/vite must allow it). Bumping them one by one fails `npm install`,
-      # so they always move together in a single PR. Listed first so it wins over the group below.
       vite-toolchain:
         patterns:
           - "vite"

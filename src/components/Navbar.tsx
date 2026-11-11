@@ -429,7 +429,7 @@ function CmdKButton() {
       type="button"
       onClick={palette.open}
       className="hidden min-h-10 items-center gap-2 rounded-full px-3 text-[0.72rem] text-muted transition-colors hover:bg-sunken/70 hover:text-ink lg:inline-flex"
-      aria-label="Open command palette"
+      aria-label="Open command palette (⌘K)"
       data-cursor="magnetic"
     >
       <Command className="size-3" aria-hidden="true" />
