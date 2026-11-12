@@ -43,6 +43,5 @@ output "github_variables_commands" {
 }
 
 output "lab" {
-  description = "Connection commands for the optional k3s lab (null while lab.enabled = false)."
   value       = var.lab.enabled ? module.k3s_lab[0].connect_commands : null
 }

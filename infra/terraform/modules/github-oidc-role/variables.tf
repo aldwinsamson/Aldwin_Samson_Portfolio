@@ -14,7 +14,6 @@ variable "oidc_provider_arn" {
 }
 
 variable "subjects" {
-  description = "Allowed OIDC `sub` claims, exactly as GitHub sends them, e.g. repo:OWNER/REPO:ref:refs/heads/main or repo:OWNER/REPO:environment:production."
   type        = list(string)
 
   validation {
@@ -29,7 +28,6 @@ variable "managed_policy_arns" {
 }
 
 variable "inline_policy_json" {
-  description = "Optional inline policy document (JSON)."
   type        = string
   default     = null
 }

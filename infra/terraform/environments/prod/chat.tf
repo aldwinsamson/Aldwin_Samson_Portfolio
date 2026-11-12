@@ -1,5 +1,4 @@
 variable "chat" {
-  description = "Optional AWS chat backend. Off by default."
   type = object({
     enabled              = optional(bool, false)
     model                = optional(string, "claude-haiku-5-5")
@@ -25,11 +24,9 @@ module "chat_api" {
 }
 
 output "chat_api_url" {
-  description = "Value for VITE_CHAT_API_URL in the AWS build (null while chat.enabled = false)."
   value       = var.chat.enabled ? module.chat_api[0].chat_api_url : null
 }
 
 output "chat_api_origin" {
-  description = "Add to site.csp.connect_hosts when the AWS site calls the chat API cross-origin."
   value       = var.chat.enabled ? module.chat_api[0].chat_api_origin : null
 }

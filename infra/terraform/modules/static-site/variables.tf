@@ -1,5 +1,4 @@
 variable "context" {
-  description = "Shared naming/tagging context built once per environment (see environments/*/locals.tf)."
   type = object({
     project     = string
     environment = string
@@ -10,7 +9,6 @@ variable "context" {
 }
 
 variable "domain_name" {
-  description = "Apex domain served by this site, e.g. example.com"
   type        = string
 }
 
@@ -20,13 +18,11 @@ variable "zone_id" {
 }
 
 variable "include_www" {
-  description = "Also serve www.<domain> (it 301-redirects to the apex)."
   type        = bool
   default     = true
 }
 
 variable "price_class" {
-  description = "PriceClass_All makes every edge location eligible (including Manila). At small-site traffic the cost is covered by the always-free allowance."
   type        = string
   default     = "PriceClass_All"
 
@@ -37,11 +33,6 @@ variable "price_class" {
 }
 
 variable "csp" {
-  description = <<-EOT
-    Content-Security-Policy. mode = "report-only" sends Content-Security-Policy-Report-Only (nothing is blocked;
-    check the browser console); "enforce" sends the blocking header. The *_hosts lists are the extra https origins
-    the site loads from (the module itself only ever allows 'self').
-  EOT
   type = object({
     mode          = optional(string, "report-only")
     style_hosts   = optional(list(string), [])
@@ -73,13 +64,6 @@ variable "permissions_policy" {
 }
 
 variable "dns_target" {
-  description = <<-EOT
-    Where the domain points.
-      "aws"      = alias A + AAAA records to this CloudFront distribution (the normal setup).
-      "external" = plain A records to another host (for example Vercel). The AWS site stays deployed but dormant.
-    Switching between the two is an in-place update of the same record resources, so Terraform never has to delete
-    and create the same record in parallel.
-  EOT
   type        = string
   default     = "aws"
 
@@ -90,7 +74,6 @@ variable "dns_target" {
 }
 
 variable "external_ipv4" {
-  description = "A-record targets used when dns_target = \"external\". Copy them exactly from the other host's DNS instructions (Vercel > Project > Settings > Domains)."
   type        = list(string)
   default     = ["76.76.21.21"]
 }

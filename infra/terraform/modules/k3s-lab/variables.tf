@@ -1,5 +1,4 @@
 variable "context" {
-  description = "Shared naming/tagging context built once per environment (see environments/*/locals.tf)."
   type = object({
     project     = string
     environment = string
@@ -10,11 +9,6 @@ variable "context" {
 }
 
 variable "instance_type" {
-  description = <<-EOT
-    EC2 size for the single-node lab. Free-plan-eligible types: t3.micro, t3.small, t4g.micro, t4g.small,
-    c7i-flex.large, m7i-flex.large. t4g.small (2 GiB, Graviton) is the cheapest that can run k3s + ArgoCD +
-    a lean Prometheus/Grafana stack (a 2 GiB swap file is added as a safety net).
-  EOT
   type        = string
   default     = "t4g.small"
 }
@@ -36,13 +30,13 @@ variable "k3s_version" {
 }
 
 variable "argocd_version" {
-  description = "Argo CD release tag (manifests are applied from this tag)."
+  description = "Argo CD release tag."
   type        = string
   default     = "v3.5.5"
 }
 
 variable "gitops_repo_url" {
-  description = "HTTPS URL of the Git repo ArgoCD watches (must be public, or add a repo credential later)."
+  description = "HTTPS URL of the Git repo ArgoCD watches."
   type        = string
 }
 

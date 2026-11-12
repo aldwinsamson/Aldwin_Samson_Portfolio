@@ -25,7 +25,6 @@ variable "domain_name" {
 }
 
 variable "github_repository" {
-  description = "OWNER/REPO that is allowed to deploy the site (OIDC trust)."
   type        = string
 }
 
@@ -70,7 +69,6 @@ variable "monitoring" {
 }
 
 variable "lab" {
-  description = "Optional DevOps lab (single-node k3s + Argo CD + Prometheus + Grafana). The public website never depends on it."
   type = object({
     enabled        = optional(bool, false)
     instance_type  = optional(string, "t4g.small")

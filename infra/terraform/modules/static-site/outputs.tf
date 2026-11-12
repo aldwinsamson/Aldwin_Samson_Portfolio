@@ -15,7 +15,6 @@ output "distribution_arn" {
 }
 
 output "distribution_domain_name" {
-  description = "The *.cloudfront.net hostname (works even before DNS is delegated)."
   value       = aws_cloudfront_distribution.site.domain_name
 }
 

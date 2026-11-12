@@ -1,5 +1,4 @@
 variable "context" {
-  description = "Shared naming/tagging context built once per environment (see environments/*/locals.tf)."
   type = object({
     project     = string
     environment = string
@@ -19,12 +18,10 @@ variable "distribution_id" {
 }
 
 variable "alert_email" {
-  description = "Receives alarm notifications (you must click the confirmation link AWS emails you)."
   type        = string
 }
 
 variable "health_check" {
-  description = "Route 53 HTTPS health check from several regions (~US$1.75/month incl. the HTTPS option)."
   type = object({
     enabled           = optional(bool, true)
     path              = optional(string, "/")

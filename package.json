@@ -48,6 +48,7 @@
   },
   "description": "Personal engineering portfolio: React, TypeScript and an adaptive WebGL hero, with Terraform and GitHub Actions infrastructure.",
   "author": "John Aldwin R. Samson",
+  "license": "MIT",
   "homepage": "https://aldwinsamson.com",
   "repository": {
     "type": "git",

@@ -1,4 +1,5 @@
 # Aldwin Samson — Portfolio
+[![CI](https://github.com/aldwinsamson/Aldwin_Samson_Portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/aldwinsamson/Aldwin_Samson_Portfolio/actions/workflows/ci.yml)
 
 Personal portfolio of John Aldwin R. Samson, a Computer Engineering graduate focused on cloud infrastructure, DevOps and embedded systems.
 
@@ -112,8 +113,6 @@ Vercel deploys production on every push to `main`. Build settings, the SPA rewri
 The repository also contains a complete AWS implementation (S3, CloudFront, ACM, Route 53, deployed from GitHub Actions through OIDC with no stored keys) and an optional k3s observability lab. Which one serves the domain is controlled by one Terraform setting.
 
 - [infra/README.md](infra/README.md): architecture, runbook and Terraform layout
-- [docs/switch-hosting.md](docs/switch-hosting.md): switching between Vercel and AWS
-- [docs/zero-cost-aws.md](docs/zero-cost-aws.md): tearing down and restoring the AWS resources
 
 ## Continuous integration
 
@@ -124,6 +123,10 @@ The repository also contains a complete AWS implementation (S3, CloudFront, ACM,
 | `terraform.yml` | Changes under `infra/` | Validate, plan on pull requests, apply behind a protected environment |
 | `deploy.yml` | Manual | Build, publish to S3, invalidate CloudFront, smoke test |
 | `container.yml` | Manual | Build and push the nginx image, update the staging image tag |
+
+## License
+
+The source code is released under the [MIT License](LICENSE). The written content, photographs, logos and project material in `src/content/` and `public/` are © 2026 John Aldwin R. Samson, all rights reserved, and are not covered by that licence.
 
 ## Credits
 

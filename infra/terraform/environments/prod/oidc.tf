@@ -1,5 +1,4 @@
 variable "github_oidc_subject_prefix" {
-  description = "Prefix of the GitHub OIDC `sub` claim. Leave null for the classic format repo:OWNER/REPO."
   type        = string
   default     = null
 }

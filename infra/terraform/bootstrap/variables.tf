@@ -1,5 +1,4 @@
 variable "project" {
-  description = "Short prefix used in resource names (lowercase letters, digits, hyphens)."
   type        = string
 
   validation {
@@ -9,7 +8,6 @@ variable "project" {
 }
 
 variable "environment" {
-  description = "Environment name, e.g. dev, staging, prod. Used in names, tags and the state key prefix."
   type        = string
 
   validation {
@@ -23,12 +21,10 @@ variable "region" {
 }
 
 variable "domain_name" {
-  description = "Apex domain registered at your registrar. A Route 53 hosted zone is created for it."
   type        = string
 }
 
 variable "github_repository" {
-  description = "GitHub repository allowed to assume the CI roles, as OWNER/REPO (case-sensitive)."
   type        = string
 }
 
@@ -42,29 +38,21 @@ variable "owner" {
 }
 
 variable "github_environments" {
-  description = "GitHub Environments (with required reviewers) that are allowed to run terraform apply, e.g. [\"production\"]."
   type        = list(string)
   default     = ["production"]
 }
 
 variable "additional_environments" {
-  description = "Extra environments (besides var.environment) whose state prefix the CI roles may use, e.g. [\"staging\"]."
   type        = list(string)
   default     = []
 }
 
 variable "monthly_budget_usd" {
-  description = "Monthly gross-usage budget (credits are NOT netted off, so this tracks how fast credit is burned)."
   type        = number
   default     = 30
 }
 
 variable "dns_zone_enabled" {
-  description = <<-EOT
-    Keep the Route 53 hosted zone (about $0.50/month). Set false ONLY after the domain's name servers point at Vercel (or
-    another DNS host) and after environments/prod has run with aws_site_enabled = false. Setting it back to true creates a
-    NEW zone with NEW name servers: copy them to your registrar (docs/zero-cost-aws.md).
-  EOT
   type        = bool
   default     = true
 }

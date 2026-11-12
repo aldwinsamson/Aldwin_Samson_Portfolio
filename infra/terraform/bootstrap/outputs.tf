@@ -1,5 +1,5 @@
 output "name_servers" {
-  description = "Set these 4 name servers at your domain registrar (null while dns_zone_enabled = false)."
+  description = "Set these 4 name servers at your domain registrar."
   value       = one(aws_route53_zone.primary[*].name_servers)
 }
 
@@ -8,7 +8,6 @@ output "hosted_zone_id" {
 }
 
 output "state_bucket" {
-  description = "Pass to `terraform init -backend-config=bucket=...` in environments/<env>."
   value       = module.state_bucket.id
 }
 

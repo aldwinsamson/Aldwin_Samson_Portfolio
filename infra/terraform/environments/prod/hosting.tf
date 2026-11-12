@@ -1,19 +1,9 @@
 variable "aws_site_enabled" {
-  description = <<-EOT
-    Master switch for the AWS copy of the website: S3 bucket, CloudFront, ACM certificate, the DNS records for them,
-    monitoring (health check, alarms, dashboard) and the GitHub deploy role. true = deployed (dormant while hosting.target =
-    "vercel"). false = all of it is destroyed and AWS costs nothing for the website. See docs/zero-cost-aws.md.
-  EOT
   type        = bool
   default     = true
 }
 
 variable "hosting" {
-  description = <<-EOT
-    Where aldwinsamson.com is served from. target = "aws" (S3 + CloudFront, this stack) or "vercel".
-    With "vercel" the AWS website stays deployed but dormant, and Route 53 serves plain A records to Vercel.
-    Copy vercel.ipv4 exactly from Vercel > Project > Settings > Domains (it can change).
-  EOT
   type = object({
     target = optional(string, "aws")
     vercel = optional(object({
